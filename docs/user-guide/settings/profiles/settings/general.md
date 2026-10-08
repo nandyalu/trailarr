@@ -67,10 +67,19 @@ Keep the old setup when you want the search: a profile that searches YouTube for
 |:-------:|:--------:|:-------:|:-------------:|
 | Integer | Yes      | 0       | 0 to 999     |
 
-This setting determines the order in which profile is applied when multiple profiles match a media item. Profiles with a higher priority (highest numerical value) will be processed first. 
+{{ version_badge("upd", "0.14.0") }}
+
+The order of the profiles that match one media item. The **lowest number goes first**: a profile with priority `0` comes before a profile with priority `1`. This is what Trailarr has always done; the docs said the opposite before `v0.14.0`.
+
+Priority does not decide whether a profile downloads. Since `v0.10.0` every matching profile downloads its own video and keeps track of it, so two matching profiles give two downloads whatever their priorities are. Priority decides the order, in four places:
+
+- **Which profile claims a file that is already on disk.** When a scan or the startup pass finds a video that no profile owns, the first matching profile of the same [Video Type](#video-type) takes it, and the others download their own.
+- **The order of the downloads in one task run.** The profile with the lowest number downloads first.
+- **Which profile a new file is given at scan time**, with the same rule as the claim.
+- **The order of the rows** in the `Download Profiles` section of the media details page.
 
 !!! warning
-    If two profiles have the same priority, any one of them can be used, so it is recommended to use unique priorities for each profile.
+    If two profiles have the same priority, either can go first, so give each profile its own number when the order matters to you.
 
 
 ## Retry Count

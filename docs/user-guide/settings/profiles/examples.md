@@ -63,7 +63,7 @@ With this filter, the **Series Trailers** profile applies to all TV series. When
 - Click `Create` to create the profile.
 - Change the following `Settings`:
 
-    - Set `Priority` to `1` which is higher than the [Movie Trailers](#example-1-movie-trailers-profile) profile, so that this profile is used first for matching movies.
+    - Leave `Priority` at `0`. Both profiles download their own trailer for a Spanish movie, so the priority does not pick one of them. It only decides which profile goes first, and which one claims a trailer that is already on disk — see [Priority](settings/general.md#priority).
     - Set `Include Words in Title` to `Español`.
     - Set `Search Query` to `{title} {year} {is_movie} Tráiler en español`.
     - Set `Always Search` to `true`.

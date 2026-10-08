@@ -58,7 +58,7 @@
       <app-text-setting
         name="Priority"
         description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 999."
-        descriptionExtra="When multiple profiles match, the one with the highest priority will be used first."
+        descriptionExtra="Every matching profile downloads its own video. The lowest number goes first, and claims a file that is already on disk."
         [isNumberType]="true"
         [isLongInput]="false"
         [placeholder]="'Priority'"
