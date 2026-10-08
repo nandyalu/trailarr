@@ -38,14 +38,23 @@ class TestVideoType:
         with pytest.raises(ValidationError, match="Invalid video type"):
             _profile(video_type="interview")
 
-    def test_always_search_is_for_trailer_profiles_only(self):
-        """Decision 5: a profile of another type never searches, so
-        `Always Search` would mean "never download"."""
-        with pytest.raises(ValidationError, match="Always Search"):
-            _profile(video_type="featurette", always_search=True)
+    def test_always_search_needs_search_youtube(self):
+        """Decision 5 as amended: Always Search is a mode of the search,
+        so without the search it would mean "never download"."""
+        with pytest.raises(ValidationError, match="Search YouTube"):
+            _profile(search_youtube=False, always_search=True)
 
-    def test_always_search_stays_fine_on_a_trailer_profile(self):
+    def test_always_search_stays_fine_with_the_search_on(self):
         assert _profile(video_type="trailer", always_search=True).always_search
+
+    def test_a_featurette_profile_may_search_when_asked(self):
+        profile = _profile(
+            video_type="featurette", search_youtube=True, always_search=True
+        )
+        assert profile.search_youtube and profile.always_search
+
+    def test_the_search_is_on_by_default(self):
+        assert _profile().search_youtube is True
 
     def test_the_file_name_token(self):
         profile = _profile(file_name="{title}-{video_type}.{ext}")

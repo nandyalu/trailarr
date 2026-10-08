@@ -384,10 +384,18 @@
     </summary>
     <hr />
     <div class="setting-group">
-      @if (!isTrailerProfile()) {
-        <div class="type-banner" role="note" data-testid="search-type-banner">{{ nonTrailerSearchNote() }}</div>
+      <app-options-setting
+        name="Search YouTube"
+        description="Search YouTube when no known video suits this profile."
+        descriptionExtra="Off, the profile takes the videos that TMDB lists, the id from Radarr or Sonarr, and videos you added, and waits for TMDB when none suits it. Turned off when the Video Type leaves Trailer."
+        [options]="trueFalseOptions"
+        [selectedOption]="searchOn()"
+        (optionChange)="profileService.updateSetting('search_youtube', $event)"
+      />
+      @if (searchNote()) {
+        <div class="type-banner" role="note" data-testid="search-type-banner">{{ searchNote() }}</div>
       }
-      @if (isTrailerProfile()) {
+      @if (searchOn()) {
         <app-text-setting
           name="Search Query"
           description="Query to use when searching for trailers on YouTube."
@@ -422,7 +430,7 @@
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('max_duration', $event)"
       />
-      @if (isTrailerProfile()) {
+      @if (searchOn()) {
         <app-options-setting
           name="Always Search"
           description="Enable this to always search for trailers, ignoring the current youtube id."
@@ -431,7 +439,7 @@
           (optionChange)="profileService.updateSetting('always_search', $event)"
         />
       }
-      @if (isTrailerProfile()) {
+      @if (searchOn()) {
         <app-text-setting
           name="Include Words in Title"
           description="Download a video only if certain words exist in video title. Comma-separated list."

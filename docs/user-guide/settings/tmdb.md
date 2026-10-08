@@ -21,7 +21,7 @@ With a key, Trailarr asks TMDB which trailers the item has, in the languages you
 | To get a trailer in another language, you turn on `Always Search` and take what a YouTube search returns. | Trailarr takes a trailer that TMDB lists in the language your profile asks for, and searches only when there is none. |
 | Without an id, Trailarr searches YouTube for the title and the year. | Trailarr searches YouTube only when TMDB and the Arr have nothing. |
 | A wrong result of a search is downloaded. | A trailer that the studio published is downloaded. |
-| A profile can download trailers only. | {{ version_badge("add", "0.14.0") }} A profile can download teasers, clips, featurettes, behind-the-scenes videos and bloopers too, with its [Video Type](profiles/settings/general.md#video-type). These come from TMDB only. |
+| A profile can download trailers only. | {{ version_badge("add", "0.14.0") }} A profile can download teasers, clips, featurettes, behind-the-scenes videos and bloopers too, with its [Video Type](profiles/settings/general.md#video-type). These come from TMDB, or from a search when [Search YouTube](profiles/settings/search.md#search-youtube) is on. |
 
 ## Get a key
 

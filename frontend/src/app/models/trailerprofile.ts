@@ -57,6 +57,7 @@ export interface TrailerProfileRead {
   subtitles_format?: string;
   subtitles_language?: string;
   search_query?: string;
+  search_youtube?: boolean;
   min_duration?: number;
   max_duration?: number;
   always_search?: boolean;
@@ -100,6 +101,7 @@ export interface TrailerProfileCreate {
   subtitles_format?: string;
   subtitles_language?: string;
   search_query?: string;
+  search_youtube?: boolean;
   min_duration?: number;
   max_duration?: number;
   always_search?: boolean;

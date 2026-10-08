@@ -22,7 +22,7 @@ from database.models.event import EventSource
 from database.models.filefolderinfo import FileFolderInfoRead
 from database.models.download import DownloadRead
 from database.models.media import MediaRead
-from database.models.video_type import is_trailer_type, video_type_label
+from database.models.video_type import video_type_label
 from services.trailers import trailer_search
 from services.trailers.inflight import inflight_registry
 from services.trailers.trailers import utils as trailer_utils
@@ -805,15 +805,17 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
     )
     media = media_manager.read(media_id)
     profile = trailerprofile.get_trailerprofile(profile_id)
-    if not is_trailer_type(profile.video_type):
-        # Decision 5 of Phase 9: only a trailer profile searches YouTube.
+    if not profile.search_youtube:
+        # Search YouTube is off for the profile: it takes known videos
+        # only (Phase 9, decision 5 as amended).
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
-                f"The profile '{profile.customfilter.filter_name}' downloads"
-                f" a {video_type_label(profile.video_type).lower()}, and"
-                " Trailarr does not search YouTube for that video type."
-                " It takes these videos from TMDB only."
+                f"Search YouTube is off for the profile"
+                f" '{profile.customfilter.filter_name}'. It takes its"
+                f" {video_type_label(profile.video_type).lower()} from the"
+                " known videos only. Turn Search YouTube on in the profile"
+                " to search."
             ),
         )
 

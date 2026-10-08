@@ -40,9 +40,10 @@ def nudge_extras_profiles() -> int:
             f"The profile '{profile.customfilter.filter_name}' has the word"
             f" '{keyword}' in its settings, and its Video Type is Trailer."
             " Since v0.14.0 a profile can download a teaser, a clip, a"
-            " featurette or another extra from TMDB with the Video Type"
-            " setting. Trailarr did not change this profile. See the"
-            " profiles documentation for the steps."
+            " featurette or another extra with the Video Type setting,"
+            " from TMDB, or from a search when Search YouTube is on."
+            " Trailarr did not change this profile. See the profiles"
+            " documentation for the steps."
         )
     if count:
         logger.info(

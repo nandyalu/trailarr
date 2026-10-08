@@ -14,7 +14,6 @@ from database.models.customfilter import (
 )
 from database.models.video_type import (
     DEFAULT_VIDEO_TYPE,
-    is_trailer_type,
     normalize_video_type,
 )
 
@@ -135,6 +134,16 @@ class _TrailerProfileBase(AppSQLModel):
     search_query: str = "{title} {year} {is_movie} trailer"
     min_duration: int = 60
     max_duration: int = 600
+    # Search YouTube when no known video suits the profile. On by default
+    # for a trailer profile. Off, the profile takes known videos only (the
+    # videos TMDB lists, the id from the Arr, and videos a person added)
+    # and waits for TMDB when none suits it. A profile of another type
+    # gets it turned off when its type changes, because a search result
+    # is not checked against TMDB; a person can turn it on again.
+    search_youtube: bool = Field(
+        default=True,
+        sa_column=Column(Boolean, server_default="1", nullable=False),
+    )
     always_search: bool = Field(
         default=False,
         sa_column=Column(Boolean, server_default="0", nullable=False),
@@ -254,6 +263,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "folder_enabled",
             "subtitles_enabled",
             "subtitles_auto_generated",
+            "search_youtube",
             "always_search",
             "upgrade_to_tmdb",
             "delete_replaced_trailer",
@@ -283,6 +293,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "folder_enabled",
         "subtitles_enabled",
         "subtitles_auto_generated",
+        "search_youtube",
         "always_search",
         "upgrade_to_tmdb",
         "delete_replaced_trailer",
@@ -452,12 +463,12 @@ class TrailerProfile(_TrailerProfileBase, table=True):
                 f"Invalid max_duration: '{self.max_duration}'. "
                 f"Valid range is 90 to {MAX_DURATION_LIMIT} seconds."
             )
-        if self.always_search and not is_trailer_type(self.video_type):
-            # Decision 5: a profile of another type never searches, so
-            # `Always Search` would mean "never download".
+        if self.always_search and not self.search_youtube:
+            # Always Search is a mode of the search. Without the search
+            # it would mean "never download".
             raise ValueError(
-                "Always Search is only for trailer profiles. A profile of"
-                " another video type takes its videos from TMDB only."
+                "Always Search needs Search YouTube. Turn on Search YouTube"
+                " first, or turn off Always Search."
             )
         if self.max_duration - self.min_duration < 60:
             raise ValueError(

@@ -17,7 +17,7 @@ from config.settings import app_settings
 import database.manager.downloadattempt as attempt_manager
 import database.manager.mediavideo as video_manager
 from database.models.media import MediaRead
-from database.models.video_type import is_trailer_type, video_type_label
+from database.models.video_type import video_type_label
 from database.models.mediavideo import MediaVideoCreate, VideoSource
 from database.models.helpers import language_names
 from database.models.trailerprofile import TrailerProfileRead
@@ -320,16 +320,17 @@ def get_video_id(
         # An upgrade replaces a trailer with a TMDB trailer. A search result
         # is not one, so the next run would replace it again, and again.
         return None
-    if not is_trailer_type(profile.video_type):
-        # Decision 5 of Phase 9: every type but the trailer comes from
-        # TMDB only. A search finds trailers, and nothing says that a
-        # result is a featurette, so a profile of another type does not
-        # search. It waits for TMDB to list a video of its type.
+    if not profile.search_youtube:
+        # Search YouTube is off: the profile takes known videos only, and
+        # waits for TMDB to list a video it can use. This is the default
+        # for a profile of another type than Trailer (Phase 9, decision
+        # 5 as amended): a search finds trailers, and nothing says that a
+        # result is a featurette.
         logger.info(
-            f"TMDB lists no {video_type_label(profile.video_type).lower()}"
-            f" for '{media.title}' that the profile"
-            f" '{profile.customfilter.filter_name}' can use. Trailarr does"
-            " not search YouTube for this video type.",
+            f"No known {video_type_label(profile.video_type).lower()} of"
+            f" '{media.title}' suits the profile"
+            f" '{profile.customfilter.filter_name}', and Search YouTube is"
+            " off for it. Trailarr waits for TMDB.",
             **logger.media(media.id),
         )
         return None

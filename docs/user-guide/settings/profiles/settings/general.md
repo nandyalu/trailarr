@@ -29,9 +29,9 @@ This setting allows you to enable or disable the profile. Only enabled profiles 
 
 The kind of video this profile downloads. Every profile that existed before `v0.14.0` is a `Trailer` profile, and a new profile is one too.
 
-A profile of another type takes its videos from the list that TMDB keeps for the media item. Trailarr never searches YouTube for a teaser, a clip or a featurette: a search finds trailers, and nothing in a search result says that a video is a featurette. The profile editor hides the search settings for these types and shows a note that says so.
+A profile of another type takes its videos from the list that TMDB keeps for the media item. When you set the type, Trailarr turns [Search YouTube](search.md#search-youtube) off for the profile: a search finds trailers, and nothing in a search result says that a video is a featurette. The profile editor hides the search settings and shows a note that says so. You can turn the search on again; the note then warns that a search result is not checked against TMDB.
 
-This has three consequences for a profile that is not a `Trailer` profile:
+With the search off, three things follow for a profile that is not a `Trailer` profile:
 
 - It needs a [TMDB API key](../../tmdb.md). Without one, no profile of another type can download anything.
 - A media item needs a TMDB id. A Plex-only item without one is skipped.
@@ -57,9 +57,8 @@ To move such a profile to the new setting:
 
 1. Open the profile and set `Video Type` to the type you want, for example `Featurette`.
 2. Trailarr relabels the files that the profile downloaded, so the profile stays satisfied. Check the `Download Profiles` section of one media item to see that its file now shows the new type.
-3. The search settings no longer apply. The profile now takes its videos from TMDB, in the language the profile asks for, and skips media that TMDB has no featurette for.
-
-Keep the old setup when you want the search: a profile that searches YouTube for interviews, for example, has no type to move to, because TMDB has no interview type (TMDB lists most interviews as featurettes). A profile with `Always Search` on cannot change its type until you turn `Always Search` off.
+3. Trailarr turns `Search YouTube` off. The profile now takes its videos from TMDB, in the language the profile asks for, and waits for media that TMDB has no featurette for.
+4. Turn `Search YouTube` on again when you want to keep the search: a profile for interviews, for example, has no TMDB type to move to (TMDB lists most interviews as featurettes), so it keeps its search query and include words, and its downloads record the type `Featurette`.
 
 ## Priority
 

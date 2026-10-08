@@ -14,7 +14,7 @@ from database.models.trailerprofile import (
 )
 from database.engine import write_session
 from database.models.download import Download
-from database.models.video_type import normalize_video_type
+from database.models.video_type import is_trailer_type, normalize_video_type
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("TrailerProfileManager")
@@ -50,6 +50,8 @@ def update_trailerprofile(
     old_video_type = trailerprofile_db.video_type
     _update_data = trailerprofile_create.model_dump(exclude_unset=True)
     trailerprofile_db.sqlmodel_update(_update_data)
+    if "search_youtube" not in _update_data:
+        _search_off_for_extras(trailerprofile_db, old_video_type)
     # Update the filters
     __update_filters(
         trailerprofile_db.customfilter,
@@ -70,6 +72,31 @@ def update_trailerprofile(
     )
     _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     return convert_to_read_item(trailerprofile_db)
+
+
+def _search_off_for_extras(
+    trailerprofile_db: TrailerProfile, old_video_type: str
+) -> None:
+    """Turn the search off when a profile leaves the Trailer type.
+
+    A search finds trailers, and nothing in a result says that a video
+    is a featurette, so a profile of another type starts without the
+    search. A person who wants it turns it on again. Always Search goes
+    off with it, because it needs the search.
+    """
+    if not is_trailer_type(old_video_type):
+        return
+    if is_trailer_type(trailerprofile_db.video_type):
+        return
+    if not trailerprofile_db.search_youtube:
+        return
+    trailerprofile_db.search_youtube = False
+    trailerprofile_db.always_search = False
+    logger.info(
+        "Trailarr turned Search YouTube off for the profile"
+        f" '{trailerprofile_db.customfilter.filter_name}', because its"
+        " Video Type is no longer Trailer. Turn it on again to search."
+    )
 
 
 def _relabel_downloads(
@@ -146,6 +173,8 @@ def update_trailerprofile_setting(
         # never 'Featurette': the resolver reads rows by this exact value.
         value = normalize_video_type(value)
     setattr(trailerprofile_db, setting, value)
+    if setting == "video_type":
+        _search_off_for_extras(trailerprofile_db, old_video_type)
 
     # Validate the updated trailer profile
     TrailerProfile.model_validate(trailerprofile_db)

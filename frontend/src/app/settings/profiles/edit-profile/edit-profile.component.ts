@@ -25,7 +25,7 @@ import {RangeSettingComponent} from '../settings/range-setting/range-setting.com
 import {TextSettingComponent} from '../settings/text-setting/text-setting.component';
 import {EditFilterDialogComponent} from 'src/app/media/dialogs/edit-filter-dialog/edit-filter-dialog.component';
 import {countUnknownVideos, unknownVideosNote} from './unknown-videos';
-import {nonTrailerPlexNote, nonTrailerSearchNote} from './video-type';
+import {nonTrailerPlexNote, searchNote} from './video-type';
 
 @Component({
   selector: 'app-edit-profile',
@@ -79,12 +79,15 @@ export class EditProfileComponent {
   videoTypeOptions = VIDEO_TYPES;
   videoTypeLabels = VIDEO_TYPE_LABELS;
 
-  /** True when the profile downloads a trailer, the only type that can
-   * search YouTube. A profile without a type is a trailer profile. The
-   * search-only settings and Skip If Plex Has Trailer show for it alone. */
+  /** True when the profile downloads a trailer. A profile without a type
+   * is a trailer profile. Skip If Plex Has Trailer shows for it alone. */
   readonly isTrailerProfile = computed(() => isTrailerType(this.profile()?.video_type));
-  /** The banner at the top of the Search section of a non-trailer profile. */
-  readonly nonTrailerSearchNote = computed(() => nonTrailerSearchNote(this.profile()?.video_type));
+  /** True when the profile searches YouTube when no known video suits it.
+   * The search settings show only then. A missing value means on. */
+  readonly searchOn = computed(() => this.profile()?.search_youtube !== false);
+  /** The banner at the top of the Search section: where the videos come
+   * from, given the type and the Search YouTube setting. */
+  readonly searchNote = computed(() => searchNote(this.profile()?.video_type, this.profile()?.search_youtube));
   /** The note in place of Skip If Plex Has Trailer on a non-trailer profile. */
   readonly nonTrailerPlexNote = computed(() => nonTrailerPlexNote(this.profile()?.video_type));
 

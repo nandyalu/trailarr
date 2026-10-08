@@ -118,4 +118,8 @@ def test_the_video_type_lands_on_profiles_and_downloads(tmp_path: Path):
     assert db.execute(
         "SELECT COUNT(*) FROM media WHERE last_videos_refresh IS NOT NULL"
     ).fetchone()[0] == 0
+    # Search YouTube: on for every profile that exists, as before.
+    assert db.execute(
+        "SELECT COUNT(*) FROM trailerprofile WHERE search_youtube != 1"
+    ).fetchone()[0] == 0
     db.close()

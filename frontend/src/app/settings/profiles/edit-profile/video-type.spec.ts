@@ -1,19 +1,23 @@
 import {describe, expect, it} from 'vitest';
-import {nonTrailerPlexNote, nonTrailerSearchNote} from './video-type';
+import {nonTrailerPlexNote, searchNote} from './video-type';
 
-describe('nonTrailerSearchNote', () => {
-  it('is empty for a trailer profile, with or without a stored type', () => {
-    expect(nonTrailerSearchNote('trailer')).toBe('');
-    expect(nonTrailerSearchNote(undefined)).toBe('');
-    expect(nonTrailerSearchNote('')).toBe('');
+describe('searchNote', () => {
+  it('is empty for a trailer profile with the search on, the default', () => {
+    expect(searchNote('trailer', true)).toBe('');
+    expect(searchNote(undefined, undefined)).toBe('');
+    expect(searchNote('', true)).toBe('');
   });
 
-  it('names the type and says the search settings do not apply', () => {
-    const note = nonTrailerSearchNote('featurette');
-    expect(note).toBe(
-      'This profile downloads a Featurette. Trailarr takes it from the videos that TMDB lists and does not fall back to a YouTube search. The search settings do not apply.',
-    );
-    expect(nonTrailerSearchNote('behind_the_scenes')).toContain('downloads a Behind the Scenes.');
+  it('says known videos only when the search is off, for any type', () => {
+    expect(searchNote('trailer', false)).toContain('Search YouTube is off. Trailarr takes the Trailer');
+    expect(searchNote('featurette', false)).toContain('takes the Featurette of a media item from its known videos only');
+    expect(searchNote('featurette', false)).toContain('The search settings do not apply.');
+  });
+
+  it('warns when the search is on for a type other than Trailer', () => {
+    const note = searchNote('behind_the_scenes', true);
+    expect(note).toContain('Search YouTube is on for a Behind the Scenes profile.');
+    expect(note).toContain('not checked against TMDB');
   });
 });
 

@@ -323,3 +323,46 @@ class TestAddUserVideoTakesTheChosenType:
             v.video_id
             for v in video_manager.read_candidates(media_id, video_type=None)
         } == {"t1", "f1"}
+
+
+class TestLeavingTheTrailerTypeTurnsTheSearchOff:
+    def test_a_single_setting_type_change(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        profile_manager.update_trailerprofile_setting(
+            profile.id, "always_search", True
+        )
+        updated = profile_manager.update_trailerprofile_setting(
+            profile.id, "video_type", "featurette"
+        )
+        assert updated.search_youtube is False
+        assert updated.always_search is False
+
+    def test_a_full_update_type_change(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        update = _profile_create("clip")
+        update.customfilter.filter_name = profile.customfilter.filter_name
+        updated = profile_manager.update_trailerprofile(profile.id, update)
+        assert updated.search_youtube is False
+
+    def test_a_full_update_that_sets_the_search_keeps_it(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        update = _profile_create("clip")
+        update.customfilter.filter_name = profile.customfilter.filter_name
+        update.search_youtube = True
+        updated = profile_manager.update_trailerprofile(profile.id, update)
+        assert updated.search_youtube is True
+
+    def test_turning_the_search_on_again_sticks(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        profile_manager.update_trailerprofile_setting(
+            profile.id, "video_type", "featurette"
+        )
+        updated = profile_manager.update_trailerprofile_setting(
+            profile.id, "search_youtube", True
+        )
+        assert updated.search_youtube is True
+        # A change between two non-trailer types leaves it alone.
+        updated = profile_manager.update_trailerprofile_setting(
+            profile.id, "video_type", "clip"
+        )
+        assert updated.search_youtube is True
