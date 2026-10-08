@@ -523,7 +523,7 @@ async def download_media_trailer(
     Returns:
         str: Downloading trailer message.
     """
-    msg = "Trailarr downloads the trailer for this media item."
+    msg = "Trailarr downloads a video for this media item."
     if yt_id:
         msg += f" from ({yt_id})"
     logger.info(msg)

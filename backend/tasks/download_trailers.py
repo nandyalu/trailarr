@@ -14,6 +14,7 @@ from database.manager import trailerprofile
 import database.manager.media as media_manager
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 from services.trailers.trailer import download_trailer
 from services.trailers.trailers.batch import batch_download_task
 from services.files.files_handler import FilesHandler
@@ -72,7 +73,9 @@ def download_trailer_by_id(
     profile = trailerprofile.get_trailerprofile(profile_id)
 
     logger.info(
-        f"Trailarr downloads the trailer for '{media.title}'.",
+        f"Trailarr downloads the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}'.",
         **logger.media(media_id),
     )
 

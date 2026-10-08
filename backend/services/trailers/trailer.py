@@ -25,7 +25,7 @@ from database.models.download import DownloadRead
 from database.models.event import EventSource
 from database.models.helpers import MediaUpdateDC
 from database.models.media import MediaRead
-from database.models.video_type import is_trailer_type
+from database.models.video_type import is_trailer_type, video_type_label
 from database.models.trailerprofile import TrailerProfileRead
 from services.files import service as files_service
 from services.trailers.inflight import inflight_registry
@@ -184,7 +184,9 @@ def __download_and_verify_trailer(
     """
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
-        f"Trailarr downloads the trailer for '{media.title}' from"
+        f"Trailarr downloads the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}' from"
         f" {trailer_url}.",
         **logger.media(media.id),
     )
@@ -260,7 +262,9 @@ async def download_trailer(
             finalizes the job as cancelled.
     """
     logger.info(
-        f"Trailarr downloads the trailer for '{media.title}'.",
+        f"Trailarr downloads the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}'.",
         **logger.media(media.id),
     )
     if not exclude:
@@ -415,7 +419,9 @@ async def download_trailer(
             await _notify_plex(media)
 
         msg = (
-            f"Trailarr downloaded the trailer for '{media.title}'"
+            f"Trailarr downloaded the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}'"
             f" from video {video_id}."
         )
         logger.info(msg, **logger.media(media.id))
