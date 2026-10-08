@@ -34,7 +34,7 @@ from database.models.downloadattempt import (
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.profiles import find_matching_profiles
-from services.satisfaction import evaluate_satisfaction
+from services.satisfaction import evaluate_satisfaction, needs_videos
 from services.trailers.trailers.pending import read_upgrade_videos
 from services.trailers import trailer as trailer_downloader
 from services.tmdb.refresh import TMDBRefresher
@@ -301,7 +301,7 @@ def _read_current_eligible_profiles(
     enabled_profiles = [profile for profile in all_profiles if profile.enabled]
     matching_profiles = find_matching_profiles(media, enabled_profiles)
     videos = None
-    if any(profile.upgrade_to_tmdb for profile in matching_profiles):
+    if needs_videos(matching_profiles):
         videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_profiles, videos)
     if result.claims:
@@ -320,7 +320,21 @@ def _read_current_eligible_profiles(
                 f" '{media.title}'.",
                 **logger.media(media.id),
             )
-    return media, _filter_backoff_eligible(media, result.unsatisfied)
+    # W3: a profile that cannot search and has no known video of its type
+    # waits for TMDB. It is not attempted, so it never fails or backs off.
+    waiting = {d.profile_id for d in result.details if d.awaiting_tmdb}
+    unsatisfied = []
+    for profile in result.unsatisfied:
+        if profile.id in waiting:
+            logger.info(
+                f"The profile '{profile.customfilter.filter_name}' waits for"
+                f" TMDB to list a video for '{media.title}'. Search YouTube"
+                " is off for it, so Trailarr does not search.",
+                **logger.media(media.id),
+            )
+            continue
+        unsatisfied.append(profile)
+    return media, _filter_backoff_eligible(media, unsatisfied)
 
 
 _PREVIEW_LOG_LIMIT = 25

@@ -18,6 +18,7 @@ from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.trailers.resolver import (
+    choose_candidates,
     upgrade_enabled,
     upgrade_keeps,
     upgrade_targets,
@@ -160,11 +161,44 @@ def evaluate_satisfaction(
             _check_upgrade(detail, profile, [claimed], videos)
             _add(result, profile, detail)
             continue
+        detail = ProfileSatisfaction(profile_id=profile.id, satisfied=False)
+        _check_waits_for_tmdb(detail, profile, videos)
         result.unsatisfied.append(profile)
-        result.details.append(
-            ProfileSatisfaction(profile_id=profile.id, satisfied=False)
-        )
+        result.details.append(detail)
     return result
+
+
+def needs_videos(profiles: list[TrailerProfileRead]) -> bool:
+    """Whether `evaluate_satisfaction` needs the known videos for these
+    profiles: an upgrade reads them, and so does a profile that cannot
+    search, to know whether it waits for TMDB."""
+    return any(
+        p.upgrade_to_tmdb or not getattr(p, "search_youtube", True)
+        for p in profiles
+    )
+
+
+def _check_waits_for_tmdb(
+    detail: ProfileSatisfaction,
+    profile: TrailerProfileRead,
+    videos: list[MediaVideoRead] | None,
+) -> None:
+    """Mark a pending profile that has nothing to download yet (W3).
+
+    A profile with `Search YouTube` off takes known videos only. When no
+    known video of its type suits it, there is nothing to try: the
+    download task skips it without a failed attempt, the refresh task
+    asks TMDB about the item again, and the matrix says that the profile
+    waits for TMDB. Without the videos nothing can be decided, and the
+    profile stays plain pending.
+    """
+    if getattr(profile, "search_youtube", True) or videos is None:
+        return
+    candidates = [c for c in videos if c.video_type == profile.video_type]
+    if choose_candidates(candidates, profile):
+        return
+    detail.awaiting_tmdb = True
+    detail.upgrade_state = "awaiting_tmdb"
 
 
 def _check_upgrade(

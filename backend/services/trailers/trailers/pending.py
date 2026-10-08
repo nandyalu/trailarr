@@ -31,6 +31,7 @@ from services.satisfaction import (
     SatisfactionResult,
     UpgradeState,
     evaluate_satisfaction,
+    needs_videos,
 )
 
 
@@ -75,7 +76,8 @@ class PendingSummaryItem(BaseModel):
     is_movie: bool
     profile_id: int
     profile_name: str
-    reason: str  # "pending" | "backoff"
+    reason: str  # "pending" | "backoff" | "awaiting_tmdb" (W3: no known
+    # video suits a profile that cannot search, so it waits for TMDB)
     # The trailer is on disk, and the download replaces it with a TMDB one.
     upgrade: bool = False
     # Why the download replaces the trailer, when it does.
@@ -106,7 +108,7 @@ def read_upgrade_videos(
     Only a profile with `Upgrade To TMDB Trailer` on reads them, so a
     library with no such profile makes no query at all.
     """
-    if not any(profile.upgrade_to_tmdb for profile in profiles):
+    if not needs_videos(profiles):
         return {}
     return video_manager.read_upgrade_candidates_by_media()
 
@@ -133,7 +135,7 @@ def compute_media_pending(
     matching_ids = {p.id for p in find_matching_profiles(media, all_profiles)}
     matching_enabled = find_matching_profiles(media, enabled_profiles)
     videos = None
-    if any(p.upgrade_to_tmdb for p in matching_enabled):
+    if needs_videos(matching_enabled):
         videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_enabled, videos)
     details_by_id = {d.profile_id: d for d in result.details}
@@ -222,6 +224,11 @@ def compute_library_pending(
                 continue
             pending_media_ids.add(media.id)
             upgrades = {d.profile_id for d in result.details if d.upgrade}
+            waiting = {
+                d.profile_id
+                for d in result.details
+                if d.awaiting_tmdb and not d.satisfied
+            }
             states = {d.profile_id: d.upgrade_state for d in result.details}
             for profile in result.unsatisfied:
                 attempt = attempts_by_key.get((media.id, profile.id))
@@ -237,7 +244,11 @@ def compute_library_pending(
                         is_movie=media.is_movie,
                         profile_id=profile.id,
                         profile_name=_profile_name(profile),
-                        reason="pending" if eligible else "backoff",
+                        reason=(
+                            "awaiting_tmdb"
+                            if profile.id in waiting
+                            else "pending" if eligible else "backoff"
+                        ),
                         upgrade=profile.id in upgrades,
                         upgrade_state=states.get(profile.id),
                         next_eligible_at=(
@@ -341,7 +352,7 @@ def compute_failing_downloads() -> list[FailingDownload]:
         if not matching:
             continue
         videos = None
-        if any(p.upgrade_to_tmdb for p in matching):
+        if needs_videos(matching):
             videos = video_manager.read_candidates(media.id, video_type=None)
         result = evaluate_satisfaction(media, matching, videos)
         unsatisfied = {p.id: p for p in result.unsatisfied}

@@ -114,6 +114,11 @@ export class PendingComponent {
             ? `Will replace the trailer with a TMDB trailer on the next run: ${why}`
             : `Would replace the trailer with a TMDB trailer (${why}), but this item is not monitored`;
         }
+        if (profile.upgrade_state === 'awaiting_tmdb') {
+          // Search YouTube is off and no known video of the profile's type
+          // suits it: nothing to try until TMDB lists one (Phase 9, W3).
+          return `Waits for TMDB: no known video suits this profile, and Search YouTube is off for it. ${this.awaitingDetail()}`;
+        }
         return this.isMonitored() ? 'Will download on the next run' : 'Would download, but this item is not monitored';
       case 'disabled':
         return 'Profile is disabled';

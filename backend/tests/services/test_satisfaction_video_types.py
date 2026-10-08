@@ -179,3 +179,56 @@ class TestUpgradePerType:
             result = evaluate_satisfaction(media, [profile], videos)
         assert result.unsatisfied == []
         assert result.details[0].upgrade_state == "awaiting_tmdb"
+
+
+class TestWaitsForTmdb:
+    """W3: a profile with Search YouTube off and no known video of its type
+    waits for TMDB. It is pending, and the detail says why, so the
+    download task skips it without a failed attempt."""
+
+    def _no_search(self, video_type="trailer"):
+        profile = _profile(3, video_type)
+        profile.search_youtube = False
+        profile.always_search = False
+        profile.language = ""
+        return profile
+
+    def test_no_candidate_of_its_type_means_waiting(self):
+        profile = self._no_search("featurette")
+        media = _media([])
+        videos = [_candidate("trail1", "trailer")]
+        result = evaluate_satisfaction(media, [profile], videos)
+        [detail] = result.details
+        assert result.unsatisfied == [profile]
+        assert detail.satisfied is False
+        assert detail.awaiting_tmdb is True
+        assert detail.upgrade_state == "awaiting_tmdb"
+
+    def test_a_candidate_of_its_type_means_plain_pending(self):
+        profile = self._no_search("featurette")
+        result = evaluate_satisfaction(
+            _media([]), [profile], [_candidate("feat1", "featurette")]
+        )
+        [detail] = result.details
+        assert detail.awaiting_tmdb is False
+        assert detail.upgrade_state is None
+
+    def test_the_language_filter_applies(self):
+        profile = self._no_search("trailer")
+        profile.language = "te"
+        videos = [_candidate("en1", "trailer")]
+        with patch("services.trailers.resolver.app_settings") as settings:
+            settings.tmdb_api_key = "key"
+            result = evaluate_satisfaction(_media([]), [profile], videos)
+        assert result.details[0].awaiting_tmdb is True
+
+    def test_a_profile_that_searches_never_waits(self):
+        profile = _profile(4, "trailer")
+        profile.search_youtube = True
+        result = evaluate_satisfaction(_media([]), [profile], [])
+        assert result.details[0].awaiting_tmdb is False
+
+    def test_without_the_videos_nothing_is_decided(self):
+        profile = self._no_search("trailer")
+        result = evaluate_satisfaction(_media([]), [profile], None)
+        assert result.details[0].awaiting_tmdb is False
