@@ -263,3 +263,35 @@ none justify their own release. Check items off with the release that shipped th
   pages (`VACUUM_MIN_FREE_RATIO`). The daily purge frees about 3% of the file, and a
   VACUUM in WAL mode wrote the full file twice for it. A TRUNCATE checkpoint now
   follows each VACUUM.
+
+- [ ] **H25 — quiv follow-ups** (moved from the root `quiv_findings.md` on Oct 8, 2026;
+  the done items stay ticked there). Each is small and independent; fold into whichever
+  release fits. None blocks v0.14.0.
+  - **Drop the dummy `interval=86400.0` and `delay=1` on run-once tasks.** Since quiv
+    1.0 the interval is optional for a run-once task and an omitted delay runs it at
+    once. Sites: `tasks/schedules.py`, `tasks/api_refresh.py` (2), `tasks/download_trailers.py` (2).
+  - **Send websocket broadcasts through `run_on_main`.** Handlers await
+    `ws_manager.broadcast` on the worker's own loop (`services/trailers/trailer.py`,
+    `tasks/api_refresh.py`, `services/trailers/trailers/missing.py`). It has not failed,
+    but it is the cross-loop use `run_on_main` exists for.
+  - **Return real errors from the task endpoints.** `api/v1/tasks.py` wraps pause,
+    resume and cancel in `except Exception: return False`. Catch `TaskNotFoundError`
+    (404) and `TaskNotActiveError`/`TaskRunningError`/`JobNotFoundError` (409) so the UI
+    can say why; the frontend expects a bool today, so it changes with it.
+  - **Use the quiv features the tasks do not use.** A whole-job `timeout` on Download
+    Missing Trailers and Cleanup, `max_retries` with backoff on Arr Data Refresh and
+    Image Refresh, `stats()` for the tasks page header.
+  - **Report the result of HTTP-triggered one-shots** with `scheduler.await_task()`
+    (`api/v1/media.py` download and search, `api/v1/connections.py` refresh), or return
+    the `task_id` and let the UI watch the jobs list.
+  - **End-to-end scheduler tests** against a real `Quiv()`: the listeners, `/tasks` and
+    `/jobs`, `reschedule_task`, `ensure_plex_trailer_refresh_scheduled`, the lifespan,
+    cancellation. `wait_for_task()` makes each a short test.
+  - **When quiv 1.4.0 ships:** scheduler liveness in the health check
+    (`scheduler.is_running`); `get_all_tasks(task_name=..., include_run_once=True)` in
+    place of the name scan in `ensure_plex_trailer_refresh_scheduled`;
+    `run_task_immediately(task_id, after_current=True)` so the run button works on a
+    running task; compare quiv's "Running in a container" page with the install docs.
+  - **Consider `executor="process"` for Download Missing Trailers** so a stuck ffmpeg
+    can be killed without a container restart; the `TASK_REGISTRY` handlers are
+    importable by name already.
