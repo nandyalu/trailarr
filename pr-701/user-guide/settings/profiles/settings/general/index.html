@@ -3360,10 +3360,18 @@
 </tr>
 </tbody>
 </table>
-<p>This setting determines the order in which profile is applied when multiple profiles match a media item. Profiles with a higher priority (highest numerical value) will be processed first. </p>
+<p><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-unreleased">v0.14.0</a></p>
+<p>The order of the profiles that match one media item. The <strong>lowest number goes first</strong>: a profile with priority <code>0</code> comes before a profile with priority <code>1</code>. This is what Trailarr has always done; the docs said the opposite before <code>v0.14.0</code>.</p>
+<p>Priority does not decide whether a profile downloads. Since <code>v0.10.0</code> every matching profile downloads its own video and keeps track of it, so two matching profiles give two downloads whatever their priorities are. Priority decides the order, in four places:</p>
+<ul>
+<li><strong>Which profile claims a file that is already on disk.</strong> When a scan or the startup pass finds a video that no profile owns, the first matching profile of the same <a href="#video-type">Video Type</a> takes it, and the others download their own.</li>
+<li><strong>The order of the downloads in one task run.</strong> The profile with the lowest number downloads first.</li>
+<li><strong>Which profile a new file is given at scan time</strong>, with the same rule as the claim.</li>
+<li><strong>The order of the rows</strong> in the <code>Download Profiles</code> section of the media details page.</li>
+</ul>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>If two profiles have the same priority, any one of them can be used, so it is recommended to use unique priorities for each profile.</p>
+<p>If two profiles have the same priority, either can go first, so give each profile its own number when the order matters to you.</p>
 </div>
 <h2 id="retry-count">Retry Count</h2>
 <p><span class="twemoji golden" title="Added in v0.6.10"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0610-beta-february-07-2026">v0.6.10</a></p>

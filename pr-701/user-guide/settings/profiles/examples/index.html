@@ -3319,7 +3319,7 @@ Older versions used a <code>Trailer Exists = false</code> filter here to prevent
 <li>
 <p>Change the following <code>Settings</code>:</p>
 <ul>
-<li>Set <code>Priority</code> to <code>1</code> which is higher than the <a href="#example-1-movie-trailers-profile">Movie Trailers</a> profile, so that this profile is used first for matching movies.</li>
+<li>Leave <code>Priority</code> at <code>0</code>. Both profiles download their own trailer for a Spanish movie, so the priority does not pick one of them. It only decides which profile goes first, and which one claims a trailer that is already on disk — see <a href="../settings/general/#priority">Priority</a>.</li>
 <li>Set <code>Include Words in Title</code> to <code>Español</code>.</li>
 <li>Set <code>Search Query</code> to <code>{title} {year} {is_movie} Tráiler en español</code>.</li>
 <li>Set <code>Always Search</code> to <code>true</code>.</li>
