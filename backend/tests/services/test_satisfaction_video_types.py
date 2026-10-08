@@ -9,6 +9,9 @@ type. A featurette on disk never counts as the trailer.
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
+from unittest.mock import patch
+
+from database.models.mediavideo import VideoSource
 from services.satisfaction import evaluate_satisfaction
 
 NOW = datetime(2026, 10, 7, tzinfo=timezone.utc)
@@ -123,3 +126,56 @@ class TestPendingProfileWithUnclaimableFile:
 
         assert [p.id for p in result.unsatisfied] == [1]
         assert result.claims == []
+
+
+def _candidate(video_id: str, video_type: str, source=VideoSource.TMDB):
+    return SimpleNamespace(
+        video_id=video_id, source=source, language="en", video_type=video_type
+    )
+
+
+class TestUpgradePerType:
+    """Copilot review on #701: the upgrade must read the candidates of the
+    profile's own type. A featurette profile that owns a TMDB featurette
+    is satisfied, even when the list holds trailers too; and it never
+    replaces its featurette with a trailer."""
+
+    def _featurette_profile(self):
+        profile = _profile(2, "featurette")
+        profile.upgrade_to_tmdb = True
+        profile.always_search = False
+        profile.language = ""
+        profile.replace_unknown_videos = False
+        return profile
+
+    def test_an_owned_tmdb_featurette_keeps_the_profile_satisfied(self):
+        profile = self._featurette_profile()
+        download = _download(10, profile_id=2, video_type="featurette")
+        download.youtube_id = "feat1"
+        media = _media([download])
+        videos = [
+            _candidate("trail1", "trailer"),
+            _candidate("feat1", "featurette"),
+            _candidate("feat2", "featurette"),
+        ]
+        with patch(
+            "services.trailers.resolver.app_settings"
+        ) as settings:
+            settings.tmdb_api_key = "key"
+            result = evaluate_satisfaction(media, [profile], videos)
+        assert result.unsatisfied == []
+        assert result.details[0].upgrade_state == "matched"
+
+    def test_a_profile_without_a_video_of_its_type_waits_for_tmdb(self):
+        profile = self._featurette_profile()
+        download = _download(10, profile_id=2, video_type="featurette")
+        download.youtube_id = "old1"
+        media = _media([download])
+        videos = [_candidate("trail1", "trailer")]
+        with patch(
+            "services.trailers.resolver.app_settings"
+        ) as settings:
+            settings.tmdb_api_key = "key"
+            result = evaluate_satisfaction(media, [profile], videos)
+        assert result.unsatisfied == []
+        assert result.details[0].upgrade_state == "awaiting_tmdb"

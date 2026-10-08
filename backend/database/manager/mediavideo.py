@@ -72,7 +72,7 @@ def read_candidates(
     media_id: int,
     *,
     language: str | None = None,
-    video_type: str = VIDEO_TYPE_TRAILER,
+    video_type: str | None = VIDEO_TYPE_TRAILER,
     season: int | None = None,
     _session: Session = None,  # type: ignore
 ) -> list[MediaVideoRead]:
@@ -83,18 +83,18 @@ def read_candidates(
         language (str | None): The language the profile asks for. Only
             videos recorded in that language come back. None or empty
             means any language, and everything comes back.
-        video_type (str): The type of video the caller wants, 'trailer'
-            by default. A profile passes its own type.
+        video_type (str | None): The type of video the caller wants,
+            'trailer' by default. A profile passes its own type. None
+            gives every type, for a caller that serves several profiles
+            and filters per profile, as `upgrade_targets` does.
         season (int | None): NULL is the movie, or the series as a whole.
 
     Returns:
         list[MediaVideoRead]: The candidates, best first.
     """
-    statement = (
-        select(MediaVideo)
-        .where(MediaVideo.media_id == media_id)
-        .where(MediaVideo.video_type == video_type)
-    )
+    statement = select(MediaVideo).where(MediaVideo.media_id == media_id)
+    if video_type is not None:
+        statement = statement.where(MediaVideo.video_type == video_type)
     if season is None:
         statement = statement.where(col(MediaVideo.season).is_(None))
     else:
@@ -113,11 +113,12 @@ def read_upgrade_candidates_by_media(
     *,
     _session: Session = None,  # type: ignore
 ) -> dict[int, list[MediaVideoRead]]:
-    """Get the USER and TMDB trailers of every media item, in one query.
+    """Get the USER and TMDB videos of every media item, in one query.
 
     A library-wide pass that checks `Upgrade To TMDB Trailer` needs these
     for each media item, and one query per item would be slow on a large
-    library. Only the rows an upgrade can accept are read.
+    library. Only the rows an upgrade can accept are read: every type,
+    because `upgrade_targets` keeps the type of each profile.
 
     Returns:
         dict[int, list[MediaVideoRead]]: The rows per media id, each list
@@ -125,7 +126,6 @@ def read_upgrade_candidates_by_media(
     """
     statement = (
         select(MediaVideo)
-        .where(MediaVideo.video_type == VIDEO_TYPE_TRAILER)
         .where(col(MediaVideo.season).is_(None))
         .where(
             col(MediaVideo.source).in_([VideoSource.USER, VideoSource.TMDB])
@@ -334,6 +334,9 @@ def add_user_video(
     now = _now()
     if existing is not None:
         existing.source = VideoSource.USER
+        # The person says what the video is. A trailer that TMDB listed
+        # can be the featurette they want, and their choice wins.
+        existing.video_type = video_type
         existing.updated_at = now
         if name:
             existing.name = name

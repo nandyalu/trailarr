@@ -144,8 +144,16 @@ def upgrade_targets(
     """
     if not upgrade_enabled(profile):
         return []
+    # The candidates can hold every type, when one list serves several
+    # profiles. A profile upgrades to a video of its own type only: a
+    # featurette profile never replaces its featurette with a trailer.
     return choose_candidates(
-        [c for c in candidates if c.source in UPGRADE_SOURCES],
+        [
+            c
+            for c in candidates
+            if c.source in UPGRADE_SOURCES
+            and c.video_type == profile.video_type
+        ],
         profile,
         exclude=exclude,
         last_tried=last_tried,

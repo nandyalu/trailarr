@@ -50,7 +50,12 @@ def make_profile(
 def video(
     video_id: str, source: VideoSource = VideoSource.TMDB, language="en"
 ) -> SimpleNamespace:
-    return SimpleNamespace(video_id=video_id, source=source, language=language)
+    return SimpleNamespace(
+        video_id=video_id,
+        source=source,
+        language=language,
+        video_type="trailer",
+    )
 
 
 def make_media(downloads: list) -> SimpleNamespace:

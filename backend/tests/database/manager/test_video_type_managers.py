@@ -255,3 +255,71 @@ class TestReplaceSourceRowsAcrossTypes:
                 media_id, video_type="featurette"
             )
         ] == ["f1", "f2"]
+
+
+class TestTheStoredFormOnEveryWritePath:
+    """Copilot review on #701: a type sent as 'Featurette' must be stored
+    as 'featurette' on every path, because the resolver reads rows by the
+    exact value."""
+
+    def test_the_single_setting_update_normalizes(self, media_id):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        download_manager.create(_download(media_id, profile.id, "n.mkv"))
+        profile_manager.update_trailerprofile_setting(
+            profile.id, "video_type", "Featurette"
+        )
+        assert profile_manager.get_trailerprofile(profile.id).video_type == (
+            "featurette"
+        )
+        [row] = download_manager.read_by_profile_id(profile.id)
+        assert row.video_type == "featurette"
+
+    def test_the_full_update_normalizes(self, media_id):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        update = _profile_create("BEHIND_THE_SCENES")
+        assert update.video_type == "behind_the_scenes"
+        update.customfilter.filter_name = profile.customfilter.filter_name
+        updated = profile_manager.update_trailerprofile(profile.id, update)
+        assert updated.video_type == "behind_the_scenes"
+
+    def test_create_normalizes(self):
+        profile = profile_manager.create_trailerprofile(
+            _profile_create("Clip")
+        )
+        assert profile.video_type == "clip"
+
+
+class TestAddUserVideoTakesTheChosenType:
+    def test_taking_over_a_tmdb_trailer_as_a_featurette(self, media_id):
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.TMDB,
+            [_video(media_id, "v1", "trailer")],
+            video_type=None,
+        )
+        row = video_manager.add_user_video(
+            media_id, "v1", video_type="featurette"
+        )
+        assert row.source == VideoSource.USER
+        assert row.video_type == "featurette"
+        assert [
+            v.video_id
+            for v in video_manager.read_candidates(
+                media_id, video_type="featurette"
+            )
+        ] == ["v1"]
+
+    def test_read_candidates_of_every_type(self, media_id):
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.TMDB,
+            [
+                _video(media_id, "t1", "trailer"),
+                _video(media_id, "f1", "featurette"),
+            ],
+            video_type=None,
+        )
+        assert {
+            v.video_id
+            for v in video_manager.read_candidates(media_id, video_type=None)
+        } == {"t1", "f1"}

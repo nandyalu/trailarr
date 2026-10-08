@@ -87,6 +87,13 @@ class _TrailerProfileBase(AppSQLModel):
             String, server_default=DEFAULT_VIDEO_TYPE, nullable=False
         ),
     )
+
+    # On the base, so that TrailerProfileCreate stores the lowercase form
+    # too: the update manager copies its fields into the row as they are.
+    @field_validator("video_type", mode="before")
+    @classmethod
+    def validate_video_type(cls, v: str | None) -> str:
+        return normalize_video_type(v)
     retry_count: int = Field(
         default=2,
         ge=0,
@@ -302,11 +309,6 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             f"Invalid boolean value: {v}. Valid values are: True/False, 1/0,"
             " 'yes'/'no'"
         )
-
-    @field_validator("video_type", mode="before")
-    @classmethod
-    def validate_video_type(cls, v: str | None) -> str:
-        return normalize_video_type(v)
 
     @field_validator("priority", mode="after")
     @classmethod

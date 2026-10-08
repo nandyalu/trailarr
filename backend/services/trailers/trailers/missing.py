@@ -302,7 +302,7 @@ def _read_current_eligible_profiles(
     matching_profiles = find_matching_profiles(media, enabled_profiles)
     videos = None
     if any(profile.upgrade_to_tmdb for profile in matching_profiles):
-        videos = video_manager.read_candidates(media.id)
+        videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_profiles, videos)
     if result.claims:
         profiles_by_id = {

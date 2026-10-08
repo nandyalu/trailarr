@@ -14,6 +14,7 @@ from database.models.trailerprofile import (
 )
 from database.engine import write_session
 from database.models.download import Download
+from database.models.video_type import normalize_video_type
 from exceptions import ItemNotFoundError
 
 logger = ModuleLogger("TrailerProfileManager")
@@ -140,6 +141,10 @@ def update_trailerprofile_setting(
     if TrailerProfile.is_int_field(setting):
         # Convert the value to an integer if the setting is an integer field
         value = int(value)
+    if setting == "video_type":
+        # The row and its downloads take the stored form, 'featurette',
+        # never 'Featurette': the resolver reads rows by this exact value.
+        value = normalize_video_type(value)
     setattr(trailerprofile_db, setting, value)
 
     # Validate the updated trailer profile

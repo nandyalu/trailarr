@@ -292,7 +292,10 @@ class TestUpgradeInThePendingView:
 
         tmdb = [
             SimpleNamespace(
-                video_id="tmdb1", source=VideoSource.TMDB, language="en"
+                video_id="tmdb1",
+                source=VideoSource.TMDB,
+                language="en",
+                video_type="trailer",
             )
         ]
         summary = self._run(

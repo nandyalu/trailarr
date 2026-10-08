@@ -134,7 +134,7 @@ def compute_media_pending(
     matching_enabled = find_matching_profiles(media, enabled_profiles)
     videos = None
     if any(p.upgrade_to_tmdb for p in matching_enabled):
-        videos = video_manager.read_candidates(media.id)
+        videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_enabled, videos)
     details_by_id = {d.profile_id: d for d in result.details}
     unsatisfied_ids = {p.id for p in result.unsatisfied}
@@ -342,7 +342,7 @@ def compute_failing_downloads() -> list[FailingDownload]:
             continue
         videos = None
         if any(p.upgrade_to_tmdb for p in matching):
-            videos = video_manager.read_candidates(media.id)
+            videos = video_manager.read_candidates(media.id, video_type=None)
         result = evaluate_satisfaction(media, matching, videos)
         unsatisfied = {p.id: p for p in result.unsatisfied}
         upgrades = {d.profile_id for d in result.details if d.upgrade}

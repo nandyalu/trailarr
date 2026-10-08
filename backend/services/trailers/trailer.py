@@ -479,7 +479,7 @@ def _upgrade_still_needed(
     again just before this call. The new answer can list the trailer that
     is already on disk, or nothing at all. Either way the trailer stays.
     """
-    candidates = video_manager.read_candidates(media.id)
+    candidates = video_manager.read_candidates(media.id, video_type=None)
     targets = resolver.upgrade_targets(candidates, profile)
     if not targets:
         logger.info(

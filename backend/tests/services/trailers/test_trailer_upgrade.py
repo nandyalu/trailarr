@@ -22,7 +22,9 @@ PKG = "services.trailers.trailer"
 
 
 def _video(video_id: str, source=VideoSource.TMDB):
-    return SimpleNamespace(video_id=video_id, source=source, language="en")
+    return SimpleNamespace(
+        video_id=video_id, source=source, language="en", video_type="trailer"
+    )
 
 
 def _download(download_id: int, path: Path, youtube_id: str):
@@ -263,10 +265,16 @@ class TestUpgradeDownload:
         profile.language = "it"
         pipeline.candidates.return_value = [
             SimpleNamespace(
-                video_id="mine", source=VideoSource.USER, language=None
+                video_id="mine",
+                source=VideoSource.USER,
+                language=None,
+                video_type="trailer",
             ),
             SimpleNamespace(
-                video_id="tmdb_it", source=VideoSource.TMDB, language="it"
+                video_id="tmdb_it",
+                source=VideoSource.TMDB,
+                language="it",
+                video_type="trailer",
             ),
         ]
         old = _download(1, folder.old, "mine")
@@ -436,7 +444,11 @@ class TestUpgradeNeverSearches:
 
         media = MagicMock(id=1, title="Test Movie")
         profile = MagicMock(
-            id=1, upgrade_to_tmdb=True, always_search=False, language=""
+            id=1,
+            upgrade_to_tmdb=True,
+            always_search=False,
+            language="",
+            video_type="trailer",
         )
         with (
             patch.object(
@@ -465,7 +477,11 @@ class TestUpgradeNeverSearches:
 
         media = MagicMock(id=1, title="Test Movie")
         profile = MagicMock(
-            id=1, upgrade_to_tmdb=True, always_search=False, language=""
+            id=1,
+            upgrade_to_tmdb=True,
+            always_search=False,
+            language="",
+            video_type="trailer",
         )
         with (
             patch.object(
