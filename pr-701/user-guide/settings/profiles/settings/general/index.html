@@ -3314,8 +3314,8 @@
 </tbody>
 </table>
 <p>The kind of video this profile downloads. Every profile that existed before <code>v0.14.0</code> is a <code>Trailer</code> profile, and a new profile is one too.</p>
-<p>A profile of another type takes its videos from the list that TMDB keeps for the media item. Trailarr never searches YouTube for a teaser, a clip or a featurette: a search finds trailers, and nothing in a search result says that a video is a featurette. The profile editor hides the search settings for these types and shows a note that says so.</p>
-<p>This has three consequences for a profile that is not a <code>Trailer</code> profile:</p>
+<p>A profile of another type takes its videos from the list that TMDB keeps for the media item. When you set the type, Trailarr turns <a href="../search/#search-youtube">Search YouTube</a> off for the profile: a search finds trailers, and nothing in a search result says that a video is a featurette. The profile editor hides the search settings and shows a note that says so. You can turn the search on again; the note then warns that a search result is not checked against TMDB.</p>
+<p>With the search off, three things follow for a profile that is not a <code>Trailer</code> profile:</p>
 <ul>
 <li>It needs a <a href="../../../tmdb/">TMDB API key</a>. Without one, no profile of another type can download anything.</li>
 <li>A media item needs a TMDB id. A Plex-only item without one is skipped.</li>
@@ -3338,9 +3338,9 @@
 <ol>
 <li>Open the profile and set <code>Video Type</code> to the type you want, for example <code>Featurette</code>.</li>
 <li>Trailarr relabels the files that the profile downloaded, so the profile stays satisfied. Check the <code>Download Profiles</code> section of one media item to see that its file now shows the new type.</li>
-<li>The search settings no longer apply. The profile now takes its videos from TMDB, in the language the profile asks for, and skips media that TMDB has no featurette for.</li>
+<li>Trailarr turns <code>Search YouTube</code> off. The profile now takes its videos from TMDB, in the language the profile asks for, and waits for media that TMDB has no featurette for.</li>
+<li>Turn <code>Search YouTube</code> on again when you want to keep the search: a profile for interviews, for example, has no TMDB type to move to (TMDB lists most interviews as featurettes), so it keeps its search query and include words, and its downloads record the type <code>Featurette</code>.</li>
 </ol>
-<p>Keep the old setup when you want the search: a profile that searches YouTube for interviews, for example, has no type to move to, because TMDB has no interview type (TMDB lists most interviews as featurettes). A profile with <code>Always Search</code> on cannot change its type until you turn <code>Always Search</code> off.</p>
 <h2 id="priority">Priority</h2>
 <table>
 <thead>
