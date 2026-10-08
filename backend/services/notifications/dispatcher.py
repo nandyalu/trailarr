@@ -40,6 +40,7 @@ import database.manager.event as event_manager
 import database.manager.media as media_manager
 import database.manager.notificationchannel as channel_manager
 from database.models.download import is_unknown_video
+from database.models.video_type import is_trailer_type
 
 logger = ModuleLogger("Notifications")
 
@@ -130,7 +131,8 @@ def _download_video_id(media) -> str | None:
 
     Phase 9 dropped `media.youtube_trailer_id`, so the download rows are
     the record of what Trailarr took. A row with no known id (a file found
-    by a scan) gives nothing.
+    by a scan) gives nothing. The notification calls the link "Trailer",
+    so a featurette or a clip, which the rows hold too, is not a match.
     """
     if media is None:
         return None
@@ -138,6 +140,7 @@ def _download_video_id(media) -> str | None:
         d
         for d in getattr(media, "downloads", None) or []
         if getattr(d, "file_exists", False)
+        and is_trailer_type(getattr(d, "video_type", None))
         and not is_unknown_video(getattr(d, "youtube_id", None))
     ]
     if not downloads:

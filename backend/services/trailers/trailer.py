@@ -196,23 +196,33 @@ def __download_and_verify_trailer(
         trailer_url, str(output_file), profile, stop_event=stop_event
     )
 
-    # Verify and get video info in one pass
-    is_valid, video_info = trailer_file.verify_download(
-        output_file, media.title, profile
-    )
-    if not is_valid:
-        raise DownloadFailedError("Trailer verification failed")
-
-    if profile.remove_silence:
-        if stop_event and stop_event.is_set():
-            raise StopEventSetError("Stop event set during silence removal")
-
-        output_file, _trimmed = video_analysis.remove_silence_at_end(
-            output_file
+    try:
+        # Verify and get video info in one pass
+        is_valid, video_info = trailer_file.verify_download(
+            output_file, media.title, profile
         )
-        # Re-analyze after silence removal as duration/size changed
-        if _trimmed:
-            video_info = video_analysis.get_media_info(output_file)
+        if not is_valid:
+            raise DownloadFailedError("Trailer verification failed")
+
+        if profile.remove_silence:
+            if stop_event and stop_event.is_set():
+                raise StopEventSetError(
+                    "Stop event set during silence removal"
+                )
+
+            output_file, _trimmed = video_analysis.remove_silence_at_end(
+                output_file
+            )
+            # Re-analyze after silence removal as duration/size changed
+            if _trimmed:
+                video_info = video_analysis.get_media_info(output_file)
+    except (JobCancelledError, StopEventSetError):
+        # A stop landed after yt-dlp finished: in ffprobe, in the silence
+        # pass, or between them. The downloaded file has no use without
+        # its record, so remove it instead of leaving it in the temp
+        # folder until the next start sweeps it.
+        Path(output_file).unlink(missing_ok=True)
+        raise
 
     return output_file, video_info
 

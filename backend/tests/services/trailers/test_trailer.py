@@ -1142,3 +1142,51 @@ class TestDownloadTrailerJobCancel:
         mock_clear.assert_not_called()
         # The finally block cleared the in-flight entry.
         assert inflight_registry.snapshot() == {}
+
+
+class TestCancelAfterTheDownload:
+    """A stop that lands in ffprobe or the silence pass must not leave the
+    downloaded file in the temp folder (Copilot review on #701)."""
+
+    def _run(self, tmp_path, mock_media, mock_profile, raise_in):
+        from quiv import JobCancelledError
+
+        from services.trailers import trailer as trailer_module
+
+        downloaded = tmp_path / "1-trailer.mp4"
+        downloaded.write_bytes(b"video")
+        mock_profile.video_type = "trailer"
+        mock_profile.remove_silence = raise_in == "silence"
+        verify = (
+            MagicMock(side_effect=JobCancelledError("ffprobe was stopped"))
+            if raise_in == "verify"
+            else MagicMock(return_value=(True, MagicMock()))
+        )
+        with (
+            patch.object(
+                trailer_module, "download_video", return_value=str(downloaded)
+            ),
+            patch.object(
+                trailer_module.trailer_file, "verify_download", verify
+            ),
+            patch.object(
+                trailer_module.video_analysis,
+                "remove_silence_at_end",
+                side_effect=JobCancelledError("ffmpeg was stopped"),
+            ),
+        ):
+            # getattr: a class body mangles the double-underscore name.
+            run = getattr(trailer_module, "__download_and_verify_trailer")
+            with pytest.raises(JobCancelledError):
+                run(mock_media, "video_id", mock_profile)
+        return downloaded
+
+    def test_cancel_in_verification_removes_the_file(
+        self, tmp_path, mock_media, mock_profile
+    ):
+        assert not self._run(tmp_path, mock_media, mock_profile, "verify").exists()
+
+    def test_cancel_in_the_silence_pass_removes_the_file(
+        self, tmp_path, mock_media, mock_profile
+    ):
+        assert not self._run(tmp_path, mock_media, mock_profile, "silence").exists()

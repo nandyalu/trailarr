@@ -161,7 +161,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x" * 100)
 
         with patch(
-            "services.trailers.video_v2.quiv.run_subprocess",
+            "services.trailers.video_v2.run_tool",
             side_effect=subprocess.TimeoutExpired(cmd="yt-dlp", timeout=900),
         ):
             with pytest.raises(DownloadFailedError, match="timed out"):
@@ -185,7 +185,7 @@ class TestDownloadFailureCleanup:
         out_file = tmp_path / "temp_311-trailer.mkv"
 
         with patch(
-            "services.trailers.video_v2.quiv.run_subprocess",
+            "services.trailers.video_v2.run_tool",
             return_value=result,
         ):
             with pytest.raises(
@@ -207,7 +207,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x")
 
         with patch(
-            "services.trailers.video_v2.quiv.run_subprocess",
+            "services.trailers.video_v2.run_tool",
             return_value=result,
         ):
             with pytest.raises(DownloadFailedError, match="exit code 1"):
@@ -228,7 +228,7 @@ class TestDownloadFailureCleanup:
         part.write_bytes(b"x")
 
         with patch(
-            "services.trailers.video_v2.quiv.run_subprocess",
+            "services.trailers.video_v2.run_tool",
             side_effect=FileNotFoundError(2, "No such file or directory"),
         ):
             with pytest.raises(DownloadFailedError, match="YTDLP_PATH"):
@@ -307,7 +307,7 @@ class TestJobCancellation:
         part.write_bytes(b"x" * 100)
 
         with patch(
-            "services.trailers.video_v2.quiv.run_subprocess",
+            "services.trailers.video_v2.run_tool",
             side_effect=quiv.JobCancelledError("yt-dlp was stopped"),
         ):
             # Not DownloadFailedError: a cancel is not a failed download.

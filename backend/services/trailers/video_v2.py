@@ -21,6 +21,7 @@ from app_logger import ModuleLogger
 
 from config.settings import app_settings
 from database.models.trailerprofile import TrailerProfileRead
+from services.trailers.process import run_tool
 from services.trailers.video_conversion import get_ffmpeg_cmd
 from exceptions import (
     ConversionFailedError,
@@ -297,13 +298,18 @@ def _cleanup_partial_downloads(file_path: str | Path) -> None:
 
 
 def _download_with_ytdlp(
-    url: str, file_path: str, profile: TrailerProfileRead
+    url: str,
+    file_path: str,
+    profile: TrailerProfileRead,
+    stop_event: threading.Event | None = None,
 ) -> str:
     """Download the video using yt-dlp from the given URL
     Args:
         url (str): URL of the video
         file_path (str): Output file path
         profile (TrailerProfileRead): Trailer profile used for downloading
+        stop_event (threading.Event, optional=None): The stop event of the
+            job. A stop ends yt-dlp and the ffmpeg it started.
     Raises:
         DownloadFailedError: Error while downloading video
     Returns:
@@ -316,8 +322,11 @@ def _download_with_ytdlp(
     logger.debug(f"Downloading video with options: {ytdlp_cmd}")
 
     try:
-        result = quiv.run_subprocess(
+        # yt-dlp starts ffmpeg to merge the streams. `run_tool` stops the
+        # whole process group on a cancel; quiv stops the child only.
+        result = run_tool(
             ytdlp_cmd,
+            stop_event=stop_event,
             capture_output=True,
             text=True,
             timeout=YTDLP_TIMEOUT,  # 15 minutes timeout
@@ -368,11 +377,10 @@ def _download_with_ytdlp(
             logger.debug(f"YT-DLP Output::\n{combined_output}")
 
     except quiv.JobCancelledError:
-        # quiv stopped yt-dlp because the job was cancelled. Remove what
-        # it left behind and let the error reach the scheduler, which
-        # finalizes the job as cancelled.
+        # yt-dlp and its ffmpeg were stopped because the job was
+        # cancelled. Remove what they left behind and let the error reach
+        # the scheduler, which finalizes the job as cancelled.
         _cleanup_partial_downloads(file_path)
-        logger.info("Trailarr stopped yt-dlp. A stop was requested.")
         raise
     except subprocess.TimeoutExpired:
         _cleanup_partial_downloads(file_path)
@@ -515,7 +523,9 @@ def download_video(
 
     # Download the video using yt-dlp
     start_time = time.perf_counter()  # Download start time
-    download_file_path = _download_with_ytdlp(url, temp_file_path, profile)
+    download_file_path = _download_with_ytdlp(
+        url, temp_file_path, profile, stop_event=stop_event
+    )
     end_time = time.perf_counter()  # Download end time / Conversion start time
     logger.debug(f"Trailer downloaded in {end_time - start_time:.2f}s")
 

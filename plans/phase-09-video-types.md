@@ -542,7 +542,7 @@ Decisions the maintainer answered at the start of execution:
 - Decision 5: agreed. Non-trailer profiles stay TMDB-only, no search. The profile editor hides the search settings for them and shows a small banner that says the profile does not fall back to a search. The model rejects `always_search=True` on a non-trailer profile.
 - Decision 6: agreed. Trailarr writes only the names that both Plex and Jellyfin read (teaser → `-trailer`/`Trailers`, clip → `-scene`/`Scenes`, bloopers and other → `-other`/`Other`). The scan never relabels a row that exists; the classifier runs only for files with no row.
 - Manual assign: the assignment records the type of the profile on the download row (user-owned state wins; a person who assigns a file says what it is). `update_profile_id(..., video_type=)`.
-- quiv: `quiv.run_subprocess()` replaces `subprocess.run` for yt-dlp, ffmpeg and ffprobe in this phase, so a cancel stops the child.
+- quiv: `quiv.run_subprocess()` replaces `subprocess.run` for ffmpeg and ffprobe; yt-dlp runs through `services/trailers/process.run_tool()`, the same loop with a process group, because yt-dlp starts ffmpeg and quiv stops the direct child only (Copilot review on #701). `quiv.run_subprocess()` replaces `subprocess.run` for yt-dlp, ffmpeg and ffprobe in this phase, so a cancel stops the child.
 
 Deviations from the plan as written, with the reason:
 

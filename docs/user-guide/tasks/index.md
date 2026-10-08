@@ -170,7 +170,7 @@ A scheduled run of a task is called Job. You can see queued/running jobs and the
 
 A running task/job shows a `Stop` button. Click it to stop the job. Trailarr stops at predefined points in the task flow, so a stop does not lose data.
 
-When a `Trailer Download` job runs `yt-dlp` or `ffmpeg`, a stop ends that process at once. Trailarr removes the partial file, and the job ends as `Cancelled`. The trailers that the job put in place before the stop stay.
+When a `Trailer Download` job runs `yt-dlp` or `ffmpeg`, a stop ends that process at once, together with the `ffmpeg` that `yt-dlp` starts to merge the streams. Trailarr removes the partial file, and the job ends as `Cancelled`. The trailers that the job put in place before the stop stay.
 
 ### Job Logs
 
