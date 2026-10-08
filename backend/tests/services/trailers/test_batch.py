@@ -40,3 +40,47 @@ async def test_a_job_cancel_stops_the_batch_and_propagates():
     assert download_trailer.await_count == 1
     sleep.assert_not_awaited()
 
+
+
+@pytest.mark.asyncio
+async def test_every_item_of_the_batch_is_downloaded():
+    """The loop skipped the last item of every batch of two or more: it
+    raised the count before it checked whether more items were pending."""
+    profile = MagicMock()
+    profile.retry_count = 0
+    media_list = [_media(1), _media(2), _media(3)]
+
+    with (
+        patch(
+            "services.trailers.trailers.batch.download_trailer",
+            new_callable=AsyncMock,
+        ) as download_trailer,
+        patch(
+            "services.trailers.trailers.batch.utils.sleep_between_downloads",
+            new_callable=AsyncMock,
+        ) as sleep,
+    ):
+        await batch_download_task(media_list, profile)
+
+    assert [c.args[0].id for c in download_trailer.await_args_list] == [1, 2, 3]
+    # A pause between items, none after the last one.
+    assert sleep.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_a_batch_of_one_downloads_and_does_not_sleep():
+    profile = MagicMock()
+    profile.retry_count = 0
+    with (
+        patch(
+            "services.trailers.trailers.batch.download_trailer",
+            new_callable=AsyncMock,
+        ) as download_trailer,
+        patch(
+            "services.trailers.trailers.batch.utils.sleep_between_downloads",
+            new_callable=AsyncMock,
+        ) as sleep,
+    ):
+        await batch_download_task([_media(1)], profile)
+    assert download_trailer.await_count == 1
+    sleep.assert_not_awaited()

@@ -60,7 +60,7 @@ none justify their own release. Check items off with the release that shipped th
   (justification recorded in `phase-03-dynamic-status.md`).
 - [ ] **H8 — Scan TODO comments** ("once the planned Issues section exists…") in
   files-scan → wired and removed in Phase 11.
-- [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
+- [x] **H9 — `media.youtube_trailer_id` column retirement** — DONE (Phase 9, PR #701, ships in v0.14.0: migration `c3d8e5f9a2b1` backfills, rewrites saved filters to `has_videos`, drops the column). Original entry: once the MediaVideo table
   owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
   candidate). Scheduled: Phase 9 decision 9 drops the column (maintainer decision, Sep
   24, 2026). The steps are in `phase-09-video-types.md`.
@@ -128,7 +128,7 @@ none justify their own release. Check items off with the release that shipped th
   Phase 7 kept it: Stage B does not change behavior. Pick one message when something
   else touches that handler.
 
-- [ ] **H16 — `api/v1/media.py` still holds logic.** Stage B extracted the three
+- [ ] **H16 — `api/v1/media.py` still holds logic.** Phase 9 touched the router (search refusal, add-video type, manual assign type) and did NOT take this: the file grew with the Phase 9 changes, and the read handlers are unchanged. Phase 10 is the next chance. Stage B extracted the three
   heaviest handlers (delete trailers, set YouTube id, set monitoring) and the bulk
   monitor path, taking the file from 739 lines to 691. The read handlers still build
   their own filters and shape their own responses.
@@ -242,7 +242,7 @@ none justify their own release. Check items off with the release that shipped th
   broad `except`. Kept out of v0.12.1 because it changes the text a user sees for
   every failing Arr request, which wants its own look at the messages.
 
-- [ ] **H24 — the `max_duration` check is never true.** Scheduled: Phase 9, decision 10.
+- [x] **H24 — the `max_duration` check is never true.** — DONE (Phase 9, PR #701, ships in v0.14.0: `not 90 <= max <= 1200`, cap 1200, migration `9a1c4e7b2d30` clamps stored values; tests for 89/90/1200/1201 through `TrailerProfile.model_validate`). Original entry: scheduled Phase 9, decision 10.
   `database/models/trailerprofile.py` checks `if 90 > self.max_duration > 600:`. A
   chained comparison needs a value below 90 AND above 600, so the check never fails,
   and the API stores any value. Only the UI slider holds the 600 limit.
