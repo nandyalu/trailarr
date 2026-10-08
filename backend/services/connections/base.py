@@ -19,6 +19,7 @@ import database.manager.media as media_manager
 from services.connections import arr_videos
 from database.models.event import EventSource
 from database.models.helpers import MediaReadDC
+from database.models.video_type import is_trailer_type
 from utils.path_utils import apply_path_mappings
 from services.files.files_handler import FilesHandler
 from database.models.connection import ConnectionRead
@@ -48,12 +49,18 @@ async def delete_trailers_for_removed_media(
         if FilesHandler.check_media_exists(media.folder_path):
             # Media files still exist on disk, nothing to delete
             return False
-    # Delete download files associated with the media
+    # Delete the trailer files of the media. Only the trailers: the scan
+    # records the extras that a person placed (a featurette, a deleted
+    # scene) as download rows too, and Trailarr never deletes a file it
+    # did not download, unless a person deletes it from the Files section.
+    # `services/media.delete_trailers` applies the same rule.
     _deleted = False
     for download in media.downloads:
         if not download.file_exists:
             continue
         if not download.path:
+            continue
+        if not is_trailer_type(download.video_type):
             continue
         if await FilesHandler.delete_file(download.path):
             _deleted = True

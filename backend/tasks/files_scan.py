@@ -13,6 +13,9 @@ import asyncio
 import os
 import threading
 from datetime import datetime, timezone
+
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 from config.settings import app_settings
 import database.manager.event as event_manager
@@ -25,6 +28,7 @@ from database.models.media import MediaRead
 from database.models.video_type import (
     DEFAULT_VIDEO_TYPE,
     classify_extra_name,
+    is_trailer_type,
 )
 from services.profiles import pick_profile_for_download
 from services.trailers.trailers.service import (
@@ -79,6 +83,13 @@ def _has_folder_changed(folder_path: str, media_id: int, tz) -> bool:
     return False
 
 
+def _classified_type(file_path: str) -> str:
+    """The stored type that the name and folder of a new file give. A
+    file that matches no name is a trailer, as before Phase 9."""
+    video_type = classify_extra_name(file_path)
+    return video_type.value if video_type else DEFAULT_VIDEO_TYPE
+
+
 def _handle_folder_gone(media: MediaRead) -> None:
     """Reset stale flags when the media folder is inaccessible or deleted."""
     if media.media_exists:
@@ -127,9 +138,19 @@ async def _process_trailer_changes(
     renamed_count = 0
     claimed_ids: set[int] = set()
     still_new_paths = []
+    # The classifier runs only for a file with no row: a file that
+    # Trailarr made keeps the type its profile gave it (decision 6).
+    types_by_path = {
+        t_path: _classified_type(t_path) for t_path in new_paths
+    }
     for t_path in new_paths:
         match = None
-        if missing_downloads:  # only hash if there's something to compare against
+        # Only hash when there is something to compare against, and only a
+        # trailer: the hash exists to recognize a renamed trailer that
+        # Trailarr made. An extra that a person placed has no hash (see
+        # the loop below), so a rename of one is a new file and a gone
+        # file, and a full read of a 20 GB featurette is never needed.
+        if missing_downloads and is_trailer_type(types_by_path[t_path]):
             t_hash = await asyncio.to_thread(compute_file_hash, t_path)
             match = next(
                 (
@@ -182,12 +203,7 @@ async def _process_trailer_changes(
         }
     for t_path in still_new_paths:
         new_count += 1
-        # The classifier runs only for a file with no row: a file that
-        # Trailarr made keeps the type its profile gave it (decision 6).
-        _video_type = classify_extra_name(t_path)
-        _type_value = (
-            _video_type.value if _video_type else DEFAULT_VIDEO_TYPE
-        )
+        _type_value = types_by_path[t_path]
         _profile_id = pick_profile_for_download(
             media, _profiles, _used_profile_ids, video_type=_type_value
         )
@@ -198,9 +214,20 @@ async def _process_trailer_changes(
             f" for '{media.title}'. Path: '{t_path}'.",
             **logger.media(media.id),
         )
+        # A file of another type than trailer is an extra that a person
+        # placed, most often found by the first scan after the upgrade to
+        # v0.14.0. Two exceptions for these, so that a library of Blu-ray
+        # rips does not cost hours and thousands of events:
+        # 1. `record_new_trailer_download` skips its hash (see there).
+        # 2. No `TRAILER_DETECTED` event: the log line above is the
+        #    record. An event is permanent, and it goes to the channels
+        #    that subscribe to it.
+        # The ffprobe stays: the row needs the duration and the streams.
         await record_new_trailer_download(
             media, _profile_id, t_path, video_type=_type_value
         )
+        if not is_trailer_type(_type_value):
+            continue
         event_manager.track_trailer_detected(
             media_id=media.id,
             source=source,
@@ -374,6 +401,10 @@ async def scan_all_media_folders(
             renamed_trailers += renamed
             modified_trailers += modified
             unavailable_count += unavailable
+        except JobCancelledError:
+            # A stop ends the scan. The scheduler records the job as
+            # cancelled, not as completed with one folder in error.
+            raise
         except Exception as e:
             logger.error(
                 f"Trailarr could not scan the folder of '{media.title}': {e}",

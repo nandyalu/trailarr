@@ -158,7 +158,7 @@ Clicking Delete will show a confirmation dialog displaying the number of selecte
     This deletes **every** trailer file on disk for the selected items — not just one. This cannot be reversed!
 
 !!! note "Trailers only"
-    {{ version_badge("upd", "0.14.0") }} The action deletes the files of type `trailer` only. A featurette, a clip or another extra that a profile with another [Video Type](../settings/profiles/settings/general.md#video-type) downloaded stays. Delete such a file from the [Files section](./media-details/index.md#files-section) of the media details page.
+    {{ version_badge("upd", "0.14.0") }} The action deletes the files of type `trailer` only, and so do the `Cleanup` task and the removal of a media item from Radarr or Sonarr: Trailarr never deletes an extra that it did not download. A featurette, a clip or another extra that a profile with another [Video Type](../settings/profiles/settings/general.md#video-type) downloaded stays. Delete such a file from the [Files section](./media-details/index.md#files-section) of the media details page.
 
 ### Cancel
 

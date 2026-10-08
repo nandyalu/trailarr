@@ -275,7 +275,7 @@ class TestUpgradeInThePendingView:
             patches[2],
             patch(
                 "services.trailers.trailers.pending.video_manager"
-                ".read_upgrade_candidates_by_media",
+                ".read_candidates_by_media",
                 return_value=videos_by_media,
             ),
             patch(
@@ -321,13 +321,15 @@ class TestUpgradeInThePendingView:
         assert awaiting == [1]
 
     def test_no_upgrade_profile_reads_no_videos(self):
-        from services.trailers.trailers.pending import read_upgrade_videos
+        from services.trailers.trailers.pending import read_known_videos
 
+        profile = make_profile(1)
+        profile.search_youtube = True
         with patch(
             "services.trailers.trailers.pending.video_manager"
-            ".read_upgrade_candidates_by_media"
+            ".read_candidates_by_media"
         ) as read:
-            assert read_upgrade_videos([make_profile(1)]) == {}
+            assert read_known_videos([profile]) == {}
         read.assert_not_called()
 
 
@@ -404,3 +406,112 @@ class TestFailingDownloads:
         abe.title = "Abe"
         failing = self._run(attempts, {1: zed, 2: abe})
         assert [f.title for f in failing] == ["Abe", "Zed"]
+
+
+class TestAProfileThatWaitsForTmdbIsNotWork:
+    """Code review of Phase 9, findings 5 and 6: the library preview is
+    exactly the download task's work list. A profile that waits for
+    TMDB is skipped by the task, so it is not counted, and the refresh
+    task gets it through `media_awaiting_tmdb`."""
+
+    @staticmethod
+    def _waiting_profile(profile_id: int = 1):
+        profile = make_profile(profile_id)
+        profile.video_type = "featurette"
+        profile.search_youtube = False
+        profile.always_search = False
+        profile.language = ""
+        return profile
+
+    def _run(self, fn, profiles, media_list, videos_by_media):
+        patches = _patch_managers(profiles, media_list)
+        with (
+            patches[0],
+            patches[1],
+            patches[2],
+            patch(
+                "services.trailers.trailers.pending.video_manager"
+                ".read_candidates_by_media",
+                return_value=videos_by_media,
+            ),
+        ):
+            return fn()
+
+    def test_a_waiting_profile_is_left_out_of_the_summary(self):
+        summary = self._run(
+            compute_library_pending,
+            [self._waiting_profile()],
+            [make_media([], media_id=1), make_media([], media_id=2)],
+            {},
+        )
+        assert summary.items == []
+        assert (summary.total_media, summary.pending_pairs) == (0, 0)
+        assert summary.backoff_pairs == 0
+
+    def test_an_item_with_no_rows_is_decided_not_undecided(self):
+        """Finding 5: an empty list is an answer. With None the profile
+        showed as plain pending while the task skipped it."""
+        from services.trailers.trailers.pending import _evaluate_library
+
+        [(_, result)] = self._run(
+            lambda: list(_evaluate_library([self._waiting_profile()])),
+            [self._waiting_profile()],
+            [make_media([], media_id=1)],
+            {},
+        )
+        assert result.details[0].awaiting_tmdb is True
+
+    def test_a_known_featurette_makes_the_profile_pending(self):
+        from database.models.mediavideo import VideoSource
+
+        featurette = SimpleNamespace(
+            video_id="f1",
+            source=VideoSource.TMDB,
+            language="en",
+            video_type="featurette",
+        )
+        summary = self._run(
+            compute_library_pending,
+            [self._waiting_profile()],
+            [make_media([], media_id=1), make_media([], media_id=2)],
+            {1: [featurette]},
+        )
+        assert [(i.media_id, i.reason) for i in summary.items] == [
+            (1, "pending")
+        ]
+        assert (summary.total_media, summary.pending_pairs) == (1, 1)
+
+    def test_the_refresh_task_still_gets_the_waiting_items(self):
+        from services.trailers.trailers.pending import media_awaiting_tmdb
+
+        awaiting = self._run(
+            media_awaiting_tmdb,
+            [self._waiting_profile()],
+            [make_media([], media_id=1), make_media([], media_id=2)],
+            {},
+        )
+        assert awaiting == [1, 2]
+
+    def test_the_bulk_read_sees_an_arr_video(self):
+        """Finding 5: the task reads every source. A trailer profile with
+        the search off and a video from Radarr downloads it, so the
+        preview must say pending, not waiting."""
+        from database.models.mediavideo import VideoSource
+
+        profile = self._waiting_profile()
+        profile.video_type = "trailer"
+        arr = SimpleNamespace(
+            video_id="arr1",
+            source=VideoSource.ARR,
+            language=None,
+            video_type="trailer",
+        )
+        summary = self._run(
+            compute_library_pending,
+            [profile],
+            [make_media([], media_id=1)],
+            {1: [arr]},
+        )
+        assert [(i.media_id, i.reason) for i in summary.items] == [
+            (1, "pending")
+        ]

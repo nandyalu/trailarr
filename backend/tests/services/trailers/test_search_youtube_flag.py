@@ -5,7 +5,7 @@ With the flag off a profile takes known videos only and waits for TMDB.
 With it on, a profile of any type searches when no known video suits it.
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -90,3 +90,78 @@ class TestSearchEndpoint:
         assert exc.value.status_code == 409
         assert "Search YouTube is off" in exc.value.detail
         search.assert_not_called()
+
+
+class TestTheSearchResultTakesTheTypeOfTheProfile:
+    """Code review of Phase 9, finding 2: a search made for a featurette
+    profile is stored as a SEARCH featurette, not as a trailer, so the
+    profile reads its own result back and a trailer profile never takes
+    it."""
+
+    def test_the_resolver_stores_the_result_with_the_type(self, media):
+        with (
+            patch.object(
+                trailer_search.video_manager, "read_candidates", return_value=[]
+            ),
+            patch.object(
+                trailer_search, "_last_tried_video_id", return_value=None
+            ),
+            patch.object(
+                trailer_search, "search_yt_for_trailer", return_value="feat1"
+            ),
+            patch.object(
+                trailer_search.video_manager, "replace_source_rows"
+            ) as replace,
+        ):
+            trailer_search.get_video_id(media, _profile("featurette", True), [])
+
+        replace.assert_called_once()
+        args, kwargs = replace.call_args
+        assert kwargs["video_type"] == "featurette"
+        [row] = args[2]
+        assert (row.video_id, row.video_type) == ("feat1", "featurette")
+
+    def test_the_default_is_still_a_trailer(self, media):
+        with patch.object(
+            trailer_search.video_manager, "replace_source_rows"
+        ) as replace:
+            trailer_search._remember_search_result(media, "t1")
+        assert replace.call_args.kwargs["video_type"] == "trailer"
+
+    @pytest.mark.asyncio
+    async def test_the_endpoint_takes_the_old_id_of_the_same_type(self):
+        from api.v1 import media as media_api
+
+        found = MagicMock()
+        found.id = 1
+        found.title = "Test Movie"
+        with (
+            patch.object(media_api.media_manager, "read", return_value=found),
+            patch.object(
+                media_api.trailerprofile,
+                "get_trailerprofile",
+                return_value=_profile("featurette", True),
+            ),
+            patch.object(
+                media_api.trailer_search,
+                "search_yt_for_trailer",
+                return_value="feat2",
+            ),
+            patch.object(
+                media_api.media_service, "first_video_id", return_value="feat1"
+            ) as first,
+            patch.object(
+                media_api.trailer_search, "_remember_search_result"
+            ) as remember,
+            patch.object(
+                media_api.event_manager, "track_youtube_id_changed"
+            ) as track,
+            patch.object(
+                media_api.websockets.ws_manager, "broadcast", new=AsyncMock()
+            ),
+        ):
+            assert await media_api.search_for_trailer(1, 1) == "feat2"
+
+        first.assert_called_once_with(1, "featurette")
+        remember.assert_called_once_with(found, "feat2", video_type="featurette")
+        assert track.call_args.kwargs["old_yt_id"] == "feat1"

@@ -109,28 +109,25 @@ def read_candidates(
 
 
 @read_session
-def read_upgrade_candidates_by_media(
+def read_candidates_by_media(
     *,
     _session: Session = None,  # type: ignore
 ) -> dict[int, list[MediaVideoRead]]:
-    """Get the USER and TMDB videos of every media item, in one query.
+    """Get the known videos of every media item, in one query.
 
-    A library-wide pass that checks `Upgrade To TMDB Trailer` needs these
-    for each media item, and one query per item would be slow on a large
-    library. Only the rows an upgrade can accept are read: every type,
-    because `upgrade_targets` keeps the type of each profile.
+    A library-wide pass runs the satisfaction rule for each media item,
+    and one query per item would be slow on a large library. Every source
+    and every type is read, the same set that `read_candidates(media_id,
+    video_type=None)` gives one item: the pass must decide an upgrade and
+    a wait for TMDB from the same videos as the download task. The
+    resolver filters by source where it must (`upgrade_targets` takes
+    USER and TMDB rows only).
 
     Returns:
         dict[int, list[MediaVideoRead]]: The rows per media id, each list
             in resolution order. A media item with no rows is not a key.
     """
-    statement = (
-        select(MediaVideo)
-        .where(col(MediaVideo.season).is_(None))
-        .where(
-            col(MediaVideo.source).in_([VideoSource.USER, VideoSource.TMDB])
-        )
-    )
+    statement = select(MediaVideo).where(col(MediaVideo.season).is_(None))
     by_media: dict[int, list[MediaVideoRead]] = {}
     for video in _session.exec(statement).all():
         by_media.setdefault(video.media_id, []).append(_to_read(video))
@@ -188,13 +185,26 @@ def replace_source_rows(
         .where(MediaVideo.media_id == media_id)
         .where(MediaVideo.source == source)
     )
-    if video_type is not None:
-        statement = statement.where(MediaVideo.video_type == video_type)
     if season is None:
         statement = statement.where(col(MediaVideo.season).is_(None))
     else:
         statement = statement.where(MediaVideo.season == season)
-    existing = {v.video_id: v for v in _session.exec(statement).all()}
+    same_source = _session.exec(statement).all()
+    existing = {
+        v.video_id: v
+        for v in same_source
+        if video_type is None or v.video_type == video_type
+    }
+    # A row of this source with another type is not in the list that
+    # this call replaces, so it is left alone, unless the list offers
+    # the same video: (media_id, video_id) is unique, so that row changes
+    # type instead of raising. A search for a featurette that finds the
+    # video an earlier trailer search found does this.
+    retyped = {
+        v.video_id: v
+        for v in same_source
+        if video_type is not None and v.video_type != video_type
+    }
 
     # A video can be offered by more than one source, and (media_id,
     # video_id) is unique, so only one row can exist for it. The better
@@ -239,8 +249,10 @@ def replace_source_rows(
         seen.add(incoming.video_id)
         if incoming.video_id in taken:
             continue
-        row = existing.get(incoming.video_id) or claimable.get(
-            incoming.video_id
+        row = (
+            existing.get(incoming.video_id)
+            or retyped.get(incoming.video_id)
+            or claimable.get(incoming.video_id)
         )
         row_type = video_type or incoming.video_type or VIDEO_TYPE_TRAILER
         if row is not None and row.source != source:

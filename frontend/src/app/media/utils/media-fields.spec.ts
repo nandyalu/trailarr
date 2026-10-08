@@ -150,7 +150,7 @@ describe('activeTrailers', () => {
 
 describe('trailer value functions', () => {
   it.each([
-    ['download_video_type', ['trailer']],
+    ['download_video_type', ['Trailer']],
     ['download_resolution', ['1080p']],
     ['download_video_codec', ['h264']],
     ['download_audio_codec', ['aac']],
@@ -166,7 +166,7 @@ describe('trailer value functions', () => {
   });
 
   it.each([
-    ['download_video_type', ['trailer', 'trailer', 'teaser']],
+    ['download_video_type', ['Trailer', 'Trailer', 'Teaser']],
     ['download_resolution', ['1080p', '2160p', '720p']],
     ['download_video_codec', ['h264', 'h265', 'vp9']],
     ['download_audio_codec', ['aac', 'ac3', 'opus']],
@@ -185,9 +185,16 @@ describe('trailer value functions', () => {
     expect(lines(key, none)).toEqual(key === 'download_count' ? ['0'] : []);
   });
 
-  it('falls back to trailer when the backend sends no video_type', () => {
+  it('falls back to Trailer when the backend sends no video_type', () => {
     const noType = makeMedia([makeDownload(1, {video_type: undefined as unknown as string})]);
-    expect(lines('download_video_type', noType)).toEqual(['trailer']);
+    expect(lines('download_video_type', noType)).toEqual(['Trailer']);
+  });
+
+  it('shows the label of the type, not the stored value', () => {
+    // Every other place (the downloads section, the pending badge, the
+    // profile editor) shows the label, so the column and the tag do too.
+    const stored = makeMedia([makeDownload(1, {video_type: 'behind_the_scenes'}), makeDownload(2, {video_type: 'featurette'})]);
+    expect(lines('download_video_type', stored)).toEqual(['Behind the Scenes', 'Featurette']);
   });
 
   it('shows a dash for an empty value', () => {

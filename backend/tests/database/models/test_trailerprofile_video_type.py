@@ -83,3 +83,17 @@ class TestMaxDuration:
     def test_the_gap_rule_still_holds(self):
         with pytest.raises(ValidationError, match="60 seconds"):
             _profile(min_duration=1150, max_duration=1200)
+
+
+class TestANewProfileNamesItsFilesByType:
+    """Code review of Phase 9, finding 3 (decision 6): a new profile
+    writes the name of its type, so a featurette profile never writes
+    `-trailer` in `Trailers/`. A stored profile keeps its names."""
+
+    def test_the_default_names_use_the_token(self):
+        profile = _profile(video_type="featurette")
+        assert profile.file_name == "{title} ({year})-{video_type}.{ext}"
+        assert profile.folder_name == "{video_type}"
+
+    def test_the_token_is_a_valid_template(self):
+        assert _profile(file_name="{title}-{video_type}.{ext}").file_name

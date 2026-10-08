@@ -1,4 +1,5 @@
 import {FileFolderInfo} from './filefolderinfo';
+import {isTrailerType} from './trailerprofile';
 
 /** The video id of a download when nothing shows which video it is: a file
  * Trailarr found on disk, or one saved before it recorded ids. Mirrors
@@ -62,12 +63,30 @@ export interface InflightDownload {
   profile_id: number;
 }
 
+/** True for a download of the trailer type. A download with no type is a
+ * trailer: the backend did not send the type, or the row is older than
+ * Phase 9. The scan also records extras (featurettes, deleted scenes, ...)
+ * as downloads, so a type check is needed wherever "has a trailer" is
+ * meant. */
+export function isTrailerDownload(download: Download): boolean {
+  return isTrailerType(download.video_type);
+}
+
+/** True when the item has a trailer on disk: an active download of the
+ * trailer type. An extra of another type does not count, so an item with
+ * only a featurette is still 'missing' and stays off the Home page. The
+ * `has_downloads` and `download_count` FILTERS keep counting every type. */
+export function hasActiveTrailer(downloads: Download[]): boolean {
+  return downloads.some((download) => download.file_exists && isTrailerDownload(download));
+}
+
 /** List-level status is computed from downloads + monitor (the backend
  * stores no status since v0.11.0). 'downloading' comes only from the
- * runtime in-flight overlay (MediaService.downloadingResource). */
+ * runtime in-flight overlay (MediaService.downloadingResource).
+ * 'downloaded' needs a trailer: an extra alone leaves the item 'missing'. */
 export function computeMediaStatus(monitor: boolean, downloads: Download[], downloading = false): string {
   if (downloading) return 'downloading';
-  if (downloads.some((download) => download.file_exists)) return 'downloaded';
+  if (hasActiveTrailer(downloads)) return 'downloaded';
   if (monitor) return 'monitored';
   return 'missing';
 }

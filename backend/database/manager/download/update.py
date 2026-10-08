@@ -1,6 +1,6 @@
 """Change a trailer download that is already stored."""
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session
 
 from . import base
 from database.models.download import (
@@ -101,36 +101,3 @@ def update_profile_id(
         download_db.video_type = video_type
     _session.add(download_db)
     _session.commit()
-
-
-@write_session
-def relabel_video_type_for_profile(
-    profile_id: int,
-    video_type: str,
-    *,
-    _session: Session = None,  # type: ignore
-) -> int:
-    """
-    Give every download of one profile a new video type.
-    The downloads of a profile are what the profile asked for, so when
-    the profile changes its type, its downloads change with it. This is
-    what keeps a profile satisfied after the change: the satisfaction
-    rule matches a download to its profile by type.
-    Args:
-        profile_id (int): The profile whose downloads change.
-        video_type (str): The new type, in its stored form.
-        _session (Session, optional): A session to use for the database connection. Defaults to None.
-    Returns:
-        int: How many downloads changed.
-    """
-    statement = (
-        select(Download)
-        .where(Download.profile_id == profile_id)
-        .where(col(Download.video_type) != video_type)
-    )
-    rows = _session.exec(statement).all()
-    for row in rows:
-        row.video_type = video_type
-        _session.add(row)
-    _session.commit()
-    return len(rows)

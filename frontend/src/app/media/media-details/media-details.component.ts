@@ -139,10 +139,24 @@ export class MediaDetailsComponent {
   /** The known videos by type, Trailer first. */
   readonly videoGroups = computed(() => groupVideosByType(this.knownVideos()));
 
-  /** The video the Watch button opens: the first one in resolver order,
-   * which is what a download takes. Phase 9 dropped the stored YouTube id,
-   * so the list is the only record. */
-  readonly firstVideo = computed<MediaVideo | null>(() => this.knownVideos()[0] ?? null);
+  /** The video the Watch button opens: the first known trailer, in
+   * resolver order, which is what a trailer download takes. The list
+   * holds every type, and a user row or a TMDB featurette can come before
+   * the first trailer, so the first row of the whole list is not it. When
+   * the item has no trailer, the first video of any type. Phase 9 dropped
+   * the stored YouTube id, so the list is the only record. */
+  readonly firstVideo = computed<MediaVideo | null>(() => {
+    const videos = this.knownVideos();
+    return videos.find((video) => normalizeVideoType(video.video_type) === DEFAULT_VIDEO_TYPE) ?? videos[0] ?? null;
+  });
+
+  /** The tooltip of the Watch button: says which video it opens. */
+  readonly watchTitle = computed(() => {
+    const video = this.firstVideo();
+    if (!video) return 'Trailarr knows no video for this item';
+    if (normalizeVideoType(video.video_type) === DEFAULT_VIDEO_TYPE) return 'Opens the first known trailer on YouTube';
+    return `Trailarr knows no trailer for this item. Opens the first known ${videoTypeLabel(video.video_type).toLowerCase()} on YouTube`;
+  });
 
   /** The 7 types a video can be, for the add form. */
   readonly videoTypeOptions = VIDEO_TYPE_OPTIONS;

@@ -9,7 +9,7 @@
 
 Search YouTube when no known video suits this profile. This is what every profile did before this setting existed: the known videos first (the videos that TMDB lists, the id from Radarr or Sonarr, and videos you added), then a search with the [Search Query](#search-query) when none of them suits the profile.
 
-Turn it off, and the profile takes known videos only. When none suits it, the profile waits: it does not search, does not fail, and does not back off. Trailarr asks TMDB again every seven days with the `Refresh Video Lists` task, and the [Download Profiles](../../../library/media-details/index.md#download-profiles-section) section of the media details page says that the profile waits for TMDB. This is the setting for a profile that is optional, such as a second trailer in a language that TMDB lists for some titles only.
+Turn it off, and the profile takes known videos only. Turning it off also turns `Always Search` off, because `Always Search` needs the search. When none suits it, the profile waits: it does not search, does not fail, and does not back off. Trailarr asks TMDB again every seven days with the `Refresh Video Lists` task, and the [Download Profiles](../../../library/media-details/index.md#download-profiles-section) section of the media details page says that the profile waits for TMDB. This is the setting for a profile that is optional, such as a second trailer in a language that TMDB lists for some titles only.
 
 The profile editor hides `Search Query`, `Always Search`, `Include Words in Title`, `Exclude Words in Title` and `Allowed Uploader IDs` while the search is off. `Minimum Duration`, `Maximum Duration` and `Yt-dlp Extra Options` apply either way.
 

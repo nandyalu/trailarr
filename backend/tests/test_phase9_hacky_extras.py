@@ -110,7 +110,13 @@ def test_a_hacky_extras_profile_downloads_nothing_new(tmp_path: Path):
     # with the profile.
     assert (1, HACKY_PROFILE_ID) not in payload["after"], payload
     assert (2, HACKY_PROFILE_ID) not in payload["after"], payload
-    assert payload["after"] == payload["before"], payload
+    # Media C: the type change turned Search YouTube off, and no known
+    # featurette exists for it, so the profile waits for TMDB (W3). A
+    # profile that waits is not in the work list; it was pending before.
+    assert [3, HACKY_PROFILE_ID] in payload["before"], payload
+    assert payload["after"] == [
+        pair for pair in payload["before"] if pair != [3, HACKY_PROFILE_ID]
+    ], payload
     # The nudge named the profile, once.
     assert "'Movie Featurettes'" in result.stderr + result.stdout, (
         result.stderr[-2000:]

@@ -83,7 +83,7 @@ There are up to 2 action buttons that can appear depending on the selected Media
 ### Watch
 
 - {{ version_badge("upd", "0.14.0") }} Appears when the [Known videos](#known-videos) list has at least one video.
-- Opens the first video of the list, the one a download would take, in YouTube in a new tab.
+- Opens the first known trailer, the one a trailer download would take, in YouTube in a new tab. When the list holds no trailer, it opens its first video.
 
 ### Download
 

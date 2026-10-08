@@ -523,10 +523,17 @@ async def download_media_trailer(
     Returns:
         str: Downloading trailer message.
     """
-    msg = "Trailarr downloads a video for this media item."
     if yt_id:
-        msg += f" from ({yt_id})"
-    logger.info(msg)
+        logger.info(
+            "Trailarr downloads a video for this media item from the"
+            f" YouTube video '{yt_id}'.",
+            **logger.media(media_id),
+        )
+    else:
+        logger.info(
+            "Trailarr downloads a video for this media item.",
+            **logger.media(media_id),
+        )
     return download_trailer_by_id(media_id, profile_id, yt_id)
 
 
@@ -823,8 +830,13 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
         # The result is remembered as a SEARCH video, so the next run does
         # not search again and the Known videos list shows it (Phase 9
         # dropped the `media.youtube_trailer_id` column, H9).
-        old_yt_id = media_service.first_video_id(media_id)
-        trailer_search._remember_search_result(media, yt_id)
+        # The result takes the type of the profile that searched, and the
+        # old id is the first video of that type (a featurette search
+        # changes which featurette comes first, not which trailer).
+        old_yt_id = media_service.first_video_id(media_id, profile.video_type)
+        trailer_search._remember_search_result(
+            media, yt_id, video_type=profile.video_type
+        )
         event_manager.track_youtube_id_changed(
             media_id=media_id,
             old_yt_id=old_yt_id,

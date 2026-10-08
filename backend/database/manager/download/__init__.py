@@ -12,7 +12,6 @@ from .update import (
     update,
     mark_as_deleted,
     update_profile_id,
-    relabel_video_type_for_profile,
 )
 
 __all__ = [
@@ -28,5 +27,4 @@ __all__ = [
     "update",
     "mark_as_deleted",
     "update_profile_id",
-    "relabel_video_type_for_profile",
 ]

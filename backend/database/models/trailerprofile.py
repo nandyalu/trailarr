@@ -101,9 +101,13 @@ class _TrailerProfileBase(AppSQLModel):
     )
     # File settings
     file_format: str = "mkv"
-    file_name: str = "{title} ({year})-trailer.{ext}"
+    # A new profile names its files and its folder by its type (Phase 9,
+    # decision 6): `{video_type}` becomes `trailer` and `Trailers` for a
+    # trailer profile, `featurette` and `Featurettes` for a featurette
+    # profile. A stored profile keeps the name it has.
+    file_name: str = "{title} ({year})-{video_type}.{ext}"
     folder_enabled: bool = False
-    folder_name: str = "Trailers"
+    folder_name: str = "{video_type}"
     embed_metadata: bool = True
     remove_silence: bool = False
     # Audio settings

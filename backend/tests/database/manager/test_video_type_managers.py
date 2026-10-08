@@ -366,3 +366,193 @@ class TestLeavingTheTrailerTypeTurnsTheSearchOff:
             profile.id, "video_type", "clip"
         )
         assert updated.search_youtube is True
+
+
+class TestTheSearchSourceKeepsOneRowPerType:
+    """Code review of Phase 9, finding 2: a search result takes the type
+    of the profile that searched, and a featurette result does not
+    remove the trailer result."""
+
+    @staticmethod
+    def _search(media_id: int, video_id: str, video_type: str):
+        return MediaVideoCreate(
+            media_id=media_id,
+            video_id=video_id,
+            source=VideoSource.SEARCH,
+            video_type=video_type,
+            sequence=0,
+            name="",
+            official=False,
+        )
+
+    def test_a_featurette_result_leaves_the_trailer_result_alone(
+        self, media_id
+    ):
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.SEARCH,
+            [self._search(media_id, "s-trailer", "trailer")],
+            video_type="trailer",
+        )
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.SEARCH,
+            [self._search(media_id, "s-feat", "featurette")],
+            video_type="featurette",
+        )
+        rows = {v.video_id: v.video_type for v in video_manager.read_for_media(media_id)}
+        assert rows == {"s-trailer": "trailer", "s-feat": "featurette"}
+        assert [
+            v.video_id
+            for v in video_manager.read_candidates(
+                media_id, video_type="featurette"
+            )
+        ] == ["s-feat"]
+
+    def test_the_same_video_found_for_another_type_changes_its_row(
+        self, media_id
+    ):
+        """(media_id, video_id) is unique. A featurette search that finds
+        the video of an earlier trailer search must not raise."""
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.SEARCH,
+            [self._search(media_id, "same", "trailer")],
+            video_type="trailer",
+        )
+        added, updated, removed = video_manager.replace_source_rows(
+            media_id,
+            VideoSource.SEARCH,
+            [self._search(media_id, "same", "featurette")],
+            video_type="featurette",
+        )
+        assert (added, updated, removed) == (0, 1, 0)
+        [row] = video_manager.read_for_media(media_id)
+        assert row.video_type == "featurette"
+
+
+class TestTheBulkReadCoversEverySource:
+    """Code review of Phase 9, finding 5: the library-wide pass must see
+    the same videos as the download task, which reads every source."""
+
+    def test_arr_and_search_rows_are_read_too(self, media_id):
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.TMDB,
+            [_video(media_id, "t1", "trailer")],
+            video_type=None,
+        )
+        video_manager.replace_source_rows(
+            media_id,
+            VideoSource.ARR,
+            [
+                MediaVideoCreate(
+                    media_id=media_id,
+                    video_id="arr1",
+                    source=VideoSource.ARR,
+                    sequence=0,
+                    name="",
+                    official=False,
+                )
+            ],
+        )
+        video_manager.add_user_video(media_id, "u1", video_type="featurette")
+        by_media = video_manager.read_candidates_by_media()
+        assert {v.video_id for v in by_media[media_id]} == {"t1", "arr1", "u1"}
+        assert [v.video_id for v in by_media[media_id]] == [
+            v.video_id
+            for v in video_manager.read_candidates(media_id, video_type=None)
+        ]
+
+
+class TestSearchYouTubeOnCreateAndWhenTurnedOff:
+    """Code review of Phase 9, finding 10."""
+
+    def test_a_new_featurette_profile_starts_without_the_search(self):
+        profile = profile_manager.create_trailerprofile(
+            _profile_create("featurette")
+        )
+        assert profile.search_youtube is False
+        assert profile.always_search is False
+
+    def test_a_new_trailer_profile_searches(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        assert profile.search_youtube is True
+
+    def test_a_create_that_sets_the_search_keeps_it(self):
+        create = _profile_create("clip")
+        create.search_youtube = True
+        profile = profile_manager.create_trailerprofile(create)
+        assert profile.search_youtube is True
+
+    def test_a_create_with_always_search_on_loses_both(self):
+        create = _profile_create("featurette")
+        create.always_search = True
+        profile = profile_manager.create_trailerprofile(create)
+        assert (profile.search_youtube, profile.always_search) == (False, False)
+
+    def test_turning_the_search_off_turns_always_search_off(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        profile_manager.update_trailerprofile_setting(
+            profile.id, "always_search", True
+        )
+        updated = profile_manager.update_trailerprofile_setting(
+            profile.id, "search_youtube", False
+        )
+        assert updated.search_youtube is False
+        assert updated.always_search is False
+
+    def test_a_full_update_that_turns_the_search_off_does_too(self):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        profile_manager.update_trailerprofile_setting(
+            profile.id, "always_search", True
+        )
+        update = _profile_create()
+        update.customfilter.filter_name = profile.customfilter.filter_name
+        update.search_youtube = False
+        updated = profile_manager.update_trailerprofile(profile.id, update)
+        assert updated.search_youtube is False
+        assert updated.always_search is False
+
+
+class TestTheRelabelIsPartOfTheProfileUpdate:
+    """Code review of Phase 9, finding 14: one implementation, in the
+    transaction of the profile update."""
+
+    def test_the_download_manager_has_no_relabel_of_its_own(self):
+        assert not hasattr(download_manager, "relabel_video_type_for_profile")
+
+    def test_a_failed_update_relabels_nothing(self, media_id):
+        profile = profile_manager.create_trailerprofile(_profile_create())
+        download_manager.create(_download(media_id, profile.id, "h.mkv"))
+        update = _profile_create("featurette")
+        update.customfilter.filter_name = profile.customfilter.filter_name
+        # An invalid combination: the validator raises after the relabel
+        # ran in the session, and the rollback takes both back.
+        update.file_format = "webm"
+        update.audio_format = "aac"
+        with pytest.raises(ValueError):
+            profile_manager.update_trailerprofile(profile.id, update)
+        assert profile_manager.get_trailerprofile(profile.id).video_type == "trailer"
+        [row] = download_manager.read_by_profile_id(profile.id)
+        assert row.video_type == "trailer"
+
+
+class TestTheFolderNamesPerType:
+    """The delete sweep for a removed media item removes the folders of
+    the trailer profiles only (code review on #701, finding 1)."""
+
+    def test_only_trailer_folders_for_the_sweep(self):
+        profile_manager.create_trailerprofile(_profile_create())  # Trailers
+        featurettes = _profile_create("featurette")
+        featurettes.folder_name = "Bonus"
+        profile_manager.create_trailerprofile(featurettes)
+        tokened = _profile_create("clip")
+        tokened.folder_name = "{video_type}"
+        profile_manager.create_trailerprofile(tokened)
+
+        every = profile_manager.get_trailer_folders()
+        trailers = profile_manager.get_trailer_folders(video_type="trailer")
+        assert {"Bonus", "Scenes"} <= every
+        assert "Bonus" not in trailers and "Scenes" not in trailers
+        assert "{video_type}" not in every

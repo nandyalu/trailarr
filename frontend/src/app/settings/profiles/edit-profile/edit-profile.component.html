@@ -150,7 +150,8 @@
       />
       <app-text-setting
         name="File Name"
-        description="File name to use for downloaded trailers."
+        description="File name to use for downloaded videos."
+        descriptionExtra="Default is '{title} ({year})-{video_type}.{ext}'. The {video_type} token writes the name that Plex and Jellyfin read for the profile's Video Type, for example '-trailer' or '-featurette'."
         [isNumberType]="false"
         [isLongInput]="true"
         [placeholder]="'File Name'"
@@ -171,7 +172,8 @@
       @if (profile()?.folder_enabled) {
         <app-text-setting
           name="Folder Name"
-          description="Name of the folder to save trailer file."
+          description="Name of the folder to save the video file."
+          descriptionExtra="Default is '{video_type}'. The {video_type} token writes the folder that Plex and Jellyfin read for the profile's Video Type, for example 'Trailers' or 'Featurettes'."
           [isNumberType]="false"
           [isLongInput]="true"
           [placeholder]="'Folder Name'"

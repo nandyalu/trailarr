@@ -123,8 +123,60 @@ describe('MediaDetailsComponent known videos', () => {
     component.loadKnownVideos();
 
     expect(component.knownVideos().map((v) => v.video_id)).toEqual(['mine', 'curated', 'from-arr']);
-    // The Watch button opens the first one: the video a download takes.
+    // The Watch button opens the first trailer: the video a download takes.
     expect(component.firstVideo()?.video_id).toBe('mine');
+    expect(component.watchTitle()).toBe('Opens the first known trailer on YouTube');
+  });
+
+  it('opens the first trailer on Watch, not a featurette or a user row of another type that comes first', () => {
+    // TMDB sequences restart for each type, and a USER row of any type
+    // comes first in the list, so the first row is not always a trailer.
+    const videos = [
+      video({id: 1, video_id: 'my-feature1', source: 'user', video_type: 'featurette'}),
+      video({id: 2, video_id: 'bts00000000', source: 'tmdb', video_type: 'behind_the_scenes', sequence: 0}),
+      video({id: 3, video_id: 'trailer2222', source: 'tmdb', video_type: 'trailer', sequence: 0}),
+      video({id: 4, video_id: 'trailer1111', source: 'tmdb', video_type: 'trailer', sequence: 1}),
+    ];
+    const service = TestBed.inject(MediaService);
+    vi.spyOn(service, 'getMediaVideos').mockReturnValue(of(videos));
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+
+    component.loadKnownVideos();
+    component.openTrailer();
+
+    expect(component.firstVideo()?.video_id).toBe('trailer2222');
+    expect(open).toHaveBeenCalledWith('https://www.youtube.com/watch?v=trailer2222', '_blank');
+    open.mockRestore();
+  });
+
+  it('falls back to the first video of any type when no trailer is known, and says so', () => {
+    const videos = [
+      video({id: 1, video_id: 'feat0000000', source: 'tmdb', video_type: 'featurette'}),
+      video({id: 2, video_id: 'clip0000000', source: 'tmdb', video_type: 'clip'}),
+    ];
+    const service = TestBed.inject(MediaService);
+    vi.spyOn(service, 'getMediaVideos').mockReturnValue(of(videos));
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+
+    component.loadKnownVideos();
+
+    expect(component.firstVideo()?.video_id).toBe('feat0000000');
+    expect(component.watchTitle()).toBe('Trailarr knows no trailer for this item. Opens the first known featurette on YouTube');
+  });
+
+  it('reads a video with no type as a trailer for Watch', () => {
+    const videos = [
+      video({id: 1, video_id: 'feat0000000', video_type: 'featurette'}),
+      video({id: 2, video_id: 'untyped0000', video_type: ''}),
+    ];
+    const service = TestBed.inject(MediaService);
+    vi.spyOn(service, 'getMediaVideos').mockReturnValue(of(videos));
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+
+    component.loadKnownVideos();
+
+    expect(component.firstVideo()?.video_id).toBe('untyped0000');
   });
 
   it('has nothing to watch when the list is empty', () => {
@@ -137,6 +189,7 @@ describe('MediaDetailsComponent known videos', () => {
     component.openTrailer();
 
     expect(component.firstVideo()).toBeNull();
+    expect(component.watchTitle()).toBe('Trailarr knows no video for this item');
     expect(open).not.toHaveBeenCalled();
   });
 

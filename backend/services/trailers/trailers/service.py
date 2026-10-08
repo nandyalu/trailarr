@@ -17,7 +17,7 @@ from database.models.download import (
     DownloadRead,
 )
 from database.models.media import MediaRead
-from database.models.video_type import DEFAULT_VIDEO_TYPE
+from database.models.video_type import DEFAULT_VIDEO_TYPE, is_trailer_type
 from services.trailers.video_analysis import VideoInfo, get_media_info
 from services.files.files_handler import FilesHandler
 
@@ -100,12 +100,16 @@ def find_youtube_id(media_info: VideoInfo) -> str:
     return media_info.youtube_id or UNKNOWN_YOUTUBE_ID
 
 
-def _extract_metadata_fields(media_info: VideoInfo, file_path: str) -> dict:
+def _extract_metadata_fields(
+    media_info: VideoInfo, file_path: str, *, with_hash: bool = True
+) -> dict:
     """Extract the physical-file-derived metadata fields shared by new-download
     recording and re-analysis after an in-place content change.
     Args:
         media_info (VideoInfo): The ffprobe-derived video info for the file.
         file_path (str): Path to the file (used to compute the content hash).
+        with_hash (bool): Whether to read the whole file for its hash.
+            False stores an empty hash.
     Returns:
         dict: Fields suitable for merging into a DownloadCreate payload —
             file_hash, size, resolution, file_format, video_format,
@@ -127,7 +131,7 @@ def _extract_metadata_fields(media_info: VideoInfo, file_path: str) -> dict:
         resolution = get_resolution_label(video_stream.coded_height)
 
     return {
-        "file_hash": compute_file_hash(file_path),
+        "file_hash": compute_file_hash(file_path) if with_hash else "",
         "size": media_info.size,
         "resolution": resolution,
         "file_format": media_info.format_name,
@@ -198,7 +202,15 @@ async def record_new_trailer_download(
             file_stat.st_ctime, tz=timezone.utc
         )
 
-        metadata = _extract_metadata_fields(media_info, file_path)
+        # The hash exists so that the scan recognizes a trailer that
+        # Trailarr made after a rename. An extra of another type is a
+        # file that a person placed: it is never renamed by Trailarr, and
+        # reading a 20 GB featurette in full for a hash it never uses
+        # made the first scan after the upgrade take hours. The ffprobe
+        # above stays: the row needs the duration and the streams.
+        metadata = _extract_metadata_fields(
+            media_info, file_path, with_hash=is_trailer_type(video_type)
+        )
 
         # Get youtube video id
         yt_id = find_youtube_id(media_info)

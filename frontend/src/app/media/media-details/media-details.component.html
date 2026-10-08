@@ -337,7 +337,7 @@
             (click)="openTrailer()"
             class="primary"
             [disabled]="!firstVideo()"
-            [title]="firstVideo() ? 'Watch the video a download takes, on YouTube' : 'Trailarr knows no video for this item'"
+            [title]="watchTitle()"
           >
             Watch
           </button>

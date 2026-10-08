@@ -76,8 +76,10 @@ class PendingSummaryItem(BaseModel):
     is_movie: bool
     profile_id: int
     profile_name: str
-    reason: str  # "pending" | "backoff" | "awaiting_tmdb" (W3: no known
-    # video suits a profile that cannot search, so it waits for TMDB)
+    reason: str  # "pending" | "backoff"
+    # A profile that waits for TMDB (W3: no known video suits it, and it
+    # cannot search) is not in the list: the download task does not act
+    # on it. `media_awaiting_tmdb` feeds those to the refresh task.
     # The trailer is on disk, and the download replaces it with a TMDB one.
     upgrade: bool = False
     # Why the download replaces the trailer, when it does.
@@ -100,17 +102,18 @@ def _profile_name(profile: TrailerProfileRead) -> str:
     return profile.customfilter.filter_name
 
 
-def read_upgrade_videos(
+def read_known_videos(
     profiles: list[TrailerProfileRead],
 ) -> dict[int, list[MediaVideoRead]]:
-    """The USER and TMDB trailers per media id, for a library-wide pass.
+    """The known videos per media id, for a library-wide pass.
 
-    Only a profile with `Upgrade To TMDB Trailer` on reads them, so a
-    library with no such profile makes no query at all.
+    Only a profile with `Upgrade To TMDB Trailer` on, or with `Search
+    YouTube` off, reads them (`needs_videos`), so a library with no such
+    profile makes no query at all.
     """
     if not needs_videos(profiles):
         return {}
-    return video_manager.read_upgrade_candidates_by_media()
+    return video_manager.read_candidates_by_media()
 
 
 def compute_media_pending(
@@ -220,17 +223,20 @@ def compute_library_pending(
             (a.media_id, a.profile_id): a for a in attempt_manager.read_all()
         }
         for media, result in _evaluate_library(enabled_profiles):
-            if not result.unsatisfied:
-                continue
-            pending_media_ids.add(media.id)
-            upgrades = {d.profile_id for d in result.details if d.upgrade}
+            # A profile that waits for TMDB is not work: the download task
+            # skips it without an attempt, so it is not counted either.
             waiting = {
                 d.profile_id
                 for d in result.details
                 if d.awaiting_tmdb and not d.satisfied
             }
+            to_act = [p for p in result.unsatisfied if p.id not in waiting]
+            if not to_act:
+                continue
+            pending_media_ids.add(media.id)
+            upgrades = {d.profile_id for d in result.details if d.upgrade}
             states = {d.profile_id: d.upgrade_state for d in result.details}
-            for profile in result.unsatisfied:
+            for profile in to_act:
                 attempt = attempts_by_key.get((media.id, profile.id))
                 eligible = is_eligible(attempt)
                 if eligible:
@@ -244,11 +250,7 @@ def compute_library_pending(
                         is_movie=media.is_movie,
                         profile_id=profile.id,
                         profile_name=_profile_name(profile),
-                        reason=(
-                            "awaiting_tmdb"
-                            if profile.id in waiting
-                            else "pending" if eligible else "backoff"
-                        ),
+                        reason="pending" if eligible else "backoff",
                         upgrade=profile.id in upgrades,
                         upgrade_state=states.get(profile.id),
                         next_eligible_at=(
@@ -268,12 +270,14 @@ def compute_library_pending(
 
 
 def media_awaiting_tmdb() -> list[int]:
-    """The media items whose upgrade waits for a TMDB trailer.
+    """The media items that wait for TMDB to list a video.
 
     A profile with `Upgrade To TMDB Trailer` keeps its trailer while TMDB
     lists nothing for it, and that includes a media item that Trailarr
-    never asked TMDB about. The refresh task asks TMDB about these, so
-    that an upgrade can happen at all.
+    never asked TMDB about. A profile with `Search YouTube` off has
+    nothing to download while no known video of its type suits it (W3).
+    Neither is in the pending list, so the refresh task asks TMDB about
+    these, so that the upgrade or the download can happen at all.
 
     Returns:
         list[int]: The media ids, in library order.
@@ -281,7 +285,7 @@ def media_awaiting_tmdb() -> list[int]:
     enabled_profiles = [
         p for p in trailerprofile.get_trailerprofiles() if p.enabled
     ]
-    if not any(p.upgrade_to_tmdb for p in enabled_profiles):
+    if not needs_videos(enabled_profiles):
         return []
     return [
         media.id
@@ -385,12 +389,16 @@ def _evaluate_library(
 
     The same rule, with the same inputs, as the download task. A media
     item that no enabled profile matches is left out.
+
+    When the profiles need the known videos, an item with no rows gets an
+    empty list, not None: an empty list is an answer ("TMDB lists
+    nothing"), and None would leave the item undecided.
     """
-    videos_by_media = read_upgrade_videos(enabled_profiles)
+    videos_needed = needs_videos(enabled_profiles)
+    videos_by_media = read_known_videos(enabled_profiles)
     for media in media_manager.read_all_generator(monitored_only=True):
         matching = find_matching_profiles(media, enabled_profiles)
         if not matching:
             continue
-        yield media, evaluate_satisfaction(
-            media, matching, videos_by_media.get(media.id)
-        )
+        videos = videos_by_media.get(media.id, []) if videos_needed else None
+        yield media, evaluate_satisfaction(media, matching, videos)

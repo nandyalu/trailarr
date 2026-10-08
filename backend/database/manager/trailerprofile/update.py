@@ -52,6 +52,8 @@ def update_trailerprofile(
     trailerprofile_db.sqlmodel_update(_update_data)
     if "search_youtube" not in _update_data:
         _search_off_for_extras(trailerprofile_db, old_video_type)
+    elif not trailerprofile_db.search_youtube:
+        _always_search_off_with_the_search(trailerprofile_db)
     # Update the filters
     __update_filters(
         trailerprofile_db.customfilter,
@@ -62,6 +64,9 @@ def update_trailerprofile(
     # Validate the updated trailer profile
     TrailerProfile.model_validate(trailerprofile_db)
 
+    # The downloads change type in the same transaction as the profile,
+    # so the two can never disagree (wargame W1).
+    _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     # Commit the changes to the database
     # _session.add(trailerprofile_db)
     _session.commit()
@@ -70,7 +75,6 @@ def update_trailerprofile(
         "Trailarr updated the trailer profile"
         f" '{trailerprofile_db.customfilter.filter_name}'."
     )
-    _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     return convert_to_read_item(trailerprofile_db)
 
 
@@ -99,6 +103,25 @@ def _search_off_for_extras(
     )
 
 
+def _always_search_off_with_the_search(
+    trailerprofile_db: TrailerProfile,
+) -> None:
+    """Turn Always Search off when the search goes off.
+
+    Always Search is a mode of the search. A person who turns Search
+    YouTube off means "do not search", so Always Search goes off with
+    it, instead of the update failing because the two disagree.
+    """
+    if not trailerprofile_db.always_search:
+        return
+    trailerprofile_db.always_search = False
+    logger.info(
+        "Trailarr turned Always Search off for the profile"
+        f" '{trailerprofile_db.customfilter.filter_name}', because Search"
+        " YouTube is off for it."
+    )
+
+
 def _relabel_downloads(
     trailerprofile_db: TrailerProfile,
     old_video_type: str,
@@ -110,6 +133,10 @@ def _relabel_downloads(
     A profile that changes its type keeps its downloads: they are what
     it asked for. Without this, the satisfaction rule would see no
     download of the new type and download every item again (wargame W1).
+
+    Runs in the session of the profile update, before its commit: the
+    profile and its downloads change in one transaction, so a failure
+    leaves both as they were. The caller commits.
     """
     new_video_type = trailerprofile_db.video_type
     if new_video_type == old_video_type:
@@ -123,7 +150,6 @@ def _relabel_downloads(
     for row in rows:
         row.video_type = new_video_type
         _session.add(row)
-    _session.commit()
     if rows:
         logger.info(
             f"Trailarr changed the video type of {len(rows)} downloads of"
@@ -175,10 +201,15 @@ def update_trailerprofile_setting(
     setattr(trailerprofile_db, setting, value)
     if setting == "video_type":
         _search_off_for_extras(trailerprofile_db, old_video_type)
+    if setting == "search_youtube" and not value:
+        _always_search_off_with_the_search(trailerprofile_db)
 
     # Validate the updated trailer profile
     TrailerProfile.model_validate(trailerprofile_db)
 
+    # The downloads change type in the same transaction as the profile
+    # (wargame W1).
+    _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     # Commit the changes to the database
     # _session.add(new_profile)
     _session.commit()
@@ -188,5 +219,4 @@ def update_trailerprofile_setting(
         f" '{trailerprofile_db.customfilter.filter_name}'. It set"
         f" {setting} to {value}."
     )
-    _relabel_downloads(trailerprofile_db, old_video_type, _session=_session)
     return convert_to_read_item(trailerprofile_db)

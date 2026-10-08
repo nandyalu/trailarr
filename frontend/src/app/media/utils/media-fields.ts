@@ -1,4 +1,5 @@
 import {Download, Media} from 'src/app/models/media';
+import {videoTypeLabel} from 'src/app/models/trailerprofile';
 import {bytesToSize, durationString, durationStringSeconds} from 'src/util';
 
 /**
@@ -130,7 +131,7 @@ export function profileName(profileId: number, context: FieldContext): string {
 /** The keys reuse the Phase 6 virtual-filter names, so a filter and a
  * column share one vocabulary. */
 export const TRAILER_FIELDS: readonly TrailerFieldDef[] = [
-  {key: 'download_video_type', label: 'Type', group: 'trailer', value: (d) => d.video_type || 'trailer'},
+  {key: 'download_video_type', label: 'Type', group: 'trailer', value: (d) => videoTypeLabel(d.video_type)},
   {key: 'download_resolution', label: 'Resolution', group: 'trailer', value: (d) => (d.resolution ? `${d.resolution}p` : EMPTY_VALUE)},
   {key: 'download_video_codec', label: 'Video Codec', group: 'trailer', value: (d) => d.video_format || EMPTY_VALUE},
   {key: 'download_audio_codec', label: 'Audio Codec', group: 'trailer', value: (d) => d.audio_format || EMPTY_VALUE},

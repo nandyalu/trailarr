@@ -35,7 +35,7 @@ from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.profiles import find_matching_profiles
 from services.satisfaction import evaluate_satisfaction, needs_videos
-from services.trailers.trailers.pending import read_upgrade_videos
+from services.trailers.trailers.pending import read_known_videos
 from services.trailers import trailer as trailer_downloader
 from services.tmdb.refresh import TMDBRefresher
 from services.trailers.inflight import inflight_registry
@@ -239,7 +239,8 @@ def _build_work_list(
         (attempt.media_id, attempt.profile_id): attempt
         for attempt in attempt_manager.read_all()
     }
-    videos_by_media = read_upgrade_videos(enabled_profiles)
+    videos_needed = needs_videos(enabled_profiles)
+    videos_by_media = read_known_videos(enabled_profiles)
     work_items: list[_WorkItem] = []
     scanned_media = 0
 
@@ -253,9 +254,12 @@ def _build_work_list(
             matching_profiles = find_matching_profiles(media, enabled_profiles)
             if not matching_profiles:
                 continue
-            result = evaluate_satisfaction(
-                media, matching_profiles, videos_by_media.get(media.id)
+            # An item with no rows gets an empty list, not None: an empty
+            # list is an answer, and None would leave the item undecided.
+            videos = (
+                videos_by_media.get(media.id, []) if videos_needed else None
             )
+            result = evaluate_satisfaction(media, matching_profiles, videos)
             if result.claims:
                 # Claims write to the database. A row deleted by a
                 # concurrent Arr refresh must cost this media item, not
@@ -289,10 +293,18 @@ def _build_work_list(
     return work_items, scanned_media
 
 
-def _read_current_eligible_profiles(
+async def _read_current_eligible_profiles(
     media_id: int,
+    refresher: TMDBRefresher | None = None,
 ) -> tuple[MediaRead, list[TrailerProfileRead]]:
-    """Re-read media and profiles before deciding what to download."""
+    """Re-read media and profiles before deciding what to download.
+
+    Args:
+        media_id (int): The media item.
+        refresher (TMDBRefresher | None): The TMDB client of this run.
+            With one, a stale video list is refreshed before the known
+            videos decide anything.
+    """
     media = media_manager.read(media_id)
     if not media.monitor:
         return media, []
@@ -302,6 +314,13 @@ def _read_current_eligible_profiles(
     matching_profiles = find_matching_profiles(media, enabled_profiles)
     videos = None
     if needs_videos(matching_profiles):
+        # The known videos decide whether a profile waits for TMDB (W3)
+        # or upgrades. A stale list would drop a profile from this run
+        # on an old answer, so the list is refreshed first. The refresh
+        # marks the item fresh, so `_process_single_media_item` does not
+        # ask TMDB a second time for the same item.
+        if refresher is not None:
+            await refresh_videos_if_stale(media, refresher)
         videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_profiles, videos)
     if result.claims:
@@ -514,8 +533,10 @@ async def download_missing_trailers(
             attempted_pairs.update(proposed_pairs)
 
             try:
-                media, current_profiles = _read_current_eligible_profiles(
-                    work_item.media_id
+                media, current_profiles = (
+                    await _read_current_eligible_profiles(
+                        work_item.media_id, refresher
+                    )
                 )
             except ItemNotFoundError:
                 skipped_items += len(work_item.profile_ids)
@@ -525,6 +546,9 @@ async def download_missing_trailers(
                     **logger.media(work_item.media_id),
                 )
                 continue
+            except JobCancelledError:
+                # The job was cancelled. Let it reach the scheduler.
+                raise
             except Exception:
                 skipped_items += len(work_item.profile_ids)
                 logger.exception(
@@ -756,4 +780,7 @@ async def refresh_videos_if_stale(
             return False
     await refresher.refresh_media(media)
     media_manager.mark_videos_refreshed(media.id)
+    # The item in hand is fresh too, so a second call in the same run
+    # (the re-check before a download, then the download) is a no-op.
+    media.last_videos_refresh = datetime.now(timezone.utc)
     return True

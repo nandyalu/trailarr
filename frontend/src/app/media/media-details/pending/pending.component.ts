@@ -49,7 +49,7 @@ export class PendingComponent {
     if (view && !view.tmdb_asked) {
       return 'Trailarr has not asked TMDB about this item yet; the Refresh Video Lists task will';
     }
-    return 'TMDB lists no trailer that the profile can use, so it stays; Trailarr asks TMDB again every 7 days';
+    return 'TMDB lists no video that the profile can use, so it stays; Trailarr asks TMDB again every 7 days';
   }
 
   protected stateOf(profile: MediaPendingProfile): 'satisfied' | 'backoff' | 'pending' | 'disabled' | 'not-matching' {
@@ -93,7 +93,7 @@ export class PendingComponent {
         // the trailer, so nobody wonders why it was not replaced.
         switch (profile.upgrade_state) {
           case 'matched':
-            return `${base}, and it is a TMDB trailer or a video you chose`;
+            return `${base}, and it is a TMDB video or a video you chose`;
           case 'awaiting_tmdb':
             return `${base}. ${this.awaitingDetail()}`;
           case 'unknown_kept':

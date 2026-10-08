@@ -17,7 +17,7 @@ from config.settings import app_settings
 import database.manager.downloadattempt as attempt_manager
 import database.manager.mediavideo as video_manager
 from database.models.media import MediaRead
-from database.models.video_type import video_type_label
+from database.models.video_type import DEFAULT_VIDEO_TYPE, video_type_label
 from database.models.mediavideo import MediaVideoCreate, VideoSource
 from database.models.helpers import language_names
 from database.models.trailerprofile import TrailerProfileRead
@@ -342,7 +342,7 @@ def get_video_id(
         # Remember what the search found, so the next run does not have to
         # search again. The row belongs to the SEARCH source, so a profile
         # with `Always Search` on will skip it.
-        _remember_search_result(media, video_id)
+        _remember_search_result(media, video_id, video_type=profile.video_type)
     if not video_id:
         if search_length >= 30:
             logger.warning(
@@ -425,8 +425,17 @@ def _last_tried_video_id(media_id: int, profile_id: int) -> str | None:
     return None
 
 
-def _remember_search_result(media: MediaRead, video_id: str) -> None:
-    """Write back what the search found, as a SEARCH candidate."""
+def _remember_search_result(
+    media: MediaRead, video_id: str, video_type: str = DEFAULT_VIDEO_TYPE
+) -> None:
+    """Write back what the search found, as a SEARCH candidate.
+
+    The row takes the type of the profile that searched, so the profile
+    reads its own result back on the next run, and a trailer profile
+    never takes a featurette that another profile found. The SEARCH
+    source keeps one row per type: a featurette result replaces the
+    featurette result, and leaves the trailer result alone.
+    """
     try:
         video_manager.replace_source_rows(
             media.id,
@@ -436,11 +445,13 @@ def _remember_search_result(media: MediaRead, video_id: str) -> None:
                     media_id=media.id,
                     video_id=video_id,
                     source=VideoSource.SEARCH,
+                    video_type=video_type,
                     sequence=0,
                     name="",
                     official=False,
                 )
             ],
+            video_type=video_type,
         )
     except Exception as e:
         logger.warning(
