@@ -3653,6 +3653,9 @@
 <p><strong>ffprobe no longer hangs a task without limit</strong> — the video analysis calls now stop after 60 seconds, and the silence detection after 600.</p>
 </li>
 <li>
+<p><strong>Trailarr never deletes an extra that it did not download</strong> — the files scan now records the extras a media folder holds, so the <code>Delete</code> actions, the <code>Cleanup</code> task and the removal of a media item from Radarr or Sonarr act on trailers only.</p>
+</li>
+<li>
 <p><strong>A batch download no longer skips its last item</strong> — a <code>Download</code> from the library edit view with two or more items left the last one out; every item downloads now.</p>
 </li>
 </ul>
