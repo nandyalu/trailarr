@@ -381,3 +381,148 @@ class TestVerifyTrailerStreams:
         )
 
         assert result is True
+
+
+class TestSubprocessGuards:
+    """ffprobe and ffmpeg run with a timeout and honour a job stop."""
+
+    def test_get_media_info_runs_ffprobe_with_a_timeout(self):
+        import subprocess
+
+        from services.trailers.video_analysis import (
+            FFPROBE_TIMEOUT,
+            get_media_info,
+        )
+
+        with patch(
+            "services.trailers.video_analysis.quiv.run_subprocess"
+        ) as run:
+            run.return_value.returncode = 1
+            run.return_value.stderr = "no such file"
+            assert get_media_info("/path/to/missing.mp4") is None
+
+        assert run.call_args.kwargs["timeout"] == FFPROBE_TIMEOUT
+        assert run.call_args.kwargs["stdout"] == subprocess.PIPE
+
+    def test_get_media_info_timeout_returns_none_and_logs(self):
+        import subprocess
+
+        from services.trailers.video_analysis import get_media_info
+
+        with (
+            patch(
+                "services.trailers.video_analysis.quiv.run_subprocess",
+                side_effect=subprocess.TimeoutExpired("ffprobe", 60),
+            ),
+            patch("services.trailers.video_analysis.logger") as logger,
+        ):
+            assert get_media_info("/path/to/slow.mp4") is None
+
+        logger.error.assert_called_once_with(
+            "Trailarr stopped ffprobe for 'slow.mp4' after 60 seconds."
+        )
+
+    def test_get_media_info_lets_a_job_cancel_propagate(self):
+        import quiv
+
+        from services.trailers.video_analysis import get_media_info
+
+        with patch(
+            "services.trailers.video_analysis.quiv.run_subprocess",
+            side_effect=quiv.JobCancelledError("ffprobe was stopped"),
+        ):
+            with pytest.raises(quiv.JobCancelledError):
+                get_media_info("/path/to/trailer.mp4")
+
+    def test_silence_detection_timeout_returns_no_silence(self):
+        import subprocess
+
+        from services.trailers.video_analysis import (
+            FFMPEG_TIMEOUT,
+            get_silence_timestamps,
+        )
+
+        with (
+            patch(
+                "services.trailers.video_analysis.quiv.run_subprocess",
+                side_effect=subprocess.TimeoutExpired("ffmpeg", 600),
+            ) as run,
+            patch("services.trailers.video_analysis.logger") as logger,
+        ):
+            assert get_silence_timestamps("/path/to/slow.mp4") == (
+                None,
+                None,
+            )
+
+        assert run.call_args.kwargs["timeout"] == FFMPEG_TIMEOUT
+        logger.error.assert_called_once_with(
+            "Trailarr stopped the silence detection for 'slow.mp4' after"
+            " 600 seconds."
+        )
+
+    def test_silence_detection_lets_a_job_cancel_propagate(self):
+        import quiv
+
+        from services.trailers.video_analysis import get_silence_timestamps
+
+        with patch(
+            "services.trailers.video_analysis.quiv.run_subprocess",
+            side_effect=quiv.JobCancelledError("ffmpeg was stopped"),
+        ):
+            with pytest.raises(quiv.JobCancelledError):
+                get_silence_timestamps("/path/to/trailer.mp4")
+
+    def test_trim_video_lets_a_job_cancel_propagate_and_removes_output(
+        self, tmp_path
+    ):
+        import quiv
+
+        from services.trailers.video_analysis import trim_video
+
+        output = tmp_path / "trimmed.mp4"
+        output.write_bytes(b"partial")
+
+        with patch(
+            "services.trailers.video_analysis.quiv.run_subprocess",
+            side_effect=quiv.JobCancelledError("ffmpeg was stopped"),
+        ):
+            # Not the generic Exception that trim_video wraps errors in.
+            with pytest.raises(quiv.JobCancelledError):
+                trim_video("/path/to/in.mp4", str(output), 0, 10)
+
+        assert not output.exists()
+
+    def test_trim_video_timeout_raises_and_removes_output(self, tmp_path):
+        import subprocess
+
+        from services.trailers.video_analysis import trim_video
+
+        output = tmp_path / "trimmed.mp4"
+        output.write_bytes(b"partial")
+
+        with patch(
+            "services.trailers.video_analysis.quiv.run_subprocess",
+            side_effect=subprocess.TimeoutExpired("ffmpeg", 600),
+        ):
+            with pytest.raises(Exception, match="stopped ffmpeg for 'in.mp4'"):
+                trim_video("/path/to/in.mp4", str(output), 0, 10)
+
+        assert not output.exists()
+
+    def test_remove_silence_lets_a_job_cancel_propagate(self):
+        import quiv
+
+        from services.trailers.video_analysis import remove_silence_at_end
+
+        with (
+            patch(
+                "services.trailers.video_analysis.get_silence_timestamps",
+                return_value=(100.0, 110.0),
+            ),
+            patch(
+                "services.trailers.video_analysis.trim_video",
+                side_effect=quiv.JobCancelledError("ffmpeg was stopped"),
+            ),
+        ):
+            with pytest.raises(quiv.JobCancelledError):
+                remove_silence_at_end("/path/to/trailer.mp4")

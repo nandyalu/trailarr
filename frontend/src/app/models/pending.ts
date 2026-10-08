@@ -52,7 +52,8 @@ export interface PendingSummaryItem {
   is_movie: boolean;
   profile_id: number;
   profile_name: string;
-  reason: 'pending' | 'backoff';
+  /** `awaiting_tmdb`: the profile cannot search and no known video suits it, so it waits for TMDB (Phase 9, W3). */
+  reason: 'pending' | 'backoff' | 'awaiting_tmdb';
   /** The trailer is on disk, and the download replaces it with a TMDB one. */
   upgrade: boolean;
   upgrade_state: UpgradeState | null;

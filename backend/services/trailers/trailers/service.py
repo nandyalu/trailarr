@@ -7,6 +7,8 @@ resolution and its hash. The scan and the download flow both write here.
 import os
 from datetime import datetime, timezone
 
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 import database.manager.download as download_manager
 from database.models.download import (
@@ -15,6 +17,7 @@ from database.models.download import (
     DownloadRead,
 )
 from database.models.media import MediaRead
+from database.models.video_type import DEFAULT_VIDEO_TYPE, is_trailer_type
 from services.trailers.video_analysis import VideoInfo, get_media_info
 from services.files.files_handler import FilesHandler
 
@@ -81,34 +84,32 @@ def compute_file_hash(file_path: str) -> str:
         return ""
 
 
-def find_youtube_id(media_info: VideoInfo, media: MediaRead) -> str:
-    """Find the YouTube ID for a trailer based on its path.
+def find_youtube_id(media_info: VideoInfo) -> str:
+    """Find the YouTube ID of a trailer file from its metadata.
+
+    A file that yt-dlp wrote carries the id in its tags. A file found by a
+    scan has no id, and nothing else can say which video it is: Phase 9
+    dropped `media.youtube_trailer_id` (H9), the single id that the old
+    code took when the file was less than an hour old.
+
     Args:
         media_info (VideoInfo): The video info object.
-        media (MediaRead): The media object.
     Returns:
         str: The YouTube ID if found, else `unknown0000`.
     """
-    youtube_id = media_info.youtube_id or UNKNOWN_YOUTUBE_ID
-    if youtube_id == UNKNOWN_YOUTUBE_ID and media.youtube_trailer_id:
-        # Check if file was recently created (within 1 hour of download)
-        if media.downloaded_at:
-            # media.downloaded_at is UTC but timezone-naive from database
-            # media_info.created_at is timezone-aware UTC
-            downloaded_at = media.downloaded_at.replace(tzinfo=timezone.utc)
-            time_diff = media_info.created_at - downloaded_at
-            time_diff = abs(time_diff.total_seconds())
-            if time_diff < 3600:  # Within 1 hour
-                youtube_id = media.youtube_trailer_id
-    return youtube_id
+    return media_info.youtube_id or UNKNOWN_YOUTUBE_ID
 
 
-def _extract_metadata_fields(media_info: VideoInfo, file_path: str) -> dict:
+def _extract_metadata_fields(
+    media_info: VideoInfo, file_path: str, *, with_hash: bool = True
+) -> dict:
     """Extract the physical-file-derived metadata fields shared by new-download
     recording and re-analysis after an in-place content change.
     Args:
         media_info (VideoInfo): The ffprobe-derived video info for the file.
         file_path (str): Path to the file (used to compute the content hash).
+        with_hash (bool): Whether to read the whole file for its hash.
+            False stores an empty hash.
     Returns:
         dict: Fields suitable for merging into a DownloadCreate payload —
             file_hash, size, resolution, file_format, video_format,
@@ -130,7 +131,7 @@ def _extract_metadata_fields(media_info: VideoInfo, file_path: str) -> dict:
         resolution = get_resolution_label(video_stream.coded_height)
 
     return {
-        "file_hash": compute_file_hash(file_path),
+        "file_hash": compute_file_hash(file_path) if with_hash else "",
         "size": media_info.size,
         "resolution": resolution,
         "file_format": media_info.format_name,
@@ -159,6 +160,7 @@ async def record_new_trailer_download(
     file_path: str,
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
+    video_type: str = DEFAULT_VIDEO_TYPE,
 ) -> bool:
     """
     Records a new trailer download in the database with comprehensive metadata.
@@ -169,6 +171,8 @@ async def record_new_trailer_download(
         youtube_video_id (str | None): The YouTube video ID of the trailer.
         video_info (VideoInfo | None): Pre-analyzed video info to avoid
             redundant ffprobe calls. If None, will analyze the file.
+        video_type (str): The kind of video: the type of the profile for a
+            download, or what the name of the file says for a scanned file.
     Returns:
         bool: True when the download is in the database. A caller that
             deletes an old trailer must check this first.
@@ -198,10 +202,18 @@ async def record_new_trailer_download(
             file_stat.st_ctime, tz=timezone.utc
         )
 
-        metadata = _extract_metadata_fields(media_info, file_path)
+        # The hash exists so that the scan recognizes a trailer that
+        # Trailarr made after a rename. An extra of another type is a
+        # file that a person placed: it is never renamed by Trailarr, and
+        # reading a 20 GB featurette in full for a hash it never uses
+        # made the first scan after the upgrade take hours. The ffprobe
+        # above stays: the row needs the duration and the streams.
+        metadata = _extract_metadata_fields(
+            media_info, file_path, with_hash=is_trailer_type(video_type)
+        )
 
         # Get youtube video id
-        yt_id = find_youtube_id(media_info, media)
+        yt_id = find_youtube_id(media_info)
         if yt_id == UNKNOWN_YOUTUBE_ID and youtube_video_id:
             yt_id = youtube_video_id
 
@@ -214,6 +226,7 @@ async def record_new_trailer_download(
             youtube_channel=media_info.youtube_channel,
             file_exists=True,
             profile_id=profile_id,
+            video_type=video_type,
             media_id=media.id,
             added_at=file_created_at,
             updated_at=file_updated_at,
@@ -227,6 +240,9 @@ async def record_new_trailer_download(
         )
         return True
 
+    except JobCancelledError:
+        # ffprobe was stopped because the job was cancelled. Let it propagate.
+        raise
     except Exception as e:
         logger.error(
             f"Trailarr could not record the new trailer download for"
@@ -294,6 +310,9 @@ async def reanalyze_trailer_download(
         )
         download_manager.update(download.id, DownloadCreate(**updated))
         return True
+    except JobCancelledError:
+        # ffprobe was stopped because the job was cancelled. Let it propagate.
+        raise
     except Exception as e:
         logger.error(
             f"Trailarr could not examine the download {download.id} at"

@@ -21,6 +21,31 @@ Library views offer some features for managing media items. They are described b
 Clicking on any Media item will open it's details page. See [Media Details](./media-details/index.md) for more info.
 
 
+## Views
+
+{{ version_badge("add", "0.14.0") }}
+
+A library page shows its media items in one of three views. The view buttons are in the header of the page, and the choice is kept per browser.
+
+- **Poster**: a grid of posters with the title and the year. This is the default.
+- **Expanded**: a wide card per media item with a backdrop, the fields you choose as tags, and one row of tags per trailer.
+- **Table**: one row per media item with a column per field, which scrolls sideways on a small screen.
+
+![Library - Table view](library-view-table.png)
+
+The `Configure Fields` button next to the view buttons opens a dialog with the fields that the Expanded and Table views can show. The dialog has two groups:
+
+- **Media**: the fields of the media item, such as the year, the studio, the language or the folder path.
+- **Trailers**: the fields of the trailers of the media item: type, resolution, video codec, audio codec, audio language, subtitles, container, duration, size, the profile that owns the trailer, and the count of trailers.
+
+![Library - Configure Fields](library-configure-fields.png)
+
+A media item can have more than one trailer, one per profile, so the Trailers group shows one block per trailer. The Expanded view shows one row of tags per trailer below the tags of the media item, and the Table view stacks one line per trailer inside each trailer column, in the same order in every column, newest first. A media item with no trailer shows a dash. At most three trailers show per card or cell, then a `+N more` line that opens the media details page. The count field counts every trailer.
+
+![Library - Expanded view](library-view-expanded.png)
+
+No trailer field shows until you turn it on. The field choice is kept per browser, in the same place as before `v0.14.0`, so a choice you made earlier stays.
+
 ## Sorting
 
 ![Library - Sorting](library-sorting.png)
@@ -131,6 +156,9 @@ Clicking Delete will show a confirmation dialog displaying the number of selecte
 
 !!! warning
     This deletes **every** trailer file on disk for the selected items — not just one. This cannot be reversed!
+
+!!! note "Trailers only"
+    {{ version_badge("upd", "0.14.0") }} The action deletes the files of type `trailer` only, and so do the `Cleanup` task and the removal of a media item from Radarr or Sonarr: Trailarr never deletes an extra that it did not download. A featurette, a clip or another extra that a profile with another [Video Type](../settings/profiles/settings/general.md#video-type) downloaded stays. Delete such a file from the [Files section](./media-details/index.md#files-section) of the media details page.
 
 ### Cancel
 

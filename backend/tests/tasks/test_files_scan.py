@@ -768,6 +768,7 @@ class TestNewTrailerAttribution:
     def _make_profile(profile_id: int, priority: int = 100) -> SimpleNamespace:
         return SimpleNamespace(
             id=profile_id,
+            video_type="trailer",
             priority=priority,
             customfilter=SimpleNamespace(
                 filter_name=f"Profile {profile_id}", filters=[]
@@ -798,7 +799,9 @@ class TestNewTrailerAttribution:
         ):
             await scan_media_folder(media, scanner=mock_scanner)
 
-        mock_record.assert_called_once_with(media, 5, trailer_path)
+        mock_record.assert_called_once_with(
+            media, 5, trailer_path, video_type="trailer"
+        )
 
     @pytest.mark.asyncio
     async def test_profile_owning_active_download_not_claimed_again(self):
@@ -839,7 +842,9 @@ class TestNewTrailerAttribution:
         ):
             await scan_media_folder(media, scanner=mock_scanner)
 
-        mock_record.assert_called_once_with(media, 0, new_path)
+        mock_record.assert_called_once_with(
+            media, 0, new_path, video_type="trailer"
+        )
 
     @pytest.mark.asyncio
     async def test_replaced_trailer_frees_profile_for_new_file(self):
@@ -884,4 +889,147 @@ class TestNewTrailerAttribution:
         ):
             await scan_media_folder(media, scanner=mock_scanner)
 
-        mock_record.assert_called_once_with(media, 5, new_path)
+        mock_record.assert_called_once_with(
+            media, 5, new_path, video_type="trailer"
+        )
+
+
+class TestAStopEndsTheScan:
+    """Code review of Phase 9, finding 11: ffprobe raises
+    `JobCancelledError` on a stop. The loop over the media must let it
+    through, so the scheduler records the job as cancelled."""
+
+    @pytest.mark.asyncio
+    async def test_a_cancel_in_one_folder_ends_the_whole_scan(self):
+        from quiv import JobCancelledError
+
+        from tasks.files_scan import scan_all_media_folders
+
+        media = [make_mock_media(media_id=1), make_mock_media(media_id=2)]
+        with (
+            patch(
+                "tasks.files_scan.media_manager.read_all_generator",
+                side_effect=lambda: iter(media),
+            ),
+            patch("tasks.files_scan.MediaScanner"),
+            patch("tasks.files_scan.app_settings") as settings,
+            patch(
+                "tasks.files_scan.scan_media_folder",
+                new=AsyncMock(side_effect=JobCancelledError()),
+            ) as scan,
+        ):
+            settings.files_full_scan = False
+            with pytest.raises(JobCancelledError):
+                await scan_all_media_folders()
+        # The second folder was never scanned.
+        assert scan.await_count == 1
+
+    @pytest.mark.asyncio
+    async def test_another_error_in_one_folder_is_logged_and_skipped(self):
+        from tasks.files_scan import scan_all_media_folders
+
+        media = [make_mock_media(media_id=1), make_mock_media(media_id=2)]
+        with (
+            patch(
+                "tasks.files_scan.media_manager.read_all_generator",
+                side_effect=lambda: iter(media),
+            ),
+            patch("tasks.files_scan.MediaScanner"),
+            patch("tasks.files_scan.app_settings") as settings,
+            patch(
+                "tasks.files_scan.scan_media_folder",
+                new=AsyncMock(side_effect=OSError("boom")),
+            ) as scan,
+        ):
+            settings.files_full_scan = False
+            await scan_all_media_folders()
+        assert scan.await_count == 2
+
+
+class TestAScannedExtraCostsLess:
+    """Code review of Phase 9, finding 13: the first scan after the
+    upgrade records every extra that a person placed. Such a file is
+    probed (the row needs its duration and streams), but not hashed for
+    a rename it never gets, and it fires no `TRAILER_DETECTED` event."""
+
+    @staticmethod
+    def _scanner(paths: set[str]) -> MagicMock:
+        scanner = MagicMock()
+        scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        scanner.check_media_exists = AsyncMock(return_value=True)
+        scanner.get_trailer_paths = MagicMock(return_value=paths)
+        return scanner
+
+    @pytest.mark.asyncio
+    async def test_a_featurette_fires_no_event_and_a_trailer_does(self):
+        featurette = "/media/Test Movie (2025)/Featurettes/Making Of.mkv"
+        trailer = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
+        media = make_mock_media(downloads=[])
+        with (
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch(
+                "tasks.files_scan.trailerprofile.get_trailerprofiles",
+                return_value=[],
+            ),
+            patch(
+                "tasks.files_scan.record_new_trailer_download",
+                new=AsyncMock(return_value=True),
+            ) as record,
+            patch(
+                "tasks.files_scan.event_manager.track_trailer_detected"
+            ) as detected,
+        ):
+            new, *_ = await scan_media_folder(
+                media, scanner=self._scanner({featurette, trailer})
+            )
+
+        assert new == 2
+        recorded = {
+            c.args[2]: c.kwargs["video_type"] for c in record.call_args_list
+        }
+        assert recorded == {featurette: "featurette", trailer: "trailer"}
+        detected.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_a_new_extra_is_not_hashed_against_missing_downloads(
+        self,
+    ):
+        """The rename pass hashes a new path only when a download is
+        missing, and only a trailer: an extra has no hash to match."""
+        featurette = "/media/Test Movie (2025)/Featurettes/Making Of.mkv"
+        trailer = "/media/Test Movie (2025)/Trailers/new-trailer.mkv"
+        gone = SimpleNamespace(
+            id=3,
+            path="/media/Test Movie (2025)/Test Movie-trailer.mkv",
+            file_exists=True,
+            file_hash="abc",
+            profile_id=1,
+            updated_at=datetime.now(tz=timezone.utc),
+        )
+        media = make_mock_media(downloads=[gone])
+        with (
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch("tasks.files_scan._is_disk_available", return_value=True),
+            patch("tasks.files_scan.os.path.exists", return_value=False),
+            patch(
+                "tasks.files_scan.trailerprofile.get_trailerprofiles",
+                return_value=[],
+            ),
+            patch(
+                "tasks.files_scan.compute_file_hash", return_value="other"
+            ) as hashed,
+            patch(
+                "tasks.files_scan.record_new_trailer_download",
+                new=AsyncMock(return_value=True),
+            ),
+            patch("tasks.files_scan.event_manager.track_trailer_detected"),
+            patch("tasks.files_scan.event_manager.track_trailer_deleted"),
+            patch("tasks.files_scan.download_manager.mark_as_deleted"),
+        ):
+            await scan_media_folder(
+                media, scanner=self._scanner({featurette, trailer})
+            )
+
+        hashed.assert_called_once_with(trailer)

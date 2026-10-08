@@ -217,27 +217,35 @@ class TestToCandidates:
             if entry["site"] == "YouTube"
         ]
 
-    def test_only_trailers_become_rows(self):
-        """Phase 8 downloads trailers; Phase 9 adds the other types."""
+    def test_every_type_becomes_a_row(self):
+        """Phase 9: every type is a row, with the TMDB type mapped to a
+        VideoType. A profile reads the rows of its own type."""
         rows = to_candidates(self._videos(), media_id=7)
-        assert {r.video_id for r in rows} == {
+        trailers = [r for r in rows if r.video_type == "trailer"]
+        assert {r.video_id for r in trailers} == {
             "FVI84Dfx2-I",
             "unofficial1",
             "german1",
         }
-        assert all(r.video_type == "trailer" for r in rows)
+        assert len(rows) == len(self._videos())
+        assert {r.video_type for r in rows} >= {"trailer", "featurette"}
         assert all(r.source == VideoSource.TMDB for r in rows)
 
     def test_an_official_trailer_comes_before_one_that_is_not(self):
         """Real data: the first Inception trailer in TMDB order is not
-        official, while two official ones follow it."""
+        official, while two official ones follow it. The sequence counts
+        inside each type."""
         rows = to_candidates(self._videos(), media_id=7)
-        assert [r.video_id for r in rows] == [
+        trailers = [r for r in rows if r.video_type == "trailer"]
+        assert [r.video_id for r in trailers] == [
             "FVI84Dfx2-I",  # official, first in TMDB order
             "german1",  # official, later in TMDB order
             "unofficial1",  # not official, so last
         ]
-        assert [r.sequence for r in rows] == [0, 1, 2]
+        assert [r.sequence for r in trailers] == [0, 1, 2]
+        for video_type in {r.video_type for r in rows}:
+            of_type = [r for r in rows if r.video_type == video_type]
+            assert [r.sequence for r in of_type] == list(range(len(of_type)))
 
     def test_the_language_and_the_title_are_kept(self):
         rows = {
@@ -249,9 +257,19 @@ class TestToCandidates:
         )
         assert rows["FVI84Dfx2-I"].published_at is not None
 
-    def test_a_title_with_no_trailer_gives_no_rows(self):
+    def test_a_title_with_no_trailer_gives_featurette_rows_only(self):
         featurettes = [v for v in self._videos() if v.type == "Featurette"]
-        assert to_candidates(featurettes, media_id=7) == []
+        rows = to_candidates(featurettes, media_id=7)
+        assert rows
+        assert all(r.video_type == "featurette" for r in rows)
+
+    def test_a_type_trailarr_does_not_know_becomes_other(self):
+        video = self._videos()[0].model_copy(update={"type": "Opening Credits"})
+        rows = to_candidates([video], media_id=7)
+        assert [r.video_type for r in rows] == ["other"]
+
+    def test_an_empty_list_gives_no_rows(self):
+        assert to_candidates([], media_id=7) == []
 
     def test_a_season_list_carries_the_season(self):
         rows = to_candidates(self._videos(), media_id=7, season=3)

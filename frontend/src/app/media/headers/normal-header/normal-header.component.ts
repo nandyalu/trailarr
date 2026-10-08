@@ -3,7 +3,8 @@ import {Media} from 'src/app/models/media';
 import {CustomfilterService} from 'src/app/services/customfilter.service';
 import {MediaService} from 'src/app/services/media.service';
 import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
-import {FieldConfigDialogComponent, FieldOption} from './dialogs/field-config-dialog/field-config-dialog.component';
+import {fieldOptionGroups} from 'src/app/media/utils/media-fields';
+import {FieldConfigDialogComponent} from './dialogs/field-config-dialog/field-config-dialog.component';
 import {ShowFiltersDialogComponent} from './dialogs/show-filters-dialog/show-filters-dialog.component';
 
 @Component({
@@ -60,48 +61,9 @@ export class NormalHeaderComponent {
 
   readonly viewOptions = ['poster', 'expanded', 'table'] as const;
 
-  // Field/column option definitions for the config dialog
-  readonly expandedFieldOptions: FieldOption[] = [
-    {key: 'year', label: 'Year'},
-    {key: 'overview', label: 'Overview'},
-    {key: 'runtime', label: 'Runtime'},
-    {key: 'language', label: 'Language'},
-    {key: 'studio', label: 'Studio'},
-    {key: 'season_count', label: 'Season Count'},
-    {key: 'status', label: 'Status'},
-    {key: 'monitor', label: 'Monitored'},
-    {key: 'arr_monitored', label: 'Arr Monitored'},
-    {key: 'media_exists', label: 'Media Exists'},
-    {key: 'imdb_id', label: 'IMDB ID'},
-    {key: 'txdb_id', label: 'TVDB/TMDB ID'},
-    {key: 'folder_path', label: 'Folder Path'},
-    {key: 'media_filename', label: 'Filename'},
-    {key: 'added_at', label: 'Date Added'},
-    {key: 'updated_at', label: 'Date Updated'},
-    {key: 'downloaded_at', label: 'Date Downloaded'},
-    {key: 'plex_rating_key', label: 'Plex Rating Key'},
-    {key: 'plex_trailer', label: 'Plex Trailer'},
-  ];
-  readonly tableColumnOptions: FieldOption[] = [
-    {key: 'year', label: 'Year'},
-    {key: 'status', label: 'Status'},
-    {key: 'runtime', label: 'Runtime'},
-    {key: 'language', label: 'Language'},
-    {key: 'studio', label: 'Studio'},
-    {key: 'season_count', label: 'Season Count'},
-    {key: 'monitor', label: 'Monitored'},
-    {key: 'arr_monitored', label: 'Arr Monitored'},
-    {key: 'media_exists', label: 'Media Exists'},
-    {key: 'imdb_id', label: 'IMDB ID'},
-    {key: 'txdb_id', label: 'TVDB/TMDB ID'},
-    {key: 'folder_path', label: 'Folder Path'},
-    {key: 'media_filename', label: 'Filename'},
-    {key: 'added_at', label: 'Date Added'},
-    {key: 'updated_at', label: 'Date Updated'},
-    {key: 'downloaded_at', label: 'Date Downloaded'},
-    {key: 'plex_rating_key', label: 'Plex Rating Key'},
-    {key: 'plex_trailer', label: 'Plex Trailer'},
-  ];
+  // The Configure Fields dialog reads the one field registry, grouped
+  // under the Media and Trailers headings.
+  protected readonly fieldGroups = computed(() => fieldOptionGroups(this.selectedView() === 'expanded' ? 'expanded' : 'table'));
 
   // Effect to retrieve sort and filter options when moviesOnly changes
   effect1 = effect(() => {

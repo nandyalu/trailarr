@@ -18,14 +18,15 @@ stabilization checklist.
    an issue disappears the moment reality is fixed, no reconciliation code.
 2. **Feeds (kind → source):**
    - `download-failing` — DownloadAttempt rows ≥3 attempts (last_error shown).
-   - `no-candidates` — per-season/typed profiles with empty TMDB candidates (Ph 9/10).
+   - `no-candidates` — profiles in the `awaiting_tmdb` state: `search_youtube` off and no known video of their type (Phase 9 W3, `services/satisfaction.py`); per unit after Phase 10. Already skipped by the download task and re-asked by the refresh task; the feed only surfaces them.
    - `unmatched-monitored` — monitored media matching zero enabled profiles.
    - `unattributed-download` — profile_id=0 active rows (formalizes v0.9.9 banner).
    - `folder-unreachable` — files-scan disk-unavailable skips (the two TODO comments in
      the scan code are wired here) + persistent health-report entries.
-   - `missing-tmdb-id` — media where a TMDB-only demand exists but tmdb_id is null.
+   - `missing-tmdb-id` — media where a profile with `search_youtube` off (any type) or a per-season profile matches, and tmdb_id is null.
    - `profile-needs-review` — Ph 10 classification disables + Ph 9 hacky-profile
-     detections.
+     detections (`tasks/profile_nudge.py::nudge_extras_profiles()` is log-only and
+     runs once; make it return the profiles and call it from the feed).
    - `user-video-failing` — USER-source MediaVideo candidates whose downloads keep
      failing (video deleted/blocked) — user intent is reported on, never discarded.
 3. **API:** `GET /issues` (grouped, counts, dismissal state) + dismiss/snooze endpoints.
@@ -43,10 +44,10 @@ stabilization checklist.
    | Issue kind | Gates downloads for the media? |
    |---|---|
    | `folder-unreachable` | Yes — prevents writes into dead mounts (the storage-reachability skip shipped early, in v0.10.1 — this phase re-expresses it as issue-gating, same behavior) |
-   | `unattributed-download` | Yes (conservative; load-bearing from Phase 9 type-aware claiming — see phase-09 W4) |
+   | `unattributed-download` | **No** (amended Oct 7, 2026, Phase 9 execution). The Phase 9 plan asked for a download skip here (W4). It was not built: the scan now records every extras file, so a library with `Featurettes/` folders and no featurette profile would have stopped every trailer download. A same-type unclaimable file cannot coexist with a pending profile (the claim takes it), so the narrow gate is a no-op. The issue surfaces the file; it does not gate downloads. |
    | `download-failing` | No — backoff governs it; gating would deadlock its own resolution |
    | `unmatched-monitored` | Vacuous — nothing to download |
-   | `missing-tmdb-id` | Only gates TMDB-only demands (already per-unit in Phases 9/10) |
+   | `missing-tmdb-id` | Only gates search-off demands, which already wait in `awaiting_tmdb` (Phase 9 W3); the feed adds nothing to the engine |
    | `profile-needs-review` | No — profile-scoped, not media-scoped |
    | `user-video-failing` | No — backoff + candidate fallback already handle it |
 

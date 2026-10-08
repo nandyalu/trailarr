@@ -4,6 +4,7 @@ import {RouterLink} from '@angular/router';
 import {DurationSecondsConvertPipe} from 'src/app/shared/pipes/duration-seconds-pipe';
 import {FileSizePipe} from 'src/app/shared/pipes/file-size.pipe';
 import {Download} from 'src/app/models/media';
+import {videoTypeLabel} from 'src/app/models/trailerprofile';
 import {MediaService} from 'src/app/services/media.service';
 import {ProfileService} from 'src/app/services/profile.service';
 import {WebsocketService} from 'src/app/services/websocket.service';
@@ -34,6 +35,12 @@ export class DownloadsComponent {
     });
     return _profileMap;
   });
+
+  /** The type of a download as a person reads it: 'Trailer', 'Featurette',
+   * ... A download saved before Phase 9 has no type and reads as a trailer. */
+  typeLabel(download: Download): string {
+    return videoTypeLabel(download.video_type || 'trailer');
+  }
 
   getYouTubeUrl(youtubeId: string): string {
     return `https://www.youtube.com/watch?v=${youtubeId}`;

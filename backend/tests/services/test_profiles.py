@@ -28,6 +28,7 @@ def make_profile(
     return SimpleNamespace(
         id=profile_id,
         priority=priority,
+        video_type="trailer",
         customfilter=SimpleNamespace(
             filter_name=f"Profile {profile_id}",
             filters=filters if filters is not None else [],

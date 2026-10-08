@@ -2,6 +2,8 @@
 
 import threading
 
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
@@ -43,6 +45,9 @@ async def batch_download_task(
             await download_trailer(
                 media, profile, profile.retry_count, stop_event=stop_event
             )
+        except JobCancelledError:
+            # The job was cancelled. Let it reach the scheduler.
+            raise
         except DownloadFailedError as e:
             logger.exception(e)
         except Exception as e:
@@ -58,8 +63,11 @@ async def batch_download_task(
                 "Trailarr stopped the downloads. A stop was requested."
             )
             return None
-        # Sleep for a random time if more downloads are pending
-        if downloading_count >= download_count:
+        # Sleep for a random time if more downloads are pending. The count
+        # was raised above, so it is the 1-based number of the NEXT item:
+        # more are pending while it is within the total. `>=` here skipped
+        # the last item of every batch of two or more.
+        if downloading_count > download_count:
             return None
         await utils.sleep_between_downloads(downloading_count, logger)
     return None

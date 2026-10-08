@@ -6,6 +6,7 @@ each match is a trailer the profile expects to exist.
 
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import DEFAULT_VIDEO_TYPE
 from services.filters import matches_filters
 
 # Media fields that change with download state rather than describing which
@@ -50,20 +51,26 @@ def pick_profile_for_download(
     media: MediaRead,
     profiles: list[TrailerProfileRead],
     used_profile_ids: set[int],
+    video_type: str = DEFAULT_VIDEO_TYPE,
 ) -> int:
-    """Pick the profile that should own a trailer download found on disk.\n
+    """Pick the profile that should own a video download found on disk.\n
     Args:
-        media (MediaRead): The media item the trailer belongs to.
+        media (MediaRead): The media item the video belongs to.
         profiles (list[TrailerProfileRead]): All profiles to consider.
         used_profile_ids (set[int]): Profile ids that already own an active
-            download for this media item.\n
+            download for this media item.
+        video_type (str): The type of the file. Only a profile of the same
+            type can own it: a featurette never becomes the trailer of a
+            trailer profile (Phase 9, wargame W4).\n
     Returns:
-        int: Id of the highest-priority matching profile that doesn't already
-            own a download, or 0 if no matching profile is available."""
+        int: Id of the highest-priority matching profile of that type that
+            doesn't already own a download, or 0 if none is available."""
     matching = find_matching_profiles(
         media, profiles, ignore_state_filters=True
     )
     for profile in matching:
+        if profile.video_type != video_type:
+            continue
         if profile.id not in used_profile_ids:
             return profile.id
     return 0

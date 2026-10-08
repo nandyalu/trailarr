@@ -5,6 +5,7 @@ from database.manager.trailerprofile.base import (
     convert_to_read_item,
     convert_to_read_list,
 )
+from database.models import video_type as video_types
 from database.models.trailerprofile import (
     TrailerProfile,
     TrailerProfileRead,
@@ -59,16 +60,33 @@ def get_trailerprofiles(
 @read_session
 def get_trailer_folders(
     *,
+    video_type: str | None = None,
     _session: Session = None,  # type: ignore
 ) -> set[str]:
     """
-    Get all Trailer folder names from the database.
+    Get the folder names of the profiles from the database.
     Args:
+        video_type (str | None): Only the profiles of this type. None gives
+            every profile. The delete sweep for a removed media item asks
+            for 'trailer' only, so that it never removes the folder of an
+            extras profile; the scan asks for every type.
         _session (Session, optional=None): A session to use for the \
             database connection. A new session is created if not provided.
     Returns:
-        set[str]: Set of folder names.
+        set[str]: Set of folder names, with the `{video_type}` token
+            replaced by the folder of the type of each profile.
     """
-    statement = select(TrailerProfile.folder_name).distinct()
-    db_trailerprofiles = _session.exec(statement).all()
-    return {folder.strip() for folder in db_trailerprofiles if folder.strip()}
+    statement = select(
+        TrailerProfile.folder_name, TrailerProfile.video_type
+    ).distinct()
+    if video_type is not None:
+        statement = statement.where(TrailerProfile.video_type == video_type)
+    folders: set[str] = set()
+    for folder, profile_type in _session.exec(statement).all():
+        folder = (folder or "").strip()
+        if not folder:
+            continue
+        folders.add(
+            folder.replace("{video_type}", video_types.folder_name(profile_type))
+        )
+    return folders

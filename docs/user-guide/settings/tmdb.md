@@ -21,6 +21,7 @@ With a key, Trailarr asks TMDB which trailers the item has, in the languages you
 | To get a trailer in another language, you turn on `Always Search` and take what a YouTube search returns. | Trailarr takes a trailer that TMDB lists in the language your profile asks for, and searches only when there is none. |
 | Without an id, Trailarr searches YouTube for the title and the year. | Trailarr searches YouTube only when TMDB and the Arr have nothing. |
 | A wrong result of a search is downloaded. | A trailer that the studio published is downloaded. |
+| A profile can download trailers only. | {{ version_badge("add", "0.14.0") }} A profile can download teasers, clips, featurettes, behind-the-scenes videos and bloopers too, with its [Video Type](profiles/settings/general.md#video-type). These come from TMDB, or from a search when [Search YouTube](profiles/settings/search.md#search-youtube) is on. |
 
 ## Get a key
 
@@ -41,7 +42,9 @@ After it is stored, the field shows only the last four characters, such as `****
 
 ## What Trailarr does with it
 
-Trailarr asks TMDB which videos belong to a media item before it downloads a trailer for it. It keeps the trailers, and it puts an official trailer before one that is not official. The videos show on the media details page under [Known videos](../library/media-details/index.md#known-videos).
+Trailarr asks TMDB which videos belong to a media item before it downloads a video for it. It keeps every video of every type, and it puts an official video before one that is not official inside each type. The videos show on the media details page under [Known videos](../library/media-details/index.md#known-videos), grouped by type.
+
+{{ version_badge("upd", "0.14.0") }} Until `v0.14.0` Trailarr kept the trailers only. The update marks every list as stale, so the next `Refresh Video Lists` run fetches the other types. A large library takes a few days to refresh in full, at 200 items every 12 hours, and the download task refreshes an item it needs before that.
 
 An answer from TMDB stays fresh for seven days. A curated list changes rarely, and asking about every item on every run would send thousands of requests.
 
@@ -68,7 +71,7 @@ A trailer whose video Trailarr does not know stays, unless [Replace Unknown Vide
 
 The [Download Profiles](../library/media-details/index.md#download-profiles-section) section of the media details page says what the upgrade does for each profile: a trailer that it replaces and why, a trailer that it keeps because it is a TMDB trailer or a video you chose, a trailer that it keeps because TMDB lists nothing in the language of the profile, and a trailer that it keeps because its video is unknown. Trailarr asks TMDB again every seven days about an item that TMDB listed nothing for.
 
-To keep one trailer that the upgrade would replace, paste its YouTube link on the media details page under [YouTube Trailer ID](../library/media-details/index.md#youtube-trailer-id). A video that you chose is never replaced, in any language.
+To keep one trailer that the upgrade would replace, add its YouTube link on the media details page under [Add a video](../library/media-details/index.md#add-a-video). A video that you chose is never replaced, in any language.
 
 When every TMDB trailer of an item fails to download, Trailarr keeps the current trailer and tries again later, with a longer wait after each failure. After two failed runs, the library pages show the item in a banner, so you can see the reason and fix it. See [Filtering](../library/index.md#filtering).
 

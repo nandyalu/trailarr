@@ -17,6 +17,7 @@ from config.settings import app_settings
 import database.manager.downloadattempt as attempt_manager
 import database.manager.mediavideo as video_manager
 from database.models.media import MediaRead
+from database.models.video_type import DEFAULT_VIDEO_TYPE, video_type_label
 from database.models.mediavideo import MediaVideoCreate, VideoSource
 from database.models.helpers import language_names
 from database.models.trailerprofile import TrailerProfileRead
@@ -314,11 +315,24 @@ def get_video_id(
         media, profile, exclude, upgrade_only=upgrade_only
     )
     if video_id:
-        media.youtube_trailer_id = video_id
         return video_id
     if upgrade_only:
         # An upgrade replaces a trailer with a TMDB trailer. A search result
         # is not one, so the next run would replace it again, and again.
+        return None
+    if not profile.search_youtube:
+        # Search YouTube is off: the profile takes known videos only, and
+        # waits for TMDB to list a video it can use. This is the default
+        # for a profile of another type than Trailer (Phase 9, decision
+        # 5 as amended): a search finds trailers, and nothing says that a
+        # result is a featurette.
+        logger.info(
+            f"No known {video_type_label(profile.video_type).lower()} of"
+            f" '{media.title}' suits the profile"
+            f" '{profile.customfilter.filter_name}', and Search YouTube is"
+            " off for it. Trailarr waits for TMDB.",
+            **logger.media(media.id),
+        )
         return None
     # Search for trailer on youtube, until a max of 30 search results
     video_id = search_yt_for_trailer(
@@ -328,7 +342,7 @@ def get_video_id(
         # Remember what the search found, so the next run does not have to
         # search again. The row belongs to the SEARCH source, so a profile
         # with `Always Search` on will skip it.
-        _remember_search_result(media, video_id)
+        _remember_search_result(media, video_id, video_type=profile.video_type)
     if not video_id:
         if search_length >= 30:
             logger.warning(
@@ -345,9 +359,6 @@ def get_video_id(
         video_id = get_video_id(
             media, profile, exclude, search_length=search_length + 10
         )
-
-    if video_id:
-        media.youtube_trailer_id = video_id
     return video_id
 
 
@@ -365,7 +376,9 @@ def _video_id_from_candidates(
         # and reading the unfiltered list is what lets the log below say
         # "I know four videos, none of them Italian" instead of "I know
         # nothing".
-        candidates = video_manager.read_candidates(media.id)
+        candidates = video_manager.read_candidates(
+            media.id, video_type=profile.video_type
+        )
     except Exception as e:
         # The table is an optimisation over searching. If reading it fails,
         # a search still finds a trailer.
@@ -412,8 +425,17 @@ def _last_tried_video_id(media_id: int, profile_id: int) -> str | None:
     return None
 
 
-def _remember_search_result(media: MediaRead, video_id: str) -> None:
-    """Write back what the search found, as a SEARCH candidate."""
+def _remember_search_result(
+    media: MediaRead, video_id: str, video_type: str = DEFAULT_VIDEO_TYPE
+) -> None:
+    """Write back what the search found, as a SEARCH candidate.
+
+    The row takes the type of the profile that searched, so the profile
+    reads its own result back on the next run, and a trailer profile
+    never takes a featurette that another profile found. The SEARCH
+    source keeps one row per type: a featurette result replaces the
+    featurette result, and leaves the trailer result alone.
+    """
     try:
         video_manager.replace_source_rows(
             media.id,
@@ -423,11 +445,13 @@ def _remember_search_result(media: MediaRead, video_id: str) -> None:
                     media_id=media.id,
                     video_id=video_id,
                     source=VideoSource.SEARCH,
+                    video_type=video_type,
                     sequence=0,
                     name="",
                     official=False,
                 )
             ],
+            video_type=video_type,
         )
     except Exception as e:
         logger.warning(

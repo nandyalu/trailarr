@@ -39,6 +39,8 @@ from app_logger import ModuleLogger
 import database.manager.event as event_manager
 import database.manager.media as media_manager
 import database.manager.notificationchannel as channel_manager
+from database.models.download import is_unknown_video
+from database.models.video_type import is_trailer_type
 
 logger = ModuleLogger("Notifications")
 
@@ -124,6 +126,29 @@ def _media_info(media_id: int | None, cache: dict[int, object]):
     return cache[media_id]
 
 
+def _download_video_id(media) -> str | None:
+    """The YouTube id of the newest trailer on disk for a media item.
+
+    Phase 9 dropped `media.youtube_trailer_id`, so the download rows are
+    the record of what Trailarr took. A row with no known id (a file found
+    by a scan) gives nothing. The notification calls the link "Trailer",
+    so a featurette or a clip, which the rows hold too, is not a match.
+    """
+    if media is None:
+        return None
+    downloads = [
+        d
+        for d in getattr(media, "downloads", None) or []
+        if getattr(d, "file_exists", False)
+        and is_trailer_type(getattr(d, "video_type", None))
+        and not is_unknown_video(getattr(d, "youtube_id", None))
+    ]
+    if not downloads:
+        return None
+    newest = max(downloads, key=lambda d: d.added_at)
+    return newest.youtube_id
+
+
 def _count_of(word: str, count: int) -> str:
     """`3 items`, `1 item`."""
     return f"{count} {word}{'s' if count != 1 else ''}"
@@ -198,11 +223,9 @@ def _format_batch(
             line += f": media [{note.media_id}]"
         if note.detail:
             line += f" — {note.detail}"
-        if media is not None and media.youtube_trailer_id:
-            line += (
-                " — [YouTube](https://www.youtube.com/watch?v="
-                f"{media.youtube_trailer_id})"
-            )
+        video_id = _download_video_id(media)
+        if video_id:
+            line += f" — [YouTube](https://www.youtube.com/watch?v={video_id})"
         lines.append(line)
     overflow = len(notes) - MAX_LINES_PER_MESSAGE
     if overflow > 0:
@@ -365,13 +388,14 @@ def _discord_payload(
                 for n in notes
             )
         fields = [{"name": "Media", "value": f"#{single.id}", "inline": True}]
-        if single.youtube_trailer_id:
+        video_id = _download_video_id(single)
+        if video_id:
             fields.append(
                 {
                     "name": "Trailer",
                     "value": (
                         "[▶ YouTube](https://www.youtube.com/watch?v="
-                        f"{single.youtube_trailer_id})"
+                        f"{video_id})"
                     ),
                     "inline": True,
                 }

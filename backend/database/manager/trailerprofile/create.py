@@ -12,6 +12,7 @@ from database.models.trailerprofile import (
     TrailerProfileCreate,
     TrailerProfileRead,
 )
+from database.models.video_type import is_trailer_type
 from database.engine import write_session
 
 logger = ModuleLogger("TrailerProfileManager")
@@ -36,6 +37,23 @@ def create_trailerprofile(
     """
     # Create a db TrailerProfile object
     db_trailerprofile = TrailerProfile.model_validate(trailerprofile_create)
+    # Search YouTube starts off for a profile of another type than Trailer
+    # (Phase 9, decision 5 as amended): a search finds trailers, and
+    # nothing in a result says that a video is a featurette. A create
+    # that sets the flag itself keeps its value. Always Search goes off
+    # with the search, because it needs it.
+    if (
+        not is_trailer_type(db_trailerprofile.video_type)
+        and "search_youtube" not in trailerprofile_create.model_fields_set
+        and db_trailerprofile.search_youtube
+    ):
+        db_trailerprofile.search_youtube = False
+        db_trailerprofile.always_search = False
+        logger.info(
+            "Trailarr turned Search YouTube off for the new profile"
+            f" '{trailerprofile_create.customfilter.filter_name}', because"
+            " its Video Type is not Trailer. Turn it on to search."
+        )
     # Save to database
     _session.add(db_trailerprofile)
     _session.commit()

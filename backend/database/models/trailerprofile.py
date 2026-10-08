@@ -12,6 +12,10 @@ from database.models.customfilter import (
     CustomFilterCreate,
     CustomFilterRead,
 )
+from database.models.video_type import (
+    DEFAULT_VIDEO_TYPE,
+    normalize_video_type,
+)
 
 VALID_AUDIO_FORMATS = ["aac", "ac3", "eac3", "flac", "opus", "copy"]
 VALID_FILE_FORMATS = ["mkv", "mp4", "webm"]
@@ -47,8 +51,13 @@ VALID_FILE_DICT = {
     "acodec": "audio_format",
     "resolution": "video_resolution",
     "vcodec": "video_format",
+    "video_type": "video_type",
     "youtube_id": "youtube_id",
 }
+
+# The largest `Maximum Duration` a profile can ask for, in seconds. It was
+# 600 until v0.14.0 (#686); bonus features often run longer.
+MAX_DURATION_LIMIT = 1200
 
 
 class _TrailerProfileBase(AppSQLModel):
@@ -68,6 +77,22 @@ class _TrailerProfileBase(AppSQLModel):
         le=1000,
         sa_column=Column(Integer, server_default="0", nullable=False),
     )
+    # The kind of video the profile downloads: 'trailer' by default. Only
+    # a trailer profile can search YouTube. Every other type comes from
+    # the videos that TMDB lists (see `video_type.py`).
+    video_type: str = Field(
+        default=DEFAULT_VIDEO_TYPE,
+        sa_column=Column(
+            String, server_default=DEFAULT_VIDEO_TYPE, nullable=False
+        ),
+    )
+
+    # On the base, so that TrailerProfileCreate stores the lowercase form
+    # too: the update manager copies its fields into the row as they are.
+    @field_validator("video_type", mode="before")
+    @classmethod
+    def validate_video_type(cls, v: str | None) -> str:
+        return normalize_video_type(v)
     retry_count: int = Field(
         default=2,
         ge=0,
@@ -76,9 +101,13 @@ class _TrailerProfileBase(AppSQLModel):
     )
     # File settings
     file_format: str = "mkv"
-    file_name: str = "{title} ({year})-trailer.{ext}"
+    # A new profile names its files and its folder by its type (Phase 9,
+    # decision 6): `{video_type}` becomes `trailer` and `Trailers` for a
+    # trailer profile, `featurette` and `Featurettes` for a featurette
+    # profile. A stored profile keeps the name it has.
+    file_name: str = "{title} ({year})-{video_type}.{ext}"
     folder_enabled: bool = False
-    folder_name: str = "Trailers"
+    folder_name: str = "{video_type}"
     embed_metadata: bool = True
     remove_silence: bool = False
     # Audio settings
@@ -109,6 +138,16 @@ class _TrailerProfileBase(AppSQLModel):
     search_query: str = "{title} {year} {is_movie} trailer"
     min_duration: int = 60
     max_duration: int = 600
+    # Search YouTube when no known video suits the profile. On by default
+    # for a trailer profile. Off, the profile takes known videos only (the
+    # videos TMDB lists, the id from the Arr, and videos a person added)
+    # and waits for TMDB when none suits it. A profile of another type
+    # gets it turned off when its type changes, because a search result
+    # is not checked against TMDB; a person can turn it on again.
+    search_youtube: bool = Field(
+        default=True,
+        sa_column=Column(Boolean, server_default="1", nullable=False),
+    )
     always_search: bool = Field(
         default=False,
         sa_column=Column(Boolean, server_default="0", nullable=False),
@@ -228,6 +267,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
             "folder_enabled",
             "subtitles_enabled",
             "subtitles_auto_generated",
+            "search_youtube",
             "always_search",
             "upgrade_to_tmdb",
             "delete_replaced_trailer",
@@ -257,6 +297,7 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         "folder_enabled",
         "subtitles_enabled",
         "subtitles_auto_generated",
+        "search_youtube",
         "always_search",
         "upgrade_to_tmdb",
         "delete_replaced_trailer",
@@ -417,12 +458,21 @@ class TrailerProfile(_TrailerProfileBase, table=True):
         if self.min_duration < 30:
             raise ValueError(
                 f"Invalid min_duration: '{self.min_duration}'. "
-                "Valid range is 30 to 600 seconds."
+                f"Valid range is 30 to {MAX_DURATION_LIMIT} seconds."
             )
-        if 90 > self.max_duration > 600:
+        # The old check `90 > max > 600` could never be true, so the API
+        # took any value. The migration of v0.14.0 clamps stored values.
+        if not 90 <= self.max_duration <= MAX_DURATION_LIMIT:
             raise ValueError(
                 f"Invalid max_duration: '{self.max_duration}'. "
-                "Valid range is 90 to 600 seconds."
+                f"Valid range is 90 to {MAX_DURATION_LIMIT} seconds."
+            )
+        if self.always_search and not self.search_youtube:
+            # Always Search is a mode of the search. Without the search
+            # it would mean "never download".
+            raise ValueError(
+                "Always Search needs Search YouTube. Turn on Search YouTube"
+                " first, or turn off Always Search."
             )
         if self.max_duration - self.min_duration < 60:
             raise ValueError(

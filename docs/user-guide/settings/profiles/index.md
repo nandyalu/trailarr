@@ -70,9 +70,9 @@ Trailarr uses profiles as follows:
 - When downloading a trailer from the UI. A dialog will appear allowing you to select a profile from existing profiles. Filters will not be applied in this case.
 - When running the `Download Missing Trailers` task (which runs periodically). {{ version_badge("upd", "0.10.0") }}
     - If no profiles are available, the task will not run.
-    - The task finds all profiles that match all the filters for each monitored media item, in order of priority (highest first).
+    - The task finds all profiles that match all the filters for each monitored media item, in order of [priority](settings/general.md#priority) (lowest number first).
     - A matching profile only downloads if it does not already **own a downloaded video** for that media item. Downloads are tracked per profile — a profile that already has its video never downloads again, so media can stay monitored forever without being re-downloaded.
-    - If a trailer already exists on disk that Trailarr is not tracking, the highest-priority matching profile claims it instead of downloading a duplicate.
+    - If a trailer already exists on disk that Trailarr is not tracking, the matching profile with the lowest priority number claims it instead of downloading a duplicate.
     - Failed downloads back off before retrying: 1 day after the first failure, then 2 days, then 4, capped at weekly per media + profile. A successful download (including a manual one) resets the backoff.
     - Media items that do not match any profiles will not be processed.
     - Media items that match a profile but do not have a valid Media folder or have `monitor` set to `false` will not be processed.
@@ -92,4 +92,5 @@ The next sections will explain the settings and filters available in profiles. Y
     Things that are planned for the future:
 
     - Improve Profiles to make downloading Season specific trailers easier.
-    - Maybe (maybe, no promises!) let the user download Featurettes, Clips, etc. as well.
+
+    Since `v0.14.0` a profile has a [Video Type](settings/general.md#video-type), so it can download Featurettes, Clips, Teasers and other extras from TMDB. See [Example 5](examples.md#example-5-featurettes-profile).

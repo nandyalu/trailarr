@@ -72,7 +72,7 @@ def read_candidates(
     media_id: int,
     *,
     language: str | None = None,
-    video_type: str = VIDEO_TYPE_TRAILER,
+    video_type: str | None = VIDEO_TYPE_TRAILER,
     season: int | None = None,
     _session: Session = None,  # type: ignore
 ) -> list[MediaVideoRead]:
@@ -83,17 +83,18 @@ def read_candidates(
         language (str | None): The language the profile asks for. Only
             videos recorded in that language come back. None or empty
             means any language, and everything comes back.
-        video_type (str): Only 'trailer' exists until Phase 9.
+        video_type (str | None): The type of video the caller wants,
+            'trailer' by default. A profile passes its own type. None
+            gives every type, for a caller that serves several profiles
+            and filters per profile, as `upgrade_targets` does.
         season (int | None): NULL is the movie, or the series as a whole.
 
     Returns:
         list[MediaVideoRead]: The candidates, best first.
     """
-    statement = (
-        select(MediaVideo)
-        .where(MediaVideo.media_id == media_id)
-        .where(MediaVideo.video_type == video_type)
-    )
+    statement = select(MediaVideo).where(MediaVideo.media_id == media_id)
+    if video_type is not None:
+        statement = statement.where(MediaVideo.video_type == video_type)
     if season is None:
         statement = statement.where(col(MediaVideo.season).is_(None))
     else:
@@ -108,28 +109,25 @@ def read_candidates(
 
 
 @read_session
-def read_upgrade_candidates_by_media(
+def read_candidates_by_media(
     *,
     _session: Session = None,  # type: ignore
 ) -> dict[int, list[MediaVideoRead]]:
-    """Get the USER and TMDB trailers of every media item, in one query.
+    """Get the known videos of every media item, in one query.
 
-    A library-wide pass that checks `Upgrade To TMDB Trailer` needs these
-    for each media item, and one query per item would be slow on a large
-    library. Only the rows an upgrade can accept are read.
+    A library-wide pass runs the satisfaction rule for each media item,
+    and one query per item would be slow on a large library. Every source
+    and every type is read, the same set that `read_candidates(media_id,
+    video_type=None)` gives one item: the pass must decide an upgrade and
+    a wait for TMDB from the same videos as the download task. The
+    resolver filters by source where it must (`upgrade_targets` takes
+    USER and TMDB rows only).
 
     Returns:
         dict[int, list[MediaVideoRead]]: The rows per media id, each list
             in resolution order. A media item with no rows is not a key.
     """
-    statement = (
-        select(MediaVideo)
-        .where(MediaVideo.video_type == VIDEO_TYPE_TRAILER)
-        .where(col(MediaVideo.season).is_(None))
-        .where(
-            col(MediaVideo.source).in_([VideoSource.USER, VideoSource.TMDB])
-        )
-    )
+    statement = select(MediaVideo).where(col(MediaVideo.season).is_(None))
     by_media: dict[int, list[MediaVideoRead]] = {}
     for video in _session.exec(statement).all():
         by_media.setdefault(video.media_id, []).append(_to_read(video))
@@ -145,7 +143,7 @@ def replace_source_rows(
     source: VideoSource,
     videos: list[MediaVideoCreate],
     *,
-    video_type: str = VIDEO_TYPE_TRAILER,
+    video_type: str | None = VIDEO_TYPE_TRAILER,
     season: int | None = None,
     _session: Session = None,  # type: ignore
 ) -> tuple[int, int, int]:
@@ -155,12 +153,19 @@ def replace_source_rows(
     source that is not in `videos` is removed, because the source no
     longer offers it.
 
+    With `video_type=None` the list covers every type at once, and each
+    row takes the type of its incoming video. The TMDB refresh uses this:
+    one TMDB call returns every type, and a video that TMDB moves from
+    `Teaser` to `Trailer` must change its row instead of raising on the
+    unique key `(media_id, video_id)`.
+
     Args:
         media_id (int): The media item.
         source (VideoSource): The source that owns the rows. USER is not
             allowed: the user owns those rows, not a task.
         videos (list[MediaVideoCreate]): What the source offers now.
-        video_type (str): The type the list covers.
+        video_type (str | None): The type the list covers, or None for
+            every type, with the type taken from each video.
         season (int | None): The season the list covers.
 
     Returns:
@@ -179,13 +184,27 @@ def replace_source_rows(
         select(MediaVideo)
         .where(MediaVideo.media_id == media_id)
         .where(MediaVideo.source == source)
-        .where(MediaVideo.video_type == video_type)
     )
     if season is None:
         statement = statement.where(col(MediaVideo.season).is_(None))
     else:
         statement = statement.where(MediaVideo.season == season)
-    existing = {v.video_id: v for v in _session.exec(statement).all()}
+    same_source = _session.exec(statement).all()
+    existing = {
+        v.video_id: v
+        for v in same_source
+        if video_type is None or v.video_type == video_type
+    }
+    # A row of this source with another type is not in the list that
+    # this call replaces, so it is left alone, unless the list offers
+    # the same video: (media_id, video_id) is unique, so that row changes
+    # type instead of raising. A search for a featurette that finds the
+    # video an earlier trailer search found does this.
+    retyped = {
+        v.video_id: v
+        for v in same_source
+        if video_type is not None and v.video_type != video_type
+    }
 
     # A video can be offered by more than one source, and (media_id,
     # video_id) is unique, so only one row can exist for it. The better
@@ -230,16 +249,19 @@ def replace_source_rows(
         seen.add(incoming.video_id)
         if incoming.video_id in taken:
             continue
-        row = existing.get(incoming.video_id) or claimable.get(
-            incoming.video_id
+        row = (
+            existing.get(incoming.video_id)
+            or retyped.get(incoming.video_id)
+            or claimable.get(incoming.video_id)
         )
+        row_type = video_type or incoming.video_type or VIDEO_TYPE_TRAILER
         if row is not None and row.source != source:
             # Take the row over, with the better information this source
             # has: an Arr gives an id, and TMDB gives the title, the
             # language and whether the studio published it.
             row.source = source
             row.season = season
-            row.video_type = video_type
+            row.video_type = row_type
             row.updated_at = now
             # Added explicitly rather than left to the dirty tracking of
             # the session: when the rest of the row happens to match, the
@@ -254,7 +276,7 @@ def replace_source_rows(
                     video_id=incoming.video_id,
                     source=source,
                     season=season,
-                    video_type=video_type,
+                    video_type=row_type,
                     sequence=incoming.sequence,
                     language=incoming.language,
                     name=incoming.name,
@@ -272,8 +294,10 @@ def replace_source_rows(
             or row.name != incoming.name
             or row.official != incoming.official
             or row.published_at != incoming.published_at
+            or row.video_type != row_type
         )
         if changed:
+            row.video_type = row_type
             row.sequence = incoming.sequence
             row.language = incoming.language
             row.name = incoming.name
@@ -322,6 +346,9 @@ def add_user_video(
     now = _now()
     if existing is not None:
         existing.source = VideoSource.USER
+        # The person says what the video is. A trailer that TMDB listed
+        # can be the featurette they want, and their choice wins.
+        existing.video_type = video_type
         existing.updated_at = now
         if name:
             existing.name = name

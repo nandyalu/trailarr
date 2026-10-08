@@ -12,13 +12,14 @@ import {
   virtualBooleanFilterKeys,
   virtualDateFilterKeys,
   virtualNumberFilterKeys,
+  virtualStringFilterKeys,
 } from 'src/app/models/customfilter';
 import { FileFolderInfo } from 'src/app/models/filefolderinfo';
 import {Media} from 'src/app/models/media';
 import {CacheDecorator} from 'src/util';
 
 // Virtual fields read from the media's download rows
-const downloadFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys];
+const downloadFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys, ...virtualStringFilterKeys];
 
 // ParserCache class with cached parsing methods
 class ParserCache {
@@ -164,6 +165,10 @@ function applyDownloadFilter(filter: Filter, media: Media): boolean {
         media.downloads.some((d) => !d.file_exists),
         boolVal,
       );
+    case 'has_videos':
+      // The media has at least one known video (a mediavideo row). The
+      // raw list endpoint computes `video_count` (Phase 9, H9).
+      return FilterFunctions.applyBooleanFilter((media.video_count ?? 0) > 0, boolVal);
     case 'has_unknown_profile_download':
       return FilterFunctions.applyBooleanFilter(
         active.some((d) => !d.profile_id),
@@ -173,6 +178,11 @@ function applyDownloadFilter(filter: Filter, media: Media): boolean {
       return active.some((d) => FilterFunctions.applyNumberFilter(d.profile_id, numVal, numCondition));
     case 'download_resolution':
       return active.some((d) => FilterFunctions.applyNumberFilter(d.resolution, numVal, numCondition));
+    case 'download_video_type':
+      // A download without a type is a trailer (rows from before Phase 9).
+      return active.some((d) =>
+        FilterFunctions.applyStringFilter(d.video_type || 'trailer', filter_value, filter_condition as StringFilterCondition),
+      );
     case 'download_added_at': {
       const filterDate = ParserCache.parseDate(filter_value);
       const days = parseInt(filter_value);

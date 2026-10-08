@@ -17,6 +17,14 @@
   background-position: center 30%;
   background-repeat: no-repeat;
   aspect-ratio: 8 / 3;
+  // The meta block sits in flow at the bottom, so a card with many tags or
+  // trailer rows grows past the aspect ratio instead of clipping the top.
+  // `clip` keeps the rounded corners but, unlike `hidden`, is not a scroll
+  // container, so the content still sets the minimum height.
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: clip;
   transition: transform 0.25s, box-shadow 0.25s;
 
   &:hover {
@@ -38,10 +46,7 @@
 }
 
 .expanded-meta {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 1;
   padding: 0.75rem 3rem 0.75rem 1rem;
   display: flex;
@@ -103,4 +108,22 @@
   max-width: 24rem;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+// One row of tags per trailer, below the media tags. The rows sit on the
+// card image, so they use the same translucent tag style as the media tags.
+.expanded-trailer-tags {
+  margin-top: 0;
+  gap: 0.25rem;
+}
+
+.expanded-trailer-tag {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+}
+
+.expanded-trailer-more {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
 }

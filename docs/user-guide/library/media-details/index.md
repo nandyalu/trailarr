@@ -40,43 +40,31 @@ If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is 
 !!! tip ""
     This status is what Trailarr checks when **Skip if Plex Trailer** is enabled in a profile. If Plex already has a qualifying trailer, Trailarr will skip the download for that media item.
 
-## YouTube Trailer ID
+## Add a video
 
-![Media - YouTube Trailer ID](media-youtube-trailer-id.png)
+{{ version_badge("upd", "0.14.0") }}
 
-This is the YouTube video ID present in Trailarr for this Media item, and can be updated here!
-
-Radarr reports a YouTube trailer id, and Trailarr stores it. Sonarr has no such field, because its metadata comes from TVDB, so for a series this is empty until Trailarr finds a video itself, or until you choose one. Trailarr also writes the video it downloaded here, so the field can hold a video that no Arr ever reported.
-
-### Save YouTube ID
-
-![Media - Save YouTube Trailer ID](media-save-youtube-trailer-id.png)
-
-A save button will appear if `YouTube Trailer ID` value has changed, prompting you to save.
+The `YouTube Trailer ID` box of earlier versions is gone. Add a video to the [Known videos](#known-videos) list instead: paste a YouTube link or id, choose its language and its type, and click `Add`. The video goes to the top of the list, Trailarr tries it before every other source, and no task removes it.
 
 !!! note ""
-    Save only stores the video in Trailarr. It does not download a trailer. Click `Download` to get it now.
+    Adding a video only stores it in Trailarr. It does not download it. Click `Download` on the row to get it now, or wait for the `Download Missing Trailers` task.
 
-{{ version_badge("upd", "0.13.0") }} A saved id is now a video **you chose**. It goes to the top of the [Known videos](#known-videos) list, Trailarr tries it before every other source, and no task removes it — not even when the download of it fails.
+The **type** says what the video is: a trailer, a teaser, a clip, a featurette, a behind-the-scenes video, bloopers or other. A profile uses the videos of its own [Video Type](../../settings/profiles/settings/general.md#video-type) only, so a featurette you add is for your featurette profile and never becomes the trailer.
 
-### Search YouTube ID
+### Search
 
-![Media - Search YouTube Trailer ID](media-search-youtube-trailer-id.png)
-
-A search button will appear if `YouTube Trailer ID` is not available for the `Media` in Trailarr.
-
-This can be used to let Trailarr search for a trailer for the `Media` by selecting a `Profile`.
+The `Search` button lets Trailarr search YouTube for a trailer with a `Profile` that you select. The result is added to the list as a search result. Only a trailer profile can search: a profile of another type takes its videos from TMDB, and the button refuses it.
 
 ## Known videos
 
 {{ version_badge("add", "0.13.0") }}
 
-Every video that Trailarr can download for this media item, in the order it tries them:
+Every video that Trailarr can download for this media item, grouped by type, with the trailers first. Inside a type, the list is in the order Trailarr tries them:
 
 | Label | Where it came from |
 |---|---|
 | **You chose this** | You pasted the link. It wins over every other source, and no task removes it. |
-| **TMDB** | A trailer from the list that TMDB curates. Needs a [TMDB API key](../../settings/tmdb.md). |
+| **TMDB** | A video from the list that TMDB curates, of any type. Needs a [TMDB API key](../../settings/tmdb.md). |
 | **Radarr / Sonarr** | The id that your Arr reports for this item. |
 | **YouTube search** | What a search found on an earlier run, kept so the next run does not search again. |
 
@@ -84,16 +72,18 @@ Trailarr takes the first video that works. When a download fails, that video mov
 
 Click the title to watch a video on YouTube. Click the cross to remove one. A video you chose comes back only when you add it again; a video from TMDB comes back with the next refresh.
 
+{{ version_badge("add", "0.14.0") }} Each row shows the **type** of the video, and a `Download` button. The button downloads that video now with a profile that you pick from the profiles of the same type, so a featurette row offers your featurette profiles. Until `v0.14.0` the list held trailers only; the update marks every list as stale, and the other types arrive with the next `Refresh Video Lists` run.
+
 {{ version_badge("add", "0.13.0") }} The **Language** box next to the YouTube ID records which language your video is in. A profile that asks for that language can then use it, which is how one media item serves an Italian profile and an English one — see [Trailer Language](../../settings/profiles/settings/general.md#trailer-language). Leave it empty if the video suits a profile that takes any language.
 
 ## Action Buttons
 
 There are up to 2 action buttons that can appear depending on the selected Media.
 
-### Watch 
+### Watch
 
-- Appears when the selected Media has a YouTube Trailer ID set.
-- Will open the video in YouTube in a new tab when clicked.
+- {{ version_badge("upd", "0.14.0") }} Appears when the [Known videos](#known-videos) list has at least one video.
+- Opens the first known trailer, the one a trailer download would take, in YouTube in a new tab. When the list holds no trailer, it opens its first video.
 
 ### Download
 
@@ -101,7 +91,7 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 - Always visible for all Media items.
 - Clicking on this will open a dialog asking you to select a Profile to use for download.
-- This will schedule a task for Trailarr to download a trailer for this Media, uses `YouTube Trailer ID` if provided/existing.
+- This will schedule a task for Trailarr to download a trailer for this Media, with the first [known video](#known-videos) that the profile can use.
 
 !!! tip "Multiple trailers"
     Because Trailarr supports downloading multiple trailers per media item (one per matching [Profile](../../settings/profiles/index.md)), the Download button is always shown so you can trigger additional downloads at any time.
@@ -119,7 +109,7 @@ This section shows, for **every** Trailer Profile, exactly where it stands with 
 
 - **Not matching** — the profile's filters do not apply to this item (or the profile is disabled).
 - **Satisfied** — the profile already owns a downloaded video (its own download, or an existing file it claimed). {{ version_badge("upd", "0.13.1") }} With [Upgrade To TMDB Trailer](../../settings/profiles/settings/general.md#upgrade-to-tmdb-trailer) on, the row also says whether the download is a TMDB trailer, or why the upgrade keeps it: the item has no TMDB id, TMDB was not asked yet, TMDB lists nothing in the language of the profile, or the video of the trailer is unknown.
-- **Pending** — the profile matches but has no download yet; it will download on the next task run. With the upgrade on, the row says that the download replaces the trailer, and why.
+- **Pending** — the profile matches but has no download yet; it will download on the next task run. With the upgrade on, the row says that the download replaces the trailer, and why. {{ version_badge("upd", "0.14.0") }} A profile of a [Video Type](../../settings/profiles/settings/general.md#video-type) other than `Trailer` stays pending while TMDB lists no video of its type for the item, and the row says that it waits for TMDB; such a profile never searches YouTube.
 - **Backing off** — previous download attempts failed; shows the attempt count, when the next retry is due, and {{ version_badge("upd", "0.13.1") }} the reason of the last failure with the fix, when Trailarr knows it. A manual download bypasses the wait.
 
 The matrix is computed with the exact same rule the download task uses, so what you see here is precisely what the engine will do next — there is no separate bookkeeping that could disagree with it.
@@ -141,6 +131,7 @@ It shows the following details:
 - Downloaded At (date and time)
 - Profile name used for download (clickable, opens the Profile details)
 - Link to the YouTube video (clickable, opens in new tab)
+- {{ version_badge("add", "0.14.0") }} The type of the video: trailer, teaser, clip, featurette, behind the scenes, bloopers or other. A download takes the type of its profile. A file that Trailarr found on disk takes the type that its name and folder say, following the names that Plex and Jellyfin use (`-featurette`, `Featurettes/`, ...).
 
 !!! tip ""
     If the trailer was downloaded using an older version of Trailarr ( `< 0.6.0-beta`), some of the above details may not be available.
@@ -152,6 +143,8 @@ It shows the following details:
 !!! note "Assigning a profile to an `Unknown` download"
     {{ version_badge("add", "0.9.9") }}
     Trailarr automatically links `Unknown` downloads to a matching profile: a one-time **Attribute Trailer Downloads** task runs shortly after startup, and the files-scan task does the same for new trailer files it finds. It checks which profiles apply to the media item (by the profile's filters, ignoring state conditions like `has_downloads`) and assigns them in priority order. If no profile could be matched automatically — either no profile's filters match the media, or all matching profiles already own a download for it — the `Unknown` label becomes a dropdown: click it and pick the profile that should own the download. The assignment is recorded as a [**Download Attributed**](../../events/index.md#download-attributed) event.
+
+    {{ version_badge("upd", "0.14.0") }} A profile takes a file of its own type only: a featurette found on disk is never given to a trailer profile, and it stays `Unknown` until a featurette profile matches the item, or until you assign it. When you assign a file to a profile by hand, the file takes the type of that profile, because you say what the file is.
 
 ## Files Section
 

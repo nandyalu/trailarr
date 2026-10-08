@@ -10,6 +10,8 @@ from pathlib import Path
 import tempfile
 import threading
 
+from quiv import JobCancelledError
+
 from api.v1 import websockets
 from app_logger import ModuleLogger
 import database.manager.connection as connection_manager
@@ -23,6 +25,7 @@ from database.models.download import DownloadRead
 from database.models.event import EventSource
 from database.models.helpers import MediaUpdateDC
 from database.models.media import MediaRead
+from database.models.video_type import is_trailer_type, video_type_label
 from database.models.trailerprofile import TrailerProfileRead
 from services.files import service as files_service
 from services.trailers.inflight import inflight_registry
@@ -148,8 +151,7 @@ async def _notify_plex(media: MediaRead) -> None:
 
 
 def __record_download_facts(media: MediaRead):
-    """Record the facts a successful download owns: downloaded_at and the
-    YouTube id that was used.
+    """Record the fact a successful download owns: downloaded_at.
 
     Phase 3: DOWNLOADING is runtime-only (see services/trailers/inflight.py) and
     is never written to the database.
@@ -157,11 +159,12 @@ def __record_download_facts(media: MediaRead):
     #6). No MONITOR_CHANGED events can originate from downloads anymore.
     Phase 5: the stored mirror columns are gone — download rows are the
     only record of downloaded-ness, so failures write nothing here.
+    Phase 9: the YouTube id is in the download row and the `mediavideo`
+    table; `media.youtube_trailer_id` is gone (H9).
     """
     update = MediaUpdateDC(
         id=media.id,
         downloaded_at=datetime.now(timezone.utc),
-        yt_id=media.youtube_trailer_id,
     )
     media_manager.update_download_facts(update)
     return None
@@ -181,7 +184,9 @@ def __download_and_verify_trailer(
     """
     trailer_url = f"https://www.youtube.com/watch?v={video_id}"
     logger.info(
-        f"Trailarr downloads the trailer for '{media.title}' from"
+        f"Trailarr downloads the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}' from"
         f" {trailer_url}.",
         **logger.media(media.id),
     )
@@ -193,23 +198,33 @@ def __download_and_verify_trailer(
         trailer_url, str(output_file), profile, stop_event=stop_event
     )
 
-    # Verify and get video info in one pass
-    is_valid, video_info = trailer_file.verify_download(
-        output_file, media.title, profile
-    )
-    if not is_valid:
-        raise DownloadFailedError("Trailer verification failed")
-
-    if profile.remove_silence:
-        if stop_event and stop_event.is_set():
-            raise StopEventSetError("Stop event set during silence removal")
-
-        output_file, _trimmed = video_analysis.remove_silence_at_end(
-            output_file
+    try:
+        # Verify and get video info in one pass
+        is_valid, video_info = trailer_file.verify_download(
+            output_file, media.title, profile
         )
-        # Re-analyze after silence removal as duration/size changed
-        if _trimmed:
-            video_info = video_analysis.get_media_info(output_file)
+        if not is_valid:
+            raise DownloadFailedError("Trailer verification failed")
+
+        if profile.remove_silence:
+            if stop_event and stop_event.is_set():
+                raise StopEventSetError(
+                    "Stop event set during silence removal"
+                )
+
+            output_file, _trimmed = video_analysis.remove_silence_at_end(
+                output_file
+            )
+            # Re-analyze after silence removal as duration/size changed
+            if _trimmed:
+                video_info = video_analysis.get_media_info(output_file)
+    except (JobCancelledError, StopEventSetError):
+        # A stop landed after yt-dlp finished: in ffprobe, in the silence
+        # pass, or between them. The downloaded file has no use without
+        # its record, so remove it instead of leaving it in the temp
+        # folder until the next start sweeps it.
+        Path(output_file).unlink(missing_ok=True)
+        raise
 
     return output_file, video_info
 
@@ -221,6 +236,7 @@ async def download_trailer(
     exclude: list[str] | None = None,
     stop_event: threading.Event | None = None,
     replace: list[DownloadRead] | None = None,
+    video_id: str | None = None,
 ) -> bool:
     """Download trailer for a media object with given profile.
     Args:
@@ -234,13 +250,21 @@ async def download_trailer(
             profile that `Upgrade To TMDB Trailer` replaces. When given,
             only a TMDB trailer (or a video the user chose) is downloaded,
             and never a search result. Defaults to None.
+        video_id (str | None, optional): The video to download, when the
+            caller chose one (a manual download). The known videos are not
+            consulted and no search runs. Defaults to None.
     Returns:
         bool: True if trailer download was successful, False otherwise.
     Raises:
         DownloadFailedError: If trailer download fails.
+        JobCancelledError: If the job is cancelled while yt-dlp or ffmpeg
+            runs. The error is not retried and not swallowed: quiv
+            finalizes the job as cancelled.
     """
     logger.info(
-        f"Trailarr downloads the trailer for '{media.title}'.",
+        f"Trailarr downloads the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}'.",
         **logger.media(media.id),
     )
     if not exclude:
@@ -258,14 +282,20 @@ async def download_trailer(
             download.youtube_id for download in replace if download.youtube_id
         )
     else:
-        # Do not download a video that this media item already has on
-        # disk. Phase 8: read the ids from the downloads themselves.
-        # Reading the single `media.youtube_trailer_id` missed every video
-        # but the last one, and the resolver now offers a list.
+        # Do not download a video that THIS profile already has on disk.
+        # The skip is per profile (Phase 9): two profiles that differ in
+        # output, 1080p and 4K, or one folder per player, want the same
+        # video, and a skip across profiles gave the second one TMDB's
+        # second choice. A video that failed in this retry chain is in
+        # `exclude` already. Phase 8 read the ids from the downloads;
+        # the single `media.youtube_trailer_id` missed every video but
+        # the last one.
         exclude.extend(
             download.youtube_id
             for download in media.downloads
-            if download.file_exists and download.youtube_id
+            if download.file_exists
+            and download.youtube_id
+            and download.profile_id == profile.id
         )
 
     # `Always Search` is applied by the resolver, which skips the videos a
@@ -276,8 +306,12 @@ async def download_trailer(
         # Trailarr put the old one there.
         if not _upgrade_still_needed(media, profile, replace):
             return False
-    # Skip download if Plex already has a trailer and profile says to
-    elif await _check_plex_trailer(media, profile):
+    # Skip download if Plex already has a trailer and profile says to.
+    # Only a trailer profile asks: a featurette is not stopped by a
+    # trailer that Plex has.
+    elif is_trailer_type(profile.video_type) and await _check_plex_trailer(
+        media, profile
+    ):
         logger.info(
             f"Plex already has a trailer for '{media.title}'. Trailarr does"
             " not download another one, because Skip If Plex Has A Trailer"
@@ -286,11 +320,12 @@ async def download_trailer(
         )
         return False
 
-    # Get the video ID, search if needed
-    video_id = trailer_search.get_video_id(
-        media, profile, exclude, upgrade_only=bool(replace)
-    )
-    media.youtube_trailer_id = video_id
+    # Get the video ID, search if needed. A video the caller chose is taken
+    # as it is.
+    if not video_id:
+        video_id = trailer_search.get_video_id(
+            media, profile, exclude, upgrade_only=bool(replace)
+        )
 
     if not video_id:
         if replace:
@@ -325,11 +360,16 @@ async def download_trailer(
         )
         # Move the trailer to the media folder (create subfolder if needed)
         final_path = trailer_file.move_trailer_to_folder(
-            output_file, media, profile, video_info
+            output_file, media, profile, video_info, video_id=video_id
         )
         # Record the download in the database
         recorded = await record_new_trailer_download(
-            media, profile.id, final_path, video_id, video_info
+            media,
+            profile.id,
+            final_path,
+            video_id,
+            video_info,
+            video_type=profile.video_type,
         )
         # Success clears any failure-backoff record for this (media, profile)
         # — single choke point covering scheduled, manual, and batch paths
@@ -359,7 +399,7 @@ async def download_trailer(
             # reads "downloaded", then "deleted, replaced".
             try:
                 await _finish_upgrade(
-                    media, profile, replace, final_path, video_info
+                    media, profile, replace, final_path, video_info, video_id
                 )
             except Exception as e:
                 # The new trailer is in place. A failure here must not
@@ -379,7 +419,9 @@ async def download_trailer(
             await _notify_plex(media)
 
         msg = (
-            f"Trailarr downloaded the trailer for '{media.title}'"
+            f"Trailarr downloaded the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}'"
             f" from video {video_id}."
         )
         logger.info(msg, **logger.media(media.id))
@@ -391,6 +433,16 @@ async def download_trailer(
             msg, "Success", reload="media,downloads,downloading"
         )
         return True
+    except JobCancelledError:
+        # quiv stopped the child process because the job was cancelled.
+        # This is not a failure: no retry, no backoff. The `finally`
+        # below clears the in-flight entry. Let it reach the scheduler.
+        logger.info(
+            f"Trailarr stopped the download for '{media.title}'. A stop was"
+            " requested.",
+            **logger.media(media.id),
+        )
+        raise
     except Exception as e:
         logger.exception(f"Trailarr could not download the trailer: {e}")
         if stop_event and stop_event.is_set():
@@ -418,8 +470,11 @@ async def download_trailer(
                 stop_event=stop_event,
                 replace=replace,
             )
+        # The attempt record keeps the video this try used, so the
+        # resolver puts it last on the next run.
         raise DownloadFailedError(
-            f"Failed to download trailer for {media.title}"
+            f"Failed to download trailer for {media.title}",
+            video_id=video_id,
         )
     finally:
         # Safety net for every failure/stop path (retries re-register in
@@ -440,7 +495,7 @@ def _upgrade_still_needed(
     again just before this call. The new answer can list the trailer that
     is already on disk, or nothing at all. Either way the trailer stays.
     """
-    candidates = video_manager.read_candidates(media.id)
+    candidates = video_manager.read_candidates(media.id, video_type=None)
     targets = resolver.upgrade_targets(candidates, profile)
     if not targets:
         logger.info(
@@ -473,6 +528,7 @@ async def _finish_upgrade(
     replace: list[DownloadRead],
     new_path: str,
     video_info: VideoInfo | None,
+    video_id: str = "",
 ) -> None:
     """Delete the replaced trailers, when the profile says to.
 
@@ -513,7 +569,7 @@ async def _finish_upgrade(
         )
     if deleted:
         await _take_replaced_name(
-            media, profile, new_path, deleted, video_info
+            media, profile, new_path, deleted, video_info, video_id
         )
 
 
@@ -523,6 +579,7 @@ async def _take_replaced_name(
     new_path: str,
     deleted: list[str],
     video_info: VideoInfo | None,
+    video_id: str = "",
 ) -> None:
     """Rename the new trailer to the name of a trailer it replaced."""
     current = Path(new_path)
@@ -532,6 +589,7 @@ async def _take_replaced_name(
         media,
         profile,
         video_info=video_info,
+        video_id=video_id,
     )
     if preferred not in deleted:
         # The name that the profile gives now is not a name that this

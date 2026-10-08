@@ -162,18 +162,15 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 A scheduled run of a task is called Job. You can see queued/running jobs and their progress in real time in the Queued Jobs section.
 
 !!! tip
-    You might sometimes see an error in logs like below and it's normal behaviour. All the tasks are setup such that if that task is already running, it won't start a new one!
-
-    ```
-    WARNING: Tasks: Execution of job "Download Missing Trailers (trigger: interval[1:00:00], next run at: 2025-06-20 11:30:10 CDT)" skipped: maximum number of running instances reached (1)
-    ```
+    A task does not start a new run while a run of the same task is still active. The scheduler skips the new run and waits for the next schedule.
 
 ### Stop Job
 
-A running task/job will show a `Stop` button that can be used to stop the task if needed. Trailarr has predefined stop points in the task flows where the tasks will stop - so it's not a forceful cancellation that might result in data loss.
+{{ version_badge("upd", "0.14.0") }}
 
-!!! note
-    Some tasks like `Trailer Download` can only be cancelled after it reaches a certain point in the flow; so cancellation might not happen immediately.
+A running task/job shows a `Stop` button. Click it to stop the job. Trailarr stops at predefined points in the task flow, so a stop does not lose data.
+
+When a `Trailer Download` job runs `yt-dlp` or `ffmpeg`, a stop ends that process at once, together with the `ffmpeg` that `yt-dlp` starts to merge the streams. Trailarr removes the partial file, and the job ends as `Cancelled`. The trailers that the job put in place before the stop stay.
 
 ### Job Logs
 

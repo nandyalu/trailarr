@@ -21,10 +21,22 @@ class ConversionFailedError(Exception):
 
 
 class DownloadFailedError(Exception):
-    """Raised when a video download fails"""
+    """Raised when a video download fails.
 
-    def __init__(self, message: str, output: str | None = None):
+    `video_id` is the video that the failed attempt used, when one was
+    chosen. The download task records it with the attempt, so the resolver
+    puts that video last on the next run.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        output: str | None = None,
+        *,
+        video_id: str | None = None,
+    ):
         super().__init__(message)
+        self.video_id = video_id
         if output:
             self.add_note(output)
 

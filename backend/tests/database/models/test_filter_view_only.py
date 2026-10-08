@@ -31,9 +31,11 @@ VIEW_ONLY_SAMPLES = [
     ("download_count", FilterCondition.GREATER_THAN, "1"),
     ("download_profile", FilterCondition.EQUALS, "2"),
     ("download_resolution", FilterCondition.LESS_THAN, "1080"),
+    ("download_video_type", FilterCondition.EQUALS, "featurette"),
     ("download_added_at", FilterCondition.IN_THE_LAST, "7"),
     ("download_file_missing", FilterCondition.EQUALS, "true"),
     ("has_unknown_profile_download", FilterCondition.EQUALS, "true"),
+    ("has_videos", FilterCondition.EQUALS, "true"),
 ]
 
 

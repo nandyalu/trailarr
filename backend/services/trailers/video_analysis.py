@@ -3,6 +3,10 @@
 The answer says whether a download is a usable trailer: it has video, it
 has audio, and its length is inside the range the profile asks for. The
 module also finds and cuts silence at the end of a video.
+
+ffprobe and ffmpeg run through ``quiv.run_subprocess`` with a timeout.
+Inside a scheduler job a stop terminates the child at once and raises
+``JobCancelledError``, which every function here lets propagate.
 """
 
 from datetime import datetime, timezone
@@ -13,6 +17,7 @@ import json
 import tempfile
 from typing import Any
 
+import quiv
 from pydantic import BaseModel
 
 from app_logger import ModuleLogger
@@ -20,6 +25,9 @@ from config.settings import app_settings
 from services.trailers.trailers.utils import extract_youtube_id
 
 logger = ModuleLogger("VideoAnalysis")
+
+FFPROBE_TIMEOUT = 60  # seconds; ffprobe reads only the headers
+FFMPEG_TIMEOUT = 600  # seconds; silence detection reads the whole file
 
 
 class StreamInfo(BaseModel):
@@ -100,11 +108,12 @@ def get_media_info(file_path: str) -> VideoInfo | None:
     try:
         logger.debug(f"Running media analysis for: {file_path}")
         # Run ffprobe command to get media info
-        result = subprocess.run(
+        result = quiv.run_subprocess(
             ffprobe_cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            timeout=FFPROBE_TIMEOUT,
         )
         # Return None if command failed
         if result.returncode != 0:
@@ -176,6 +185,15 @@ def get_media_info(file_path: str) -> VideoInfo | None:
             )
             video_info.streams.append(stream_info)
         return video_info
+    except quiv.JobCancelledError:
+        # The job was cancelled while ffprobe ran. quiv already stopped
+        # ffprobe. Let the error reach the scheduler.
+        raise
+    except subprocess.TimeoutExpired:
+        logger.error(
+            f"Trailarr stopped ffprobe for '{Path(file_path).name}' after"
+            f" {FFPROBE_TIMEOUT} seconds."
+        )
     except FileNotFoundError as e:
         # subprocess sets e.filename to the executable when it cannot run
         # ffprobe. Path.stat() sets it to the media file when the file is
@@ -335,7 +353,7 @@ def get_silence_timestamps(
     try:
         # Get silence timestamps using ffmpeg silencedetect filter
         logger.debug(f"Running ffmpeg silencedetect for: {file_path}")
-        result = subprocess.run(
+        result = quiv.run_subprocess(
             [
                 app_settings.ffmpeg_path,
                 "-i",
@@ -349,6 +367,7 @@ def get_silence_timestamps(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            timeout=FFMPEG_TIMEOUT,
         )
         silence_start = None
         silence_end = None
@@ -403,6 +422,14 @@ def get_silence_timestamps(
             f"in video: {file_path} of duration {duration}"
         )
         return silence_start, silence_end
+    except quiv.JobCancelledError:
+        # The job was cancelled while ffmpeg ran. Let the error propagate.
+        raise
+    except subprocess.TimeoutExpired:
+        logger.error(
+            f"Trailarr stopped the silence detection for"
+            f" '{Path(file_path).name}' after {FFMPEG_TIMEOUT} seconds."
+        )
     except Exception as e:
         logger.exception(
             f"Trailarr could not look for silence in the video: {str(e)}"
@@ -451,11 +478,12 @@ def trim_video(
             "copy",
             output_file,
         ]
-        remove_result = subprocess.run(
+        remove_result = quiv.run_subprocess(
             remove_cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            timeout=FFMPEG_TIMEOUT,
         )
         if remove_result.returncode == 0:
             # print("STDERR:")
@@ -469,6 +497,19 @@ def trim_video(
         else:
             raise Exception(f"FFMPEG Exception: {remove_result.stderr}")
             # print(f"Error: {remove_result.stderr}")
+    except quiv.JobCancelledError:
+        # The job was cancelled while ffmpeg ran. The output file is
+        # incomplete, so remove it and let the error propagate.
+        Path(output_file).unlink(missing_ok=True)
+        raise
+    except subprocess.TimeoutExpired:
+        Path(output_file).unlink(missing_ok=True)
+        msg = (
+            f"Trailarr stopped ffmpeg for '{Path(file_path).name}' after"
+            f" {FFMPEG_TIMEOUT} seconds."
+        )
+        logger.error(msg)
+        raise Exception(msg)
     except Exception as e:
         raise Exception(f"Exception while trimming video: {str(e)}")
     # timeTook = datetime.now() - time
@@ -503,6 +544,9 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
             f" video at {silence_start}."
         )
         trim_video(file_path, output_file, 0, silence_start)
+    except quiv.JobCancelledError:
+        # The job was cancelled during the trim. Let the error propagate.
+        raise
     except Exception as e:
         # Log error with traceback but return original file to continue processing
         logger.exception(

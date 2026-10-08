@@ -23,6 +23,7 @@
             <span class="profile-name link" [routerLink]="['/settings', 'profiles', profile.profile_id]">
               {{ profile.profile_name }}
             </span>
+            <span class="type-badge" [title]="'This profile downloads a ' + typeLabel(profile).toLowerCase()">{{ typeLabel(profile) }}</span>
             <span class="state-chip" [class]="'state-' + stateOf(profile)">{{ stateLabel(profile) }}</span>
             <span class="state-detail">
               {{ stateDetail(profile) }}

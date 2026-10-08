@@ -64,7 +64,15 @@ def read_all_raw(
     Returns:
         list[dict]: List of all media items as dictionaries.
     """
-    query = text("SELECT * FROM media")
+    # `video_count` is not a column: the list pages evaluate the
+    # `has_videos` filter from it (Phase 9, H9). A correlated count over
+    # the indexed `mediavideo.media_id` costs one index probe per row.
+    query = text(
+        "SELECT media.*,"
+        " (SELECT COUNT(*) FROM mediavideo mv WHERE mv.media_id = media.id)"
+        " AS video_count"
+        " FROM media"
+    )
     result = _session.execute(query)
     rows = []
     for row in result.mappings():

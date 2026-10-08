@@ -46,10 +46,19 @@
         [selectedOption]="profile()?.enabled"
         (optionChange)="profileService.updateSetting('enabled', $event)"
       />
+      <app-options-setting
+        name="Video Type"
+        description="The kind of video this profile downloads."
+        descriptionExtra="Every type except Trailer comes from TMDB only. Trailarr does not search YouTube for it."
+        [options]="videoTypeOptions"
+        [optionLabels]="videoTypeLabels"
+        [selectedOption]="profile()?.video_type ?? 'trailer'"
+        (optionChange)="profileService.updateSetting('video_type', $event)"
+      />
       <app-text-setting
         name="Priority"
         description="Priority level for this profile. Default is 0. Minimum is 0. Maximum is 999."
-        descriptionExtra="When multiple profiles match, the one with the highest priority will be used first."
+        descriptionExtra="Every matching profile downloads its own video. The lowest number goes first, and claims a file that is already on disk."
         [isNumberType]="true"
         [isLongInput]="false"
         [placeholder]="'Priority'"
@@ -98,21 +107,25 @@
           [selectedOption]="profile()?.notify_plex"
           (optionChange)="profileService.updateSetting('notify_plex', $event)"
         />
-        <app-options-setting
-          name="Skip If Plex Has Trailer"
-          description="Skip downloading a trailer if Plex already has one for this item."
-          [options]="trueFalseOptions"
-          [selectedOption]="profile()?.skip_if_plex_trailer"
-          (optionChange)="profileService.updateSetting('skip_if_plex_trailer', $event)"
-        />
-        @if (profile()?.skip_if_plex_trailer) {
+        @if (isTrailerProfile()) {
           <app-options-setting
-            name="Skip If Plex Trailer Resolution"
-            description="Minimum resolution the Plex trailer must have before skipping the download."
-            [options]="plexResolutionOptions"
-            [selectedOption]="profile()?.skip_if_plex_trailer_resolution"
-            (optionChange)="profileService.updateSetting('skip_if_plex_trailer_resolution', $event)"
+            name="Skip If Plex Has Trailer"
+            description="Skip downloading a trailer if Plex already has one for this item."
+            [options]="trueFalseOptions"
+            [selectedOption]="profile()?.skip_if_plex_trailer"
+            (optionChange)="profileService.updateSetting('skip_if_plex_trailer', $event)"
           />
+          @if (profile()?.skip_if_plex_trailer) {
+            <app-options-setting
+              name="Skip If Plex Trailer Resolution"
+              description="Minimum resolution the Plex trailer must have before skipping the download."
+              [options]="plexResolutionOptions"
+              [selectedOption]="profile()?.skip_if_plex_trailer_resolution"
+              (optionChange)="profileService.updateSetting('skip_if_plex_trailer_resolution', $event)"
+            />
+          }
+        } @else {
+          <p class="text-sm type-note" data-testid="plex-type-note">{{ nonTrailerPlexNote() }}</p>
         }
       </div>
     </details>
@@ -137,7 +150,8 @@
       />
       <app-text-setting
         name="File Name"
-        description="File name to use for downloaded trailers."
+        description="File name to use for downloaded videos."
+        descriptionExtra="Default is '{title} ({year})-{video_type}.{ext}'. The {video_type} token writes the name that Plex and Jellyfin read for the profile's Video Type, for example '-trailer' or '-featurette'."
         [isNumberType]="false"
         [isLongInput]="true"
         [placeholder]="'File Name'"
@@ -158,7 +172,8 @@
       @if (profile()?.folder_enabled) {
         <app-text-setting
           name="Folder Name"
-          description="Name of the folder to save trailer file."
+          description="Name of the folder to save the video file."
+          descriptionExtra="Default is '{video_type}'. The {video_type} token writes the folder that Plex and Jellyfin read for the profile's Video Type, for example 'Trailers' or 'Featurettes'."
           [isNumberType]="false"
           [isLongInput]="true"
           [placeholder]="'Folder Name'"
@@ -371,88 +386,105 @@
     </summary>
     <hr />
     <div class="setting-group">
-      <app-text-setting
-        name="Search Query"
-        description="Query to use when searching for trailers on YouTube."
-        [isNumberType]="false"
-        [isLongInput]="true"
-        [placeholder]="'Search Query'"
-        [autocomplete]="'off'"
-        [minLength]="10"
-        [maxLength]="150"
-        [value]="profile()?.search_query ?? ''"
-        [disabled]="false"
-        (onSubmit)="profileService.updateSetting('search_query', $event)"
+      <app-options-setting
+        name="Search YouTube"
+        description="Search YouTube when no known video suits this profile."
+        descriptionExtra="Off, the profile takes the videos that TMDB lists, the id from Radarr or Sonarr, and videos you added, and waits for TMDB when none suits it. Turned off when the Video Type leaves Trailer."
+        [options]="trueFalseOptions"
+        [selectedOption]="searchOn()"
+        (optionChange)="profileService.updateSetting('search_youtube', $event)"
       />
+      @if (searchNote()) {
+        <div class="type-banner" role="note" data-testid="search-type-banner">{{ searchNote() }}</div>
+      }
+      @if (searchOn()) {
+        <app-text-setting
+          name="Search Query"
+          description="Query to use when searching for trailers on YouTube."
+          [isNumberType]="false"
+          [isLongInput]="true"
+          [placeholder]="'Search Query'"
+          [autocomplete]="'off'"
+          [minLength]="10"
+          [maxLength]="150"
+          [value]="profile()?.search_query ?? ''"
+          [disabled]="false"
+          (onSubmit)="profileService.updateSetting('search_query', $event)"
+        />
+      }
       <app-range-setting
         name="Min Duration"
         description="Minimum video duration (in seconds) to consider while searching."
-        descriptionExtra="Default is 30. Minimum is 30. Should be at most `Maximum Duration - 60`."
+        descriptionExtra="Default is 60. Minimum is 30. Should be at most `Maximum Duration - 60`."
         [minValue]="30"
         [maxValue]="minLimitMax()"
-        [value]="profile()?.min_duration ?? 30"
+        [value]="profile()?.min_duration ?? 60"
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('min_duration', $event)"
       />
       <app-range-setting
         name="Max Duration"
         description="Maximum video duration (in seconds) to consider while searching."
-        descriptionExtra="Default is 600. Maximum is 600. Should be at least `Minimum Duration + 60`."
+        descriptionExtra="Default is 600. Maximum is 1200. Should be at least `Minimum Duration + 60`."
         [minValue]="maxLimitMin()"
-        [maxValue]="600"
+        [maxValue]="1200"
         [value]="profile()?.max_duration ?? 600"
         [disabled]="false"
         (onSubmit)="profileService.updateSetting('max_duration', $event)"
       />
-      <app-options-setting
-        name="Always Search"
-        description="Enable this to always search for trailers, ignoring the current youtube id."
-        [options]="trueFalseOptions"
-        [selectedOption]="profile()?.always_search"
-        (optionChange)="profileService.updateSetting('always_search', $event)"
-      />
-      <app-text-setting
-        name="Include Words in Title"
-        description="Download a video only if certain words exist in video title. Comma-separated list."
-        descriptionExtra="Eg: 'trailer, official'"
-        [isNumberType]="false"
-        [isLongInput]="true"
-        [placeholder]="'Include Words'"
-        [autocomplete]="'off'"
-        [minLength]="0"
-        [maxLength]="200"
-        [value]="profile()?.include_words ?? ''"
-        [disabled]="false"
-        (onSubmit)="profileService.updateSetting('include_words', $event)"
-      />
-      <app-text-setting
-        name="Exclude Words in Title"
-        description="Exclude downloading a video if certain words exist in video title. Comma-separated list."
-        descriptionExtra="Eg: 'teaser, behind the scenes, review, comment'"
-        [isNumberType]="false"
-        [isLongInput]="true"
-        [placeholder]="'Exclude Words List'"
-        [autocomplete]="'off'"
-        [minLength]="0"
-        [maxLength]="200"
-        [value]="profile()?.exclude_words ?? ''"
-        [disabled]="false"
-        (onSubmit)="profileService.updateSetting('exclude_words', $event)"
-      />
-      <app-text-setting
-        name="Allowed Uploader IDs"
-        description="Only download videos from these YouTube channels. Comma-separated list of uploader handles or channel IDs."
-        descriptionExtra="Eg: '@WarnerBrosPictures, UCbmNph6atAoGfqLoCL_duAg'. Leave empty to allow all channels."
-        [isNumberType]="false"
-        [isLongInput]="true"
-        [placeholder]="'Uploader IDs (optional)'"
-        [autocomplete]="'off'"
-        [minLength]="0"
-        [maxLength]="2000"
-        [value]="profile()?.uploader_ids ?? ''"
-        [disabled]="false"
-        (onSubmit)="profileService.updateSetting('uploader_ids', $event)"
-      />
+      @if (searchOn()) {
+        <app-options-setting
+          name="Always Search"
+          description="Enable this to always search for trailers, ignoring the current youtube id."
+          [options]="trueFalseOptions"
+          [selectedOption]="profile()?.always_search"
+          (optionChange)="profileService.updateSetting('always_search', $event)"
+        />
+      }
+      @if (searchOn()) {
+        <app-text-setting
+          name="Include Words in Title"
+          description="Download a video only if certain words exist in video title. Comma-separated list."
+          descriptionExtra="Eg: 'trailer, official'"
+          [isNumberType]="false"
+          [isLongInput]="true"
+          [placeholder]="'Include Words'"
+          [autocomplete]="'off'"
+          [minLength]="0"
+          [maxLength]="200"
+          [value]="profile()?.include_words ?? ''"
+          [disabled]="false"
+          (onSubmit)="profileService.updateSetting('include_words', $event)"
+        />
+        <app-text-setting
+          name="Exclude Words in Title"
+          description="Exclude downloading a video if certain words exist in video title. Comma-separated list."
+          descriptionExtra="Eg: 'teaser, behind the scenes, review, comment'"
+          [isNumberType]="false"
+          [isLongInput]="true"
+          [placeholder]="'Exclude Words List'"
+          [autocomplete]="'off'"
+          [minLength]="0"
+          [maxLength]="200"
+          [value]="profile()?.exclude_words ?? ''"
+          [disabled]="false"
+          (onSubmit)="profileService.updateSetting('exclude_words', $event)"
+        />
+        <app-text-setting
+          name="Allowed Uploader IDs"
+          description="Only download videos from these YouTube channels. Comma-separated list of uploader handles or channel IDs."
+          descriptionExtra="Eg: '@WarnerBrosPictures, UCbmNph6atAoGfqLoCL_duAg'. Leave empty to allow all channels."
+          [isNumberType]="false"
+          [isLongInput]="true"
+          [placeholder]="'Uploader IDs (optional)'"
+          [autocomplete]="'off'"
+          [minLength]="0"
+          [maxLength]="2000"
+          [value]="profile()?.uploader_ids ?? ''"
+          [disabled]="false"
+          (onSubmit)="profileService.updateSetting('uploader_ids', $event)"
+        />
+      }
       <app-text-setting
         name="Yt-dlp Extra Options"
         description="Additional options to pass to yt-dlp when downloading trailers."

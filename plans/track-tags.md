@@ -8,6 +8,13 @@ Raised by [#491](https://github.com/nandyalu/trailarr/issues/491): a user review
 trailer in their library has no way to record which ones they have already been through.
 Their follow-up asked for bulk tag and untag.
 
+**Phase 9 note (Oct 8, 2026):** the list pages read their fields from one registry,
+`frontend/src/app/media/utils/media-fields.ts` (Media and Trailers groups); a Tags
+column is one entry there. `download_video_type` is the first string virtual filter
+(`VIRTUAL_STR_COLS` in `database/models/filter.py`, `virtualStringFilterKeys` in
+`models/customfilter.ts`, a `video_type` value select in the filter editor), so a tags
+filter follows that precedent.
+
 ## Objective
 
 Give users a place to record what they know about their own media, and let both views and

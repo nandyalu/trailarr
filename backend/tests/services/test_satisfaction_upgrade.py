@@ -25,6 +25,7 @@ def make_download(
         file_exists=file_exists,
         youtube_id=youtube_id,
         added_at=NOW - timedelta(hours=download_id),
+        video_type="trailer",
     )
 
 
@@ -42,13 +43,19 @@ def make_profile(
         language=language,
         always_search=always_search,
         replace_unknown_videos=replace_unknown,
+        video_type="trailer",
     )
 
 
 def video(
     video_id: str, source: VideoSource = VideoSource.TMDB, language="en"
 ) -> SimpleNamespace:
-    return SimpleNamespace(video_id=video_id, source=source, language=language)
+    return SimpleNamespace(
+        video_id=video_id,
+        source=source,
+        language=language,
+        video_type="trailer",
+    )
 
 
 def make_media(downloads: list) -> SimpleNamespace:

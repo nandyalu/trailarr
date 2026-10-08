@@ -60,7 +60,7 @@ none justify their own release. Check items off with the release that shipped th
   (justification recorded in `phase-03-dynamic-status.md`).
 - [ ] **H8 — Scan TODO comments** ("once the planned Issues section exists…") in
   files-scan → wired and removed in Phase 11.
-- [ ] **H9 — `media.youtube_trailer_id` column retirement** once the MediaVideo table
+- [x] **H9 — `media.youtube_trailer_id` column retirement** — DONE (Phase 9, PR #701, ships in v0.14.0: migration `c3d8e5f9a2b1` backfills, rewrites saved filters to `has_videos`, drops the column). Original entry: once the MediaVideo table
   owns candidates (Phase 9 cleanup; UI "saved trailer id" field becomes a USER-source
   candidate). Scheduled: Phase 9 decision 9 drops the column (maintainer decision, Sep
   24, 2026). The steps are in `phase-09-video-types.md`.
@@ -128,7 +128,7 @@ none justify their own release. Check items off with the release that shipped th
   Phase 7 kept it: Stage B does not change behavior. Pick one message when something
   else touches that handler.
 
-- [ ] **H16 — `api/v1/media.py` still holds logic.** Stage B extracted the three
+- [ ] **H16 — `api/v1/media.py` still holds logic.** Phase 9 touched the router (search refusal, add-video type, manual assign type) and did NOT take this: the file grew with the Phase 9 changes, and the read handlers are unchanged. Phase 10 is the next chance. Stage B extracted the three
   heaviest handlers (delete trailers, set YouTube id, set monitoring) and the bulk
   monitor path, taking the file from 739 lines to 691. The read handlers still build
   their own filters and shape their own responses.
@@ -242,7 +242,7 @@ none justify their own release. Check items off with the release that shipped th
   broad `except`. Kept out of v0.12.1 because it changes the text a user sees for
   every failing Arr request, which wants its own look at the messages.
 
-- [ ] **H24 — the `max_duration` check is never true.** Scheduled: Phase 9, decision 10.
+- [x] **H24 — the `max_duration` check is never true.** — DONE (Phase 9, PR #701, ships in v0.14.0: `not 90 <= max <= 1200`, cap 1200, migration `9a1c4e7b2d30` clamps stored values; tests for 89/90/1200/1201 through `TrailerProfile.model_validate`). Original entry: scheduled Phase 9, decision 10.
   `database/models/trailerprofile.py` checks `if 90 > self.max_duration > 600:`. A
   chained comparison needs a value below 90 AND above 600, so the check never fails,
   and the API stores any value. Only the UI slider holds the 600 limit.
@@ -263,3 +263,35 @@ none justify their own release. Check items off with the release that shipped th
   pages (`VACUUM_MIN_FREE_RATIO`). The daily purge frees about 3% of the file, and a
   VACUUM in WAL mode wrote the full file twice for it. A TRUNCATE checkpoint now
   follows each VACUUM.
+
+- [ ] **H25 — quiv follow-ups** (moved from the root `quiv_findings.md` on Oct 8, 2026;
+  the done items stay ticked there). Each is small and independent; fold into whichever
+  release fits. None blocks v0.14.0.
+  - **Drop the dummy `interval=86400.0` and `delay=1` on run-once tasks.** Since quiv
+    1.0 the interval is optional for a run-once task and an omitted delay runs it at
+    once. Sites: `tasks/schedules.py`, `tasks/api_refresh.py` (2), `tasks/download_trailers.py` (2).
+  - **Send websocket broadcasts through `run_on_main`.** Handlers await
+    `ws_manager.broadcast` on the worker's own loop (`services/trailers/trailer.py`,
+    `tasks/api_refresh.py`, `services/trailers/trailers/missing.py`). It has not failed,
+    but it is the cross-loop use `run_on_main` exists for.
+  - **Return real errors from the task endpoints.** `api/v1/tasks.py` wraps pause,
+    resume and cancel in `except Exception: return False`. Catch `TaskNotFoundError`
+    (404) and `TaskNotActiveError`/`TaskRunningError`/`JobNotFoundError` (409) so the UI
+    can say why; the frontend expects a bool today, so it changes with it.
+  - **Use the quiv features the tasks do not use.** A whole-job `timeout` on Download
+    Missing Trailers and Cleanup, `max_retries` with backoff on Arr Data Refresh and
+    Image Refresh, `stats()` for the tasks page header.
+  - **Report the result of HTTP-triggered one-shots** with `scheduler.await_task()`
+    (`api/v1/media.py` download and search, `api/v1/connections.py` refresh), or return
+    the `task_id` and let the UI watch the jobs list.
+  - **End-to-end scheduler tests** against a real `Quiv()`: the listeners, `/tasks` and
+    `/jobs`, `reschedule_task`, `ensure_plex_trailer_refresh_scheduled`, the lifespan,
+    cancellation. `wait_for_task()` makes each a short test.
+  - **When quiv 1.4.0 ships:** scheduler liveness in the health check
+    (`scheduler.is_running`); `get_all_tasks(task_name=..., include_run_once=True)` in
+    place of the name scan in `ensure_plex_trailer_refresh_scheduled`;
+    `run_task_immediately(task_id, after_current=True)` so the run button works on a
+    running task; compare quiv's "Running in a container" page with the install docs.
+  - **Consider `executor="process"` for Download Missing Trailers** so a stuck ffmpeg
+    can be killed without a container restart; the `TASK_REGISTRY` handlers are
+    importable by name already.

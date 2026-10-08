@@ -19,7 +19,6 @@ def mock_media():
     media.is_movie = True
     media.folder_path = "/media/movies/Test Movie (2024)"
     media.media_filename = "Test.Movie.2024.1080p.mkv"
-    media.youtube_trailer_id = "dQw4w9WgXcQ"
     media.language = "en"
     media.monitor = True
     media.downloads = []  # No active downloads yet
@@ -33,7 +32,6 @@ def mock_media():
         "is_movie": True,
         "folder_path": "/media/movies/Test Movie (2024)",
         "media_filename": "Test.Movie.2024.1080p.mkv",
-        "youtube_trailer_id": "dQw4w9WgXcQ",
         "language": "en",
     }
     return media
@@ -54,6 +52,7 @@ def mock_profile():
     profile.audio_format = "aac"
     profile.min_duration = 30
     profile.max_duration = 300
+    profile.video_type = "trailer"
     profile.always_search = False
     profile.remove_silence = False
     profile.skip_if_plex_trailer = (
@@ -206,7 +205,8 @@ class TestDownloadTrailer:
         ]
         update = manager.mock_calls[-1].args[0]
         assert update.downloaded_at is not None
-        assert update.yt_id == "dQw4w9WgXcQ"
+        # Phase 9 (H9): the facts write carries no YouTube id any more.
+        assert not hasattr(update, "yt_id")
 
     @pytest.mark.asyncio
     @patch("services.trailers.trailer.trailer_search.get_video_id")
@@ -277,17 +277,24 @@ class TestDownloadTrailer:
         mock_profile,
         mock_video_info,
     ):
-        """A video already on disk is not offered again.
+        """A video THIS profile already has on disk is not offered again.
 
         Phase 8 reads the ids from the downloads themselves. Reading the
         single `media.youtube_trailer_id` saw only the last video, so a
-        second profile could be handed a video the item already had."""
+        second profile could be handed a video the item already had.
+        Phase 9 makes the skip per profile: a 4K profile wants the same
+        video that the 1080p profile has, so another profile's download
+        is not a reason to skip it."""
         mock_media.downloads = [
-            MagicMock(file_exists=True, youtube_id="existing_id"),
-            MagicMock(file_exists=True, youtube_id="another_existing"),
-            MagicMock(file_exists=False, youtube_id="deleted_one"),
+            MagicMock(file_exists=True, youtube_id="existing_id", profile_id=1),
+            MagicMock(
+                file_exists=True, youtube_id="another_existing", profile_id=1
+            ),
+            MagicMock(file_exists=False, youtube_id="deleted_one", profile_id=1),
+            MagicMock(
+                file_exists=True, youtube_id="other_profiles", profile_id=2
+            ),
         ]
-        mock_media.youtube_trailer_id = "existing_id"
         mock_get_video_id.return_value = "new_video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
         mock_verify.return_value = (True, mock_video_info)
@@ -302,6 +309,8 @@ class TestDownloadTrailer:
         assert "another_existing" in exclude
         # A download whose file is gone is not a reason to skip the video.
         assert "deleted_one" not in exclude
+        # Another profile's download is not either (per-profile skip).
+        assert "other_profiles" not in exclude
 
     @pytest.mark.asyncio
     @patch("services.trailers.trailer.trailer_search.get_video_id")
@@ -332,8 +341,8 @@ class TestDownloadTrailer:
         mock_profile,
         mock_video_info,
     ):
-        """Ignores existing YouTube ID when always_search is enabled."""
-        mock_media.youtube_trailer_id = "existing_id"
+        """`Always Search` is the resolver's rule: the download asks it
+        once and does not pick a video itself."""
         mock_profile.always_search = True
         mock_get_video_id.return_value = "new_video_id"
         mock_download.return_value = "/tmp/test-trailer.mp4"
@@ -344,7 +353,6 @@ class TestDownloadTrailer:
 
         await download_trailer(mock_media, mock_profile)
 
-        # media.youtube_trailer_id should have been set to None before search
         mock_get_video_id.assert_called_once()
 
     @pytest.mark.asyncio
@@ -518,6 +526,85 @@ class TestDownloadTrailerRetryBehavior:
         assert mock_get_video_id.call_count == 1
 
 
+class TestDownloadTrailerChosenVideo:
+    """Phase 9 (H9): a manual download names its video. Before, the API put
+    the id on `media.youtube_trailer_id`, which the Phase 8 resolver no
+    longer read, so a chosen video was silently ignored."""
+
+    @pytest.mark.asyncio
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
+    @patch(
+        "services.trailers.trailer.record_new_trailer_download",
+        new_callable=AsyncMock,
+    )
+    @patch("services.trailers.trailer.event_manager.track_trailer_downloaded")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
+    @patch(
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
+        new_callable=AsyncMock,
+    )
+    async def test_a_chosen_video_skips_the_resolver(
+        self,
+        mock_broadcast,
+        mock_update_facts,
+        mock_track_download,
+        mock_record,
+        mock_move,
+        mock_verify,
+        mock_download,
+        mock_get_video_id,
+        mock_media,
+        mock_profile,
+        mock_video_info,
+    ):
+        from services.trailers.trailer import download_trailer
+
+        mock_download.return_value = "/tmp/test-trailer.mp4"
+        mock_verify.return_value = (True, mock_video_info)
+        mock_move.return_value = "/media/Test/Trailers/trailer.mp4"
+
+        result = await download_trailer(
+            mock_media, mock_profile, video_id="chosen0000a"
+        )
+
+        assert result is True
+        mock_get_video_id.assert_not_called()
+        # The chosen id reaches yt-dlp, the file name token and the record.
+        assert "chosen0000a" in mock_download.call_args[0][0]
+        assert mock_move.call_args.kwargs["video_id"] == "chosen0000a"
+        assert mock_record.call_args[0][3] == "chosen0000a"
+
+    @pytest.mark.asyncio
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch(
+        "services.trailers.trailer.websockets.ws_manager.broadcast",
+        new_callable=AsyncMock,
+    )
+    async def test_the_failed_video_travels_on_the_error(
+        self,
+        mock_broadcast,
+        mock_download,
+        mock_get_video_id,
+        mock_media,
+        mock_profile,
+    ):
+        """The download task records the video an attempt used from the
+        error, so the resolver can put it last on the next run."""
+        from services.trailers.trailer import download_trailer
+
+        mock_get_video_id.return_value = "failing000a"
+        mock_download.side_effect = RuntimeError("yt-dlp failed")
+
+        with pytest.raises(DownloadFailedError) as exc:
+            await download_trailer(mock_media, mock_profile, retry_count=0)
+
+        assert exc.value.video_id == "failing000a"
+
+
 class TestDownloadTrailerDownloadFacts:
     """Tests for the download-facts write during download."""
 
@@ -567,7 +654,7 @@ class TestDownloadTrailerDownloadFacts:
         assert mock_update_facts.call_count == 1
         update = mock_update_facts.call_args[0][0]
         assert update.downloaded_at is not None
-        assert update.yt_id == "video_id"
+        assert not hasattr(update, "yt_id")
 
         # Registry is empty once the download completes
         assert inflight_registry.snapshot() == {}
@@ -632,6 +719,7 @@ class TestCheckPlexTrailer:
     @pytest.fixture
     def mock_profile_plex(self):
         profile = MagicMock()
+        profile.video_type = "trailer"
         profile.skip_if_plex_trailer = True
         profile.skip_if_plex_trailer_resolution = 0
         return profile
@@ -1015,3 +1103,90 @@ class TestNotifyPlex:
         kwargs = plex_manager.trigger_item_scan.await_args.kwargs
         assert kwargs["rating_key"] is None
         assert kwargs["folder_path"] == "/media/tv/Example Show"
+
+
+class TestDownloadTrailerJobCancel:
+    """A job stop inside yt-dlp or ffmpeg must reach the scheduler."""
+
+    @pytest.mark.asyncio
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
+    @patch("services.trailers.trailer.attempt_manager.clear")
+    async def test_cancel_is_not_retried_and_not_swallowed(
+        self,
+        mock_clear,
+        mock_update_facts,
+        mock_download,
+        mock_get_video_id,
+        mock_media,
+        mock_profile,
+    ):
+        from quiv import JobCancelledError
+
+        from services.trailers.inflight import inflight_registry
+        from services.trailers.trailer import download_trailer
+
+        # Phase 9 reads the profile's video type before the Plex check.
+        mock_profile.video_type = "trailer"
+        mock_get_video_id.return_value = "video_id"
+        mock_download.side_effect = JobCancelledError("yt-dlp was stopped")
+
+        with pytest.raises(JobCancelledError):
+            await download_trailer(mock_media, mock_profile, retry_count=2)
+
+        # No retry: the stop is final, so the resolver ran only once.
+        assert mock_get_video_id.call_count == 1
+        # Not a failure, not a success: nothing is written.
+        mock_update_facts.assert_not_called()
+        mock_clear.assert_not_called()
+        # The finally block cleared the in-flight entry.
+        assert inflight_registry.snapshot() == {}
+
+
+class TestCancelAfterTheDownload:
+    """A stop that lands in ffprobe or the silence pass must not leave the
+    downloaded file in the temp folder (Copilot review on #701)."""
+
+    def _run(self, tmp_path, mock_media, mock_profile, raise_in):
+        from quiv import JobCancelledError
+
+        from services.trailers import trailer as trailer_module
+
+        downloaded = tmp_path / "1-trailer.mp4"
+        downloaded.write_bytes(b"video")
+        mock_profile.video_type = "trailer"
+        mock_profile.remove_silence = raise_in == "silence"
+        verify = (
+            MagicMock(side_effect=JobCancelledError("ffprobe was stopped"))
+            if raise_in == "verify"
+            else MagicMock(return_value=(True, MagicMock()))
+        )
+        with (
+            patch.object(
+                trailer_module, "download_video", return_value=str(downloaded)
+            ),
+            patch.object(
+                trailer_module.trailer_file, "verify_download", verify
+            ),
+            patch.object(
+                trailer_module.video_analysis,
+                "remove_silence_at_end",
+                side_effect=JobCancelledError("ffmpeg was stopped"),
+            ),
+        ):
+            # getattr: a class body mangles the double-underscore name.
+            run = getattr(trailer_module, "__download_and_verify_trailer")
+            with pytest.raises(JobCancelledError):
+                run(mock_media, "video_id", mock_profile)
+        return downloaded
+
+    def test_cancel_in_verification_removes_the_file(
+        self, tmp_path, mock_media, mock_profile
+    ):
+        assert not self._run(tmp_path, mock_media, mock_profile, "verify").exists()
+
+    def test_cancel_in_the_silence_pass_removes_the_file(
+        self, tmp_path, mock_media, mock_profile
+    ):
+        assert not self._run(tmp_path, mock_media, mock_profile, "silence").exists()

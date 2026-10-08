@@ -77,6 +77,7 @@ def update_profile_id(
     download_id: int,
     profile_id: int,
     *,
+    video_type: str | None = None,
     _session: Session = None,  # type: ignore
 ) -> None:
     """
@@ -86,11 +87,17 @@ def update_profile_id(
     Args:
         download_id (int): The ID of the download to update.
         profile_id (int): The ID of the TrailerProfile to attribute it to.
+        video_type (str | None): The type the download takes with the
+            profile. A person who assigns a file to a profile says what
+            the file is, so the row records the type of the profile.
+            None keeps the type of the row.
         _session (Session, optional): A session to use for the database connection. Defaults to None.
     Raises:
         ItemNotFoundError: If the download with the given ID is not found.
     """
     download_db = base._get_db_item(download_id, _session)
     download_db.profile_id = profile_id
+    if video_type is not None:
+        download_db.video_type = video_type
     _session.add(download_db)
     _session.commit()
