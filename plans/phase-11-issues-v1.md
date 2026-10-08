@@ -43,7 +43,7 @@ stabilization checklist.
    | Issue kind | Gates downloads for the media? |
    |---|---|
    | `folder-unreachable` | Yes — prevents writes into dead mounts (the storage-reachability skip shipped early, in v0.10.1 — this phase re-expresses it as issue-gating, same behavior) |
-   | `unattributed-download` | Yes (conservative; load-bearing from Phase 9 type-aware claiming — see phase-09 W4) |
+   | `unattributed-download` | **No** (amended Oct 7, 2026, Phase 9 execution). The Phase 9 plan asked for a download skip here (W4). It was not built: the scan now records every extras file, so a library with `Featurettes/` folders and no featurette profile would have stopped every trailer download. A same-type unclaimable file cannot coexist with a pending profile (the claim takes it), so the narrow gate is a no-op. The issue surfaces the file; it does not gate downloads. |
    | `download-failing` | No — backoff governs it; gating would deadlock its own resolution |
    | `unmatched-monitored` | Vacuous — nothing to download |
    | `missing-tmdb-id` | Only gates TMDB-only demands (already per-unit in Phases 9/10) |
