@@ -1,4 +1,4 @@
-"""Tests for the download path of `Upgrade To TMDB Trailer` —
+"""Tests for the download path of `Upgrade To TMDB` —
 plans/track-tmdb-upgrade.md, decisions 7–9 and wargame W2, W3.
 
 The delete and rename steps run on real files in a temporary folder. The

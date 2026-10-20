@@ -121,7 +121,7 @@ Trailarr only knows the language of a video when something told it. TMDB records
 !!! note "This setting needs a TMDB API key"
     The field is disabled until you add a [TMDB API key](../../tmdb.md) in `Settings > General`, and every profile takes any language until then. Only TMDB records which language a trailer is in, so without a key Trailarr cannot tell — and a language it cannot check would match nothing, making every download fall back to a YouTube search.
 
-## Upgrade To TMDB Trailer
+## Upgrade To TMDB
 
 {{ version_badge("add", "0.13.1") }}
 
@@ -129,7 +129,9 @@ Trailarr only knows the language of a video when something told it. TMDB records
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true, false   |
 
-Replace a trailer that is not a TMDB trailer with a trailer that is. Use this to rebuild a library that you downloaded before you added a [TMDB API key](../../tmdb.md).
+Replace a video that is not a TMDB video with a TMDB video of the same type. Use this to rebuild a library that you downloaded before you added a [TMDB API key](../../tmdb.md).
+
+{{ version_badge("upd", "0.14.0") }} <a id="upgrade-to-tmdb-trailer"></a>Before `v0.14.0`, this setting was called `Upgrade To TMDB Trailer`. It works for every [Video Type](#video-type): a profile replaces a video of its own type with a TMDB video of the same type, so a `Featurette` profile never takes a trailer. The text below says "trailer" for the video of the profile.
 
 The [Download Missing Trailers](../../../tasks/index.md#download-missing-trailers) task does the replacement. For each media item, it compares the trailer of this profile with the trailers that TMDB lists:
 
@@ -149,7 +151,7 @@ A replacement only takes a TMDB trailer (or a video that you chose). It never ta
 !!! note "This setting needs a TMDB API key, and `Always Search` off"
     Without a key, Trailarr has no TMDB list to compare with. [Always Search](search.md#always-search) never takes a trailer from the TMDB list. In both cases the setting can do nothing, so you cannot turn it on.
 
-## Delete Replaced Trailer
+## Delete Replaced File
 
 {{ version_badge("add", "0.13.1") }}
 
@@ -157,7 +159,9 @@ A replacement only takes a TMDB trailer (or a video that you chose). It never ta
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | true    | true, false   |
 
-Shows only when `Upgrade To TMDB Trailer` is on. When it is `true`, Trailarr deletes the old trailer after the TMDB trailer replaces it. The new trailer then takes the file name of the old one, when that is the name that the profile gives it. When it is `false`, Trailarr keeps both files, and does not replace the trailer again.
+{{ version_badge("upd", "0.14.0") }} <a id="delete-replaced-trailer"></a>Before `v0.14.0`, this setting was called `Delete Replaced Trailer`.
+
+Shows only when `Upgrade To TMDB` is on. When it is `true`, Trailarr deletes the old trailer after the TMDB trailer replaces it. The new trailer then takes the file name of the old one, when that is the name that the profile gives it. When it is `false`, Trailarr keeps both files, and does not replace the trailer again.
 
 Trailarr deletes the old trailer only after the new one is in the media folder. A failed download never leaves a media item without a trailer.
 
@@ -169,7 +173,7 @@ Trailarr deletes the old trailer only after the new one is in the media folder. 
 |:-------:|:--------:|:-------:|:-------------:|
 | Boolean | Yes      | false   | true, false   |
 
-Shows only when `Upgrade To TMDB Trailer` is on. Trailarr does not know which video some trailers are: a file that it found on disk, or one that an old version saved before Trailarr recorded video ids. Nothing shows whether such a trailer is a TMDB trailer, so the upgrade cannot compare it with the TMDB list.
+Shows only when `Upgrade To TMDB` is on. Trailarr does not know which video some trailers are: a file that it found on disk, or one that an old version saved before Trailarr recorded video ids. Nothing shows whether such a trailer is a TMDB trailer, so the upgrade cannot compare it with the TMDB list.
 
 The setting shows how many trailers of the profile have an unknown video, out of all its trailers on disk, so you can see the impact before you turn it on. When this is `false`, Trailarr keeps these trailers, and the media details page says so for each one. Most of them came from the trailer id that Radarr reports, and Radarr takes that id from TMDB, so they are TMDB trailers already. Replacing them all would download a large part of a library again for nothing: in one real library, almost a third of the trailers had no known video id.
 

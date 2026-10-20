@@ -120,7 +120,11 @@ def get_trailer_filename(
     Returns:
         str: Trailer filename."""
     if increment_index == 1:
-        logger.debug(f"Getting trailer filename for '{media.title}'...")
+        logger.debug(
+            f"Trailarr gets the file name of the"
+            f" {video_types.video_type_label(profile.video_type).lower()} for"
+            f" '{media.title}'."
+        )
     # Get trailer file name format from settings
     title_format = profile.file_name
     if title_format.count("{") != title_format.count("}"):
@@ -225,7 +229,11 @@ def get_trailer_path(
     Returns:
         str: Destination path for the trailer file."""
     if increment_index == 1:
-        logger.debug(f"Getting trailer path for '{media.title}'...")
+        logger.debug(
+            f"Trailarr gets the path of the"
+            f" {video_types.video_type_label(profile.video_type).lower()} for"
+            f" '{media.title}'."
+        )
 
     src_path = Path(src_path)
     dst_folder_path = Path(dst_folder_path)
@@ -254,7 +262,11 @@ def get_trailer_path(
             video_info,
             video_id=video_id,
         )
-    logger.debug(f"Trailer path: {dst_file_path}")
+    logger.debug(
+        f"The path of the"
+        f" {video_types.video_type_label(profile.video_type).lower()}"
+        f" is '{dst_file_path}'."
+    )
     return str(dst_file_path)
 
 
@@ -282,10 +294,16 @@ def move_trailer_to_folder(
     Returns:
         str: Destination path if trailer is moved successfully."""
     src_path = Path(src_path)
-    logger.debug(f"Moving trailer to media folder: '{media.folder_path}'")
+    kind = video_types.video_type_label(profile.video_type).lower()
+    logger.debug(
+        f"Trailarr moves the {kind} to the media folder"
+        f" '{media.folder_path}'."
+    )
     # Move the trailer file to the specified folder
     if not src_path.exists():
-        raise FileNotFoundError(f"Trailer file not found at: {src_path}")
+        raise FileNotFoundError(
+            f"Trailarr found no {kind} file at '{src_path}'."
+        )
 
     # Get the destination path, create subfolder if enabled
     if profile.custom_folder == "{media_folder}":
@@ -377,7 +395,10 @@ def move_trailer_to_folder(
             video_id=video_id,
         )
     )
-    logger.debug(f"Moving trailer from '{src_path}' to '{dst_file_path}'")
+    logger.debug(
+        f"Trailarr moves the {kind} from '{src_path}' to"
+        f" '{dst_file_path}'."
+    )
 
     # Fixes https://github.com/nandyalu/trailarr/issues/285
     # Sometimes shutil.move fails when app only has write permissions without modify
@@ -402,10 +423,13 @@ def move_trailer_to_folder(
 
         if not dst_file_path.exists():
             raise FileMoveFailedError(
-                f"Failed to move trailer file to {dst_file_path}: {e}"
+                f"Trailarr could not move the {kind} file to"
+                f" '{dst_file_path}': {e}"
             )
 
-    logger.debug(f"Trailer moved successfully to folder: '{dst_folder_path}'")
+    logger.debug(
+        f"Trailarr moved the {kind} to the folder '{dst_folder_path}'."
+    )
     return str(dst_file_path)
 
 
@@ -438,13 +462,16 @@ def verify_download(
     )
 
     if not is_valid:
-        logger.debug(f"Trailer verification failed for: {title}")
-        logger.debug(f"Deleting failed trailer file: {file_path_obj}")
+        kind = video_types.video_type_label(profile.video_type).lower()
+        logger.debug(f"The {kind} for '{title}' failed the checks.")
+        logger.debug(
+            f"Trailarr deletes the failed {kind} file '{file_path_obj}'."
+        )
         try:
             file_path_obj.unlink()
         except Exception as e:
             logger.exception(
-                f"Trailarr could not delete the trailer file: {e}"
+                f"Trailarr could not delete the {kind} file: {e}"
             )
         return is_valid, None
 

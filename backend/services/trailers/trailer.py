@@ -247,7 +247,7 @@ async def download_trailer(
         stop_event (threading.Event, optional): Set when the task that
             runs this download is stopped. Every retry gets it too.
         replace (list[DownloadRead], optional): The trailers of this
-            profile that `Upgrade To TMDB Trailer` replaces. When given,
+            profile that `Upgrade To TMDB` replaces. When given,
             only a TMDB trailer (or a video the user chose) is downloaded,
             and never a search result. Defaults to None.
         video_id (str | None, optional): The video to download, when the
@@ -520,7 +520,7 @@ def _upgrade_still_needed(
         return False
     logger.info(
         f"Trailarr replaces the {kind} of '{media.title}' with a TMDB"
-        f" {kind}, because Upgrade To TMDB Trailer is on in the profile"
+        f" {kind}, because Upgrade To TMDB is on in the profile"
         f" '{profile.customfilter.filter_name}'.",
         **logger.media(media.id),
     )
@@ -546,7 +546,7 @@ async def _finish_upgrade(
     if not profile.delete_replaced_trailer:
         logger.info(
             f"Trailarr keeps the replaced {kind} of '{media.title}',"
-            " because Delete Replaced Trailer is off.",
+            " because Delete Replaced File is off.",
             **logger.media(media.id),
         )
         return

@@ -61,11 +61,11 @@ An answer from TMDB stays fresh for seven days. A curated list changes rarely, a
 
 {{ version_badge("add", "0.13.1") }}
 
-A key changes which trailer Trailarr downloads next. It does not change the trailers that you already have. To replace those with TMDB trailers, turn on [Upgrade To TMDB Trailer](profiles/settings/general.md#upgrade-to-tmdb-trailer) in each profile that you want to upgrade.
+A key changes which trailer Trailarr downloads next. It does not change the trailers that you already have. To replace those with TMDB trailers, turn on [Upgrade To TMDB](profiles/settings/general.md#upgrade-to-tmdb) in each profile that you want to upgrade.
 
 Trailarr then replaces only the trailers that are not TMDB trailers. It keeps a trailer that TMDB already lists, and it keeps a trailer when TMDB lists none for the item. Most trailers from Radarr are TMDB trailers already, because Radarr takes its trailer id from TMDB. In a test on one real library, about one media item in four needed a new trailer.
 
-[Delete Replaced Trailer](profiles/settings/general.md#delete-replaced-trailer) decides whether the old file stays next to the new one.
+[Delete Replaced File](profiles/settings/general.md#delete-replaced-file) decides whether the old file stays next to the new one.
 
 A trailer whose video Trailarr does not know stays, unless [Replace Unknown Videos](profiles/settings/general.md#replace-unknown-videos) is on. Most of these are TMDB trailers already, because Radarr takes its trailer id from TMDB, so replacing them would download a large part of the library again for nothing.
 

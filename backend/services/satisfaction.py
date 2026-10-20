@@ -4,7 +4,7 @@ A profile is satisfied when a download for it exists and its file is still
 on disk. An existing download with no profile can be claimed by a profile
 that matches, so Trailarr does not download the same trailer again.
 
-A profile with `Upgrade To TMDB Trailer` on asks one more thing: is one of
+A profile with `Upgrade To TMDB` on asks one more thing: is one of
 its downloads a video that the upgrade accepts? When TMDB lists a trailer
 for it and none of its downloads is one, it is not satisfied, and the
 download task replaces the trailer (plans/track-tmdb-upgrade.md).
@@ -24,7 +24,7 @@ from services.trailers.resolver import (
     upgrade_targets,
 )
 
-# Why `Upgrade To TMDB Trailer` acts on a profile, or why it does not. The
+# Why `Upgrade To TMDB` acts on a profile, or why it does not. The
 # pending view shows these, so a user sees why a trailer is replaced, or
 # why it stays, without reading the log.
 UpgradeState = Literal[
@@ -102,7 +102,7 @@ def evaluate_satisfaction(
     the same media get one download per profile — exactly what overlapping
     profiles configure.
 
-    A profile with `Upgrade To TMDB Trailer` on is satisfied only when one
+    A profile with `Upgrade To TMDB` on is satisfied only when one
     of its downloads is a video that the upgrade accepts, or when there is
     no such video to upgrade to. `videos` holds the USER and TMDB rows of
     the media item; without them no upgrade can be decided, and the profile
@@ -207,7 +207,7 @@ def _check_upgrade(
     owned: list,
     videos: list[MediaVideoRead] | None,
 ) -> None:
-    """Apply `Upgrade To TMDB Trailer` to a satisfied profile, in place.
+    """Apply `Upgrade To TMDB` to a satisfied profile, in place.
 
     A download whose video the upgrade accepts keeps the profile
     satisfied, and so does a video the user chose, in any language. With

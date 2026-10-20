@@ -310,7 +310,7 @@ def get_video_id(
         exclude (list[str], Optional=None): List of video ids to exclude.
         search_length (int, Optional=10): Number of search results to return.
         upgrade_only (bool, Optional=False): Take only a video that
-            `Upgrade To TMDB Trailer` accepts, and never search.
+            `Upgrade To TMDB` accepts, and never search.
     Returns:
         str|None: Youtube video id / None if not found."""
     # Phase 8: the candidates table is the source of the answer. It holds

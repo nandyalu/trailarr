@@ -376,8 +376,8 @@ async def _run_preview_pass() -> None:
             # The item has a trailer. "Would download" read as if it had
             # none, and the page says "would replace" for the same item.
             logger.info(
-                f"Preview: Trailarr would replace the trailer of"
-                f" '{item.title}' with a TMDB trailer, with the profile"
+                f"Preview: Trailarr would replace the video of"
+                f" '{item.title}' with a TMDB video, with the profile"
                 f" '{item.profile_name}'.",
                 **logger.media(item.media_id),
             )
@@ -732,7 +732,7 @@ def _downloads_to_replace(
     """The trailers that an upgrade of this profile would replace.
 
     An unsatisfied profile that already has a trailer on disk is only
-    unsatisfied because `Upgrade To TMDB Trailer` wants a better one. The
+    unsatisfied because `Upgrade To TMDB` wants a better one. The
     downloads are read again here, because a claim made in this pass is
     in the database but not in `media.downloads`.
 

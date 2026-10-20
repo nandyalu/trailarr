@@ -1,4 +1,4 @@
-"""Tests for `Upgrade To TMDB Trailer` in the satisfaction rule —
+"""Tests for `Upgrade To TMDB` in the satisfaction rule —
 plans/track-tmdb-upgrade.md, decisions 2–6 and 11, wargame W6 and W8."""
 
 from datetime import datetime, timedelta, timezone

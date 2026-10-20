@@ -89,8 +89,8 @@ export class PendingComponent {
           default:
             base = 'Satisfied by an existing download';
         }
-        // With Upgrade To TMDB Trailer on, say what the upgrade makes of
-        // the trailer, so nobody wonders why it was not replaced.
+        // With Upgrade To TMDB on, say what the upgrade makes of the
+        // video, so nobody wonders why it was not replaced.
         switch (profile.upgrade_state) {
           case 'matched':
             return `${base}, and it is a TMDB video or a video you chose`;
@@ -108,11 +108,11 @@ export class PendingComponent {
         if (profile.upgrade) {
           const why =
             profile.upgrade_state === 'replace_unknown'
-              ? 'Trailarr does not know which video the trailer is'
-              : 'the trailer is not a TMDB trailer';
+              ? 'Trailarr does not know which video it is'
+              : 'it is not a TMDB video';
           return this.isMonitored()
-            ? `Will replace the trailer with a TMDB trailer on the next run: ${why}`
-            : `Would replace the trailer with a TMDB trailer (${why}), but this item is not monitored`;
+            ? `Will replace the video with a TMDB video on the next run: ${why}`
+            : `Would replace the video with a TMDB video (${why}), but this item is not monitored`;
         }
         if (profile.upgrade_state === 'awaiting_tmdb') {
           // Search YouTube is off and no known video of the profile's type

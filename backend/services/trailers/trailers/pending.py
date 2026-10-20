@@ -46,7 +46,7 @@ class MediaPendingProfile(BaseModel):
     satisfied_by: int | None  # download id
     satisfied_via: str | None  # "own_download" | "claim"
     pending: bool
-    # Pending only because `Upgrade To TMDB Trailer` replaces the trailer.
+    # Pending only because `Upgrade To TMDB` replaces the trailer.
     upgrade: bool = False
     # Why the upgrade replaces the trailer, or why it keeps it. None when
     # the upgrade is off or inert.
@@ -107,7 +107,7 @@ def read_known_videos(
 ) -> dict[int, list[MediaVideoRead]]:
     """The known videos per media id, for a library-wide pass.
 
-    Only a profile with `Upgrade To TMDB Trailer` on, or with `Search
+    Only a profile with `Upgrade To TMDB` on, or with `Search
     YouTube` off, reads them (`needs_videos`), so a library with no such
     profile makes no query at all.
     """
@@ -272,7 +272,7 @@ def compute_library_pending(
 def media_awaiting_tmdb() -> list[int]:
     """The media items that wait for TMDB to list a video.
 
-    A profile with `Upgrade To TMDB Trailer` keeps its trailer while TMDB
+    A profile with `Upgrade To TMDB` keeps its trailer while TMDB
     lists nothing for it, and that includes a media item that Trailarr
     never asked TMDB about. A profile with `Search YouTube` off has
     nothing to download while no known video of its type suits it (W3).

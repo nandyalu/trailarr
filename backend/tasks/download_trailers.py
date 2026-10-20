@@ -95,7 +95,10 @@ def download_trailer_by_id(
 
     # Add Task to scheduler to download trailer
     scheduler.add_task(
-        task_name=f"Download Trailer for {media.title}",
+        task_name=(
+            f"Download {video_type_label(profile.video_type)}"
+            f" for {media.title}"
+        ),
         func=_download_trailer,
         interval=86400.0,
         delay=1,
@@ -205,11 +208,17 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
 
     # Return if no media to download
     if not media_trailer_list:
-        logger.info("Every monitored media item has its trailer.")
+        logger.info(
+            "Trailarr has no media item to download the"
+            f" {video_type_label(profile.video_type).lower()} for."
+            " It skipped every selected item."
+        )
         return
     # Add Task to scheduler to download trailers
     scheduler.add_task(
-        task_name="Batch Download Trailers",
+        task_name=(
+            f"Batch Download ({video_type_label(profile.video_type)})"
+        ),
         func=_batch_download_task,
         interval=86400.0,
         delay=1,

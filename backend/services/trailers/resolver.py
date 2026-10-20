@@ -95,7 +95,7 @@ UPGRADE_SOURCES = (VideoSource.USER, VideoSource.TMDB)
 
 
 def upgrade_enabled(profile: TrailerProfileRead) -> bool:
-    """True when `Upgrade To TMDB Trailer` can do anything for a profile.
+    """True when `Upgrade To TMDB` can do anything for a profile.
 
     It needs the setting on, a TMDB API key, and `Always Search` off:
     Always Search takes nothing from the table, so there is no TMDB
@@ -122,7 +122,7 @@ def upgrade_targets(
     exclude: list[str] | None = None,
     last_tried: str | None = None,
 ) -> list[MediaVideoRead]:
-    """The videos that a profile with `Upgrade To TMDB Trailer` accepts.
+    """The videos that a profile with `Upgrade To TMDB` accepts.
 
     A trailer on disk that is one of these videos stays. A trailer that is
     not one of them is replaced by the first of them that downloads. The
