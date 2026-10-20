@@ -18,6 +18,7 @@ from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead, VideoSource
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 
 logger = ModuleLogger("TrailerResolver")
 
@@ -197,8 +198,9 @@ def describe_choice(media: MediaRead, candidate: MediaVideoRead) -> str:
         VideoSource.ARR: "the id from Radarr or Sonarr",
         VideoSource.SEARCH: "an earlier YouTube search",
     }.get(candidate.source, "an unknown source")
+    label = video_type_label(candidate.video_type).lower()
     return (
-        f"Trailarr takes the trailer for '{media.title}' from {where}"
+        f"Trailarr takes the {label} for '{media.title}' from {where}"
         f" ({candidate.video_id})."
     )
 

@@ -33,6 +33,7 @@ from database.models.downloadattempt import (
 )
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 from services.profiles import find_matching_profiles
 from services.satisfaction import evaluate_satisfaction, needs_videos
 from services.trailers.trailers.pending import read_known_videos
@@ -609,7 +610,7 @@ async def download_missing_trailers(
     logger.info(
         "Trailarr finished the missing-trailer task. It scanned"
         f" {scanned_media} media rows, attempted {attempted_downloads}"
-        f" downloads, downloaded {successful_downloads} trailers, and"
+        f" downloads, downloaded {successful_downloads} videos, and"
         f" skipped {skipped_items} profile items."
     )
 
@@ -630,7 +631,7 @@ async def _process_single_media_item(
     never reaches the network, so it must not push the next real download
     further away."""
     logger.info(
-        f"Trailarr examines '{media.title}' for trailer downloads.",
+        f"Trailarr examines '{media.title}' for videos to download.",
         **logger.media(media.id),
     )
     successful_downloads = 0
@@ -661,11 +662,12 @@ async def _process_single_media_item(
             )
 
         _profile_name = profile.customfilter.filter_name
+        _type_label = video_type_label(profile.video_type).lower()
         download_attempted = False
         try:
             logger.info(
-                f"Trailarr downloads a trailer for '{media.title}' with the"
-                f" profile '{_profile_name}'.",
+                f"Trailarr downloads the {_type_label} for '{media.title}'"
+                f" with the profile '{_profile_name}'.",
                 **logger.media(media.id),
             )
             download_successful = await trailer_downloader.download_trailer(
@@ -698,8 +700,8 @@ async def _process_single_media_item(
                 video_id=getattr(e, "video_id", None),
             )
             logger.warning(
-                f"Trailarr could not download a trailer for '{media.title}' with"
-                f" the profile '{_profile_name}'. Attempt"
+                f"Trailarr could not download the {_type_label} for"
+                f" '{media.title}' with the profile '{_profile_name}'. Attempt"
                 f" {attempt.attempt_count}.",
                 **logger.media(media.id),
             )

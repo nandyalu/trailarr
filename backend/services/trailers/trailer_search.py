@@ -237,7 +237,10 @@ def search_yt_for_trailer(
         exclude (list[str], Optional): List of video ids to exclude. \n
     Returns:
         str | None: Youtube video id / None if not found."""
-    logger.debug(f"Searching youtube for trailer for '{media.title}'...")
+    kind = video_type_label(profile.video_type).lower()
+    logger.debug(
+        f"Trailarr searches YouTube for the {kind} for '{media.title}'."
+    )
     # Set options
     filter_func = partial(
         _yt_search_filter, media=media, profile=profile, exclude=exclude
@@ -284,7 +287,10 @@ def search_yt_for_trailer(
         if result["id"] in exclude:
             logger.debug(f"Skipping excluded video: {result['id']}")
             continue
-        logger.debug(f"Found trailer for {media.title}: {result['id']}")
+        logger.debug(
+            f"Trailarr found the {kind} for '{media.title}':"
+            f" {result['id']}."
+        )
         return str(result["id"])
 
 
@@ -344,17 +350,18 @@ def get_video_id(
         # with `Always Search` on will skip it.
         _remember_search_result(media, video_id, video_type=profile.video_type)
     if not video_id:
+        kind = video_type_label(profile.video_type).lower()
         if search_length >= 30:
             logger.warning(
-                f"Trailarr found no trailer for '{media.title}' with the profile"
-                f" '{profile.customfilter.filter_name}'.",
+                f"Trailarr found no {kind} for '{media.title}' with the"
+                f" profile '{profile.customfilter.filter_name}'.",
                 **logger.media(media.id),
             )
             return None
         logger.debug(
-            f"No trailer found for '{media.title}' with profile"
-            f" '{profile.customfilter.filter_name}'. Retrying with longer"
-            " search length."
+            f"Trailarr found no {kind} for '{media.title}' with the profile"
+            f" '{profile.customfilter.filter_name}'. It searches again and"
+            " reads more results."
         )
         video_id = get_video_id(
             media, profile, exclude, search_length=search_length + 10
@@ -394,7 +401,8 @@ def _video_id_from_candidates(
         )
         if not chosen:
             logger.info(
-                f"Trailarr has no other TMDB trailer to try for"
+                f"Trailarr has no other TMDB"
+                f" {video_type_label(profile.video_type).lower()} to try for"
                 f" '{media.title}'.",
                 **logger.media(media.id),
             )
@@ -455,8 +463,10 @@ def _remember_search_result(
         )
     except Exception as e:
         logger.warning(
-            f"Trailarr found a trailer for '{media.title}' but could not"
-            f" store it as a known video: {e}"
+            f"Trailarr found the {video_type_label(video_type).lower()} for"
+            f" '{media.title}' but could not store it as a known video:"
+            f" {e}",
+            **logger.media(media.id),
         )
 
 

@@ -118,6 +118,16 @@ class TestDescribeChoice:
         }
         assert len(set(lines.values())) == len(VideoSource)
 
+    def test_the_log_line_names_the_video_type(self):
+        """A featurette is not called a trailer in the log."""
+        media = MagicMock(title="The Matrix", id=1)
+        candidate = _candidate("feat1", VideoSource.TMDB).model_copy(
+            update={"video_type": "featurette"}
+        )
+        line = describe_choice(media, candidate)
+        assert "takes the featurette for 'The Matrix'" in line
+        assert "trailer" not in line
+
 
 class TestLanguageIsAFilter:
     """A profile that names a language gets that language or a search.

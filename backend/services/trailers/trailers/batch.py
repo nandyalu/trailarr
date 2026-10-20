@@ -7,6 +7,7 @@ from quiv import JobCancelledError
 from app_logger import ModuleLogger
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 from services.trailers.trailer import download_trailer
 from services.trailers.trailers import utils
 from exceptions import DownloadFailedError
@@ -36,9 +37,10 @@ async def batch_download_task(
         downloading_count = 1
     if download_count is None:
         download_count = len(media_list)
+    kind = video_type_label(profile.video_type).lower()
     for media in media_list:
         logger.info(
-            f"Trailarr downloads trailer {downloading_count} of"
+            f"Trailarr downloads video {downloading_count} of"
             f" {download_count}."
         )
         try:
@@ -52,8 +54,8 @@ async def batch_download_task(
             logger.exception(e)
         except Exception as e:
             logger.exception(
-                f"Trailarr could not download the trailer for '{media.title}':"
-                f" {e}",
+                f"Trailarr could not download the {kind} for"
+                f" '{media.title}': {e}",
                 **logger.media(media.id),
             )
         finally:

@@ -84,6 +84,7 @@ def _profile(
     profile.priority = profile_id
     profile.video_resolution = resolution
     profile.custom_folder = "{media_folder}"
+    profile.video_type = "trailer"
     profile.customfilter.filter_name = f"Profile {profile_id}"
     profile.customfilter.filters = []
     return profile

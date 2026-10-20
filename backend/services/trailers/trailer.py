@@ -144,7 +144,7 @@ async def _notify_plex(media: MediaRead) -> None:
         )
     except Exception as e:
         logger.warning(
-            f"Trailarr could not tell Plex about the new trailer for"
+            f"Trailarr could not tell Plex about the new video for"
             f" '{media.title}': {e}",
             **logger.media(media.id),
         )
@@ -261,10 +261,9 @@ async def download_trailer(
             runs. The error is not retried and not swallowed: quiv
             finalizes the job as cancelled.
     """
+    kind = video_type_label(profile.video_type).lower()
     logger.info(
-        f"Trailarr downloads the"
-        f" {video_type_label(profile.video_type).lower()} for"
-        f" '{media.title}'.",
+        f"Trailarr downloads the {kind} for '{media.title}'.",
         **logger.media(media.id),
     )
     if not exclude:
@@ -332,10 +331,12 @@ async def download_trailer(
             # The item has a trailer. The pending view shows this text,
             # so it must not read as if the item had none.
             raise DownloadFailedError(
-                f"No TMDB trailer of '{media.title}' could be downloaded,"
-                " so the current trailer stays."
+                f"No TMDB {kind} of '{media.title}' could be downloaded,"
+                f" so the current {kind} stays."
             )
-        raise DownloadFailedError(f"No trailer found for {media.title}")
+        raise DownloadFailedError(
+            f"Trailarr found no {kind} for '{media.title}'."
+        )
 
     # Stop if stop event is set
     if stop_event and stop_event.is_set():
@@ -349,7 +350,7 @@ async def download_trailer(
     # The broadcast tells the frontend to refresh its downloading overlay.
     inflight_registry.start(media.id, profile.id)
     await websockets.ws_manager.broadcast(
-        f"Downloading trailer for '{media.title}'",
+        f"Trailarr downloads the {kind} for '{media.title}'.",
         "Info",
         reload="downloading",
     )
@@ -388,7 +389,7 @@ async def download_trailer(
             # The old trailer is the only one it tracks, so it stays. The
             # next files scan finds the new file.
             logger.warning(
-                f"Trailarr could not record the new trailer of"
+                f"Trailarr could not record the new {kind} of"
                 f" '{media.title}', so it keeps the old one.",
                 **logger.media(media.id),
             )
@@ -405,7 +406,7 @@ async def download_trailer(
                 # The new trailer is in place. A failure here must not
                 # reach the retry below, which would download another one.
                 logger.exception(
-                    f"Trailarr replaced the trailer of '{media.title}' but"
+                    f"Trailarr replaced the {kind} of '{media.title}' but"
                     f" could not remove the old one: {e}",
                     **logger.media(media.id),
                 )
@@ -419,9 +420,7 @@ async def download_trailer(
             await _notify_plex(media)
 
         msg = (
-            f"Trailarr downloaded the"
-        f" {video_type_label(profile.video_type).lower()} for"
-        f" '{media.title}'"
+            f"Trailarr downloaded the {kind} for '{media.title}'"
             f" from video {video_id}."
         )
         logger.info(msg, **logger.media(media.id))
@@ -444,7 +443,11 @@ async def download_trailer(
         )
         raise
     except Exception as e:
-        logger.exception(f"Trailarr could not download the trailer: {e}")
+        logger.exception(
+            f"Trailarr could not download the {kind} for"
+            f" '{media.title}': {e}",
+            **logger.media(media.id),
+        )
         if stop_event and stop_event.is_set():
             logger.info(
                 f"Trailarr stopped the download for '{media.title}'. A stop was"
@@ -473,7 +476,8 @@ async def download_trailer(
         # The attempt record keeps the video this try used, so the
         # resolver puts it last on the next run.
         raise DownloadFailedError(
-            f"Failed to download trailer for {media.title}",
+            f"Trailarr could not download the {kind} for"
+            f" '{media.title}'.",
             video_id=video_id,
         )
     finally:
@@ -495,27 +499,28 @@ def _upgrade_still_needed(
     again just before this call. The new answer can list the trailer that
     is already on disk, or nothing at all. Either way the trailer stays.
     """
+    kind = video_type_label(profile.video_type).lower()
     candidates = video_manager.read_candidates(media.id, video_type=None)
     targets = resolver.upgrade_targets(candidates, profile)
     if not targets:
         logger.info(
-            f"TMDB lists no trailer for '{media.title}' that the profile"
+            f"TMDB lists no {kind} for '{media.title}' that the profile"
             f" '{profile.customfilter.filter_name}' can use. Trailarr keeps"
-            " the current trailer.",
+            f" the current {kind}.",
             **logger.media(media.id),
         )
         return False
     kept = resolver.upgrade_keeps(candidates, targets)
     if any(download.youtube_id in kept for download in replace):
         logger.info(
-            f"The trailer of '{media.title}' is already a TMDB trailer or a"
+            f"The {kind} of '{media.title}' is already a TMDB {kind} or a"
             " video you chose. Trailarr keeps it.",
             **logger.media(media.id),
         )
         return False
     logger.info(
-        f"Trailarr replaces the trailer of '{media.title}' with a TMDB"
-        f" trailer, because Upgrade To TMDB Trailer is on in the profile"
+        f"Trailarr replaces the {kind} of '{media.title}' with a TMDB"
+        f" {kind}, because Upgrade To TMDB Trailer is on in the profile"
         f" '{profile.customfilter.filter_name}'.",
         **logger.media(media.id),
     )
@@ -537,9 +542,10 @@ async def _finish_upgrade(
     would keep the "Trailer 2" name that it got while the old file was
     still there.
     """
+    kind = video_type_label(profile.video_type).lower()
     if not profile.delete_replaced_trailer:
         logger.info(
-            f"Trailarr keeps the replaced trailer of '{media.title}',"
+            f"Trailarr keeps the replaced {kind} of '{media.title}',"
             " because Delete Replaced Trailer is off.",
             **logger.media(media.id),
         )
@@ -550,7 +556,7 @@ async def _finish_upgrade(
             download.path, media.id
         ):
             logger.warning(
-                f"Trailarr could not delete the replaced trailer"
+                f"Trailarr could not delete the replaced {kind}"
                 f" '{download.path}' of '{media.title}'.",
                 **logger.media(media.id),
             )
@@ -558,12 +564,12 @@ async def _finish_upgrade(
         deleted.append(download.path)
         event_manager.track_trailer_deleted(
             media_id=media.id,
-            reason="Replaced by a TMDB trailer",
+            reason=f"Replaced by a TMDB {kind}",
             source=EventSource.SYSTEM,
             source_detail="TrailerUpgrade",
         )
         logger.info(
-            f"Trailarr deleted the replaced trailer '{download.path}' of"
+            f"Trailarr deleted the replaced {kind} '{download.path}' of"
             f" '{media.title}'.",
             **logger.media(media.id),
         )
@@ -609,8 +615,9 @@ async def _take_replaced_name(
         current.rename(preferred)
     except OSError as e:
         logger.warning(
-            f"Trailarr could not rename the new trailer of '{media.title}'"
-            f" to '{preferred}': {e}",
+            f"Trailarr could not rename the new"
+            f" {video_type_label(profile.video_type).lower()} of"
+            f" '{media.title}' to '{preferred}': {e}",
             **logger.media(media.id),
         )
         return

@@ -806,12 +806,9 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
     Returns:
         str: Youtube ID of the trailer if found, else empty string. \n
     """
-    logger.info(
-        f"Trailarr searches for a trailer for this media item.",
-        **logger.media(media_id),
-    )
     media = media_manager.read(media_id)
     profile = trailerprofile.get_trailerprofile(profile_id)
+    kind = video_type_label(profile.video_type).lower()
     if not profile.search_youtube:
         # Search YouTube is off for the profile: it takes known videos
         # only (Phase 9, decision 5 as amended).
@@ -820,11 +817,14 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
             detail=(
                 f"Search YouTube is off for the profile"
                 f" '{profile.customfilter.filter_name}'. It takes its"
-                f" {video_type_label(profile.video_type).lower()} from the"
-                " known videos only. Turn Search YouTube on in the profile"
-                " to search."
+                f" {kind} from the known videos only. Turn Search YouTube"
+                " on in the profile to search."
             ),
         )
+    logger.info(
+        f"Trailarr searches YouTube for the {kind} of this media item.",
+        **logger.media(media_id),
+    )
 
     if yt_id := trailer_search.search_yt_for_trailer(media, profile):
         # The result is remembered as a SEARCH video, so the next run does
@@ -844,12 +844,12 @@ async def search_for_trailer(media_id: int, profile_id: int) -> str:
             source=EventSource.USER,
             source_detail="UserSearch",
         )
-        msg = f"Trailarr found a trailer for '{media.title}': {yt_id}."
-        logger.info(msg)
+        msg = f"Trailarr found the {kind} for '{media.title}': {yt_id}."
+        logger.info(msg, **logger.media(media_id))
         await websockets.ws_manager.broadcast(msg, "Success", reload="media")
         return yt_id
-    msg = f"Trailarr found no trailer for '{media.title}'."
-    logger.info(msg)
+    msg = f"Trailarr found no {kind} for '{media.title}'."
+    logger.info(msg, **logger.media(media_id))
     await websockets.ws_manager.broadcast(msg, "Error", reload="media")
     return ""
 

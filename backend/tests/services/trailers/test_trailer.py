@@ -218,7 +218,7 @@ class TestDownloadTrailer:
 
         from services.trailers.trailer import download_trailer
 
-        with pytest.raises(DownloadFailedError, match="No trailer found"):
+        with pytest.raises(DownloadFailedError, match="found no trailer"):
             await download_trailer(mock_media, mock_profile)
 
     @pytest.mark.asyncio
