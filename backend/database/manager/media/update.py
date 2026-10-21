@@ -67,8 +67,6 @@ def update_download_facts(
         db_media.updated_at = datetime.now(timezone.utc)
     if media_update.downloaded_at:
         db_media.downloaded_at = media_update.downloaded_at
-    if media_update.yt_id:
-        db_media.youtube_trailer_id = media_update.yt_id
     _session.add(db_media)
     if _commit:
         _session.commit()
@@ -164,34 +162,6 @@ def update_media_exists(
         db_media.media_exists = media_exists
         db_media.updated_at = datetime.now(timezone.utc)
         _session.add(db_media)
-        _session.commit()
-    return None
-
-
-@write_session
-def update_ytid(
-    media_id: int,
-    yt_id: str,
-    *,
-    _commit: bool = True,
-    _session: Session = None,  # type: ignore
-) -> None:
-    """Update the youtube trailer id of a media item in the database by id.\n
-    Args:
-        media_id (int): The id of the media to update.
-        yt_id (str): The youtube trailer id to set.
-        _commit (bool, Optional): Flag to `commit` the changes. Default is `True`.
-        _session (Session, Optional): A session to use for the database connection. \
-            Default is `None`, in which case a new session will be created.
-    Returns:
-        None
-    Raises:
-        ItemNotFoundError: If the media item with provided id doesn't exist.
-    """
-    db_media = base._get_db_item(media_id, _session)
-    db_media.youtube_trailer_id = yt_id
-    _session.add(db_media)
-    if _commit:
         _session.commit()
     return None
 

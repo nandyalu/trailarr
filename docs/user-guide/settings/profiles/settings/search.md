@@ -1,4 +1,24 @@
 
+## Search YouTube
+
+{{ version_badge("add", "0.14.0") }}
+
+| Type    | Required | Default | Valid Values  |
+|:-------:|:--------:|:-------:|:-------------:|
+| Boolean | Yes      | true    | true or false |
+
+Search YouTube when no known video suits this profile. This is what every profile did before this setting existed: the known videos first (the videos that TMDB lists, the id from Radarr or Sonarr, and videos you added), then a search with the [Search Query](#search-query) when none of them suits the profile.
+
+Turn it off, and the profile takes known videos only. Turning it off also turns `Always Search` off, because `Always Search` needs the search. When none suits it, the profile waits: it does not search, does not fail, and does not back off. Trailarr asks TMDB again every seven days with the `Refresh Video Lists` task, and the [Download Profiles](../../../library/media-details/index.md#download-profiles-section) section of the media details page says that the profile waits for TMDB. This is the setting for a profile that is optional, such as a second trailer in a language that TMDB lists for some titles only.
+
+The profile editor hides `Search Query`, `Always Search`, `Include Words in Title`, `Exclude Words in Title` and `Allowed Uploader IDs` while the search is off. `Minimum Duration`, `Maximum Duration` and `Yt-dlp Extra Options` apply either way.
+
+!!! note "Off by default for the other video types"
+    When you set the [Video Type](general.md#video-type) of a profile to something other than `Trailer`, Trailarr turns `Search YouTube` off, because a search finds trailers and nothing in a result says that a video is a featurette. Turn it on again when you want the search, for example for interviews, which TMDB has no type for: aim the `Search Query` and the `Include Words` at the videos you want, and the downloads take the type of the profile. The editor shows a note on such a profile.
+
+!!! tip "An optional trailer in a second language"
+    To keep an English trailer for every movie and a Telugu one where TMDB has it, make two profiles with the same filters: `English Trailers` with the [Trailer Language](general.md#trailer-language) `en`, and `Telugu Trailers` with the language `te` and `Search YouTube` off. The Telugu profile downloads when TMDB lists a Telugu trailer and waits otherwise, without failed downloads in the log.
+
 ## Search Query
 
 | Type   | Required | Default                               | Valid Values                            |
@@ -31,7 +51,7 @@ You can use the following placeholders in the file name:
 
 | Type    | Required | Default | Valid Values |
 |:-------:|:--------:|:-------:|:------------:|
-| Integer | Yes      | 30      | 30 - 540     |
+| Integer | Yes      | 60      | 30 - 1140    |
 
 Select the minimum duration of the trailers to download. Trailers with a duration less than this value will be skipped.
 
@@ -39,9 +59,11 @@ Select the minimum duration of the trailers to download. Trailers with a duratio
 
 | Type    | Required | Default | Valid Values |
 |:-------:|:--------:|:-------:|:------------:|
-| Integer | Yes      | 600     | 90 - 600     |
+| Integer | Yes      | 600     | 90 - 1200    |
 
 Select the maximum duration of the trailers to download. Trailers with a duration greater than this value will be skipped.
+
+{{ version_badge("upd", "0.14.0") }} The largest value is `1200` seconds (20 minutes). It was `600` before `v0.14.0`. Bonus features such as featurettes and behind-the-scenes videos often run longer than 10 minutes, so a profile for them can raise this. The default stays `600`, and no existing profile changes. The limit also applies to a video that TMDB lists: Trailarr checks the duration after the download and removes a video that is too long, then tries the next one in the list.
 
 !!! info
     If you want to download trailers with a duration of 2 minutes to 5 minutes, set `Trailer Minimum Duration` to `120` seconds and `Trailer Maximum Duration` to `300` seconds.
@@ -51,7 +73,9 @@ Select the maximum duration of the trailers to download. Trailers with a duratio
 
 ## Always Search
 
-{{ version_badge("upd", "0.13.0") }}
+{{ version_badge("upd", "0.14.0") }}
+
+`Always Search` needs [Search YouTube](#search-youtube) on. It is a mode of the search: search every time, instead of only when no known video suits the profile. Trailarr refuses `Always Search` on a profile with the search off.
 
 | Type    | Required | Default | Valid Values  |
 |:-------:|:--------:|:-------:|:-------------:|
@@ -165,7 +189,7 @@ Most people turn this on to get a trailer that Radarr does not report — a trai
     Open the YouTube channel page and copy the `@handle` from the URL or page header. For the channel ID, check the channel's **About** page or use a tool like [YouTube Channel ID Finder](https://commentpicker.com/youtube-channel-id.php).
 
 !!! note
-    This filter only applies to YouTube search results. If a `YouTube Trailer ID` is set directly on a media item, it bypasses all search filters including this one.
+    This filter only applies to YouTube search results. A video that you add to the [Known videos](../../../library/media-details/index.md#known-videos) of a media item bypasses all search filters including this one.
 
 ## Automatic Exclusions
 
@@ -178,7 +202,7 @@ In addition to the filters you configure above, some videos are always excluded 
 - **YouTube Shorts** — vertical videos are skipped.
 - **Reviews** — videos with "review" in the title are skipped.
 
-As a second layer of protection, the download command itself also refuses live and upcoming content — this covers trailer URLs provided directly by Radarr or set manually as `YouTube Trailer ID`, which bypass search filters.
+As a second layer of protection, the download command itself also refuses live and upcoming content — this covers the ids that Radarr reports and the videos that you add by hand, which bypass search filters.
 
 If a download fails or times out for any reason, its partially downloaded files are deleted immediately, and any leftover temporary files from previous runs are cleaned up automatically at every app startup.
 

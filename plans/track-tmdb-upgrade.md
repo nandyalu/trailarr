@@ -1,6 +1,6 @@
 # Parallel Track — Upgrade To TMDB Trailer
 
-**Status:** implemented on dev, awaiting v0.13.1 · **Release:** v0.13.1 · **Depends on:** Phase 8 (TMDB, shipped
+**Status:** DONE (v0.13.1, Oct 4 2026, PR #696) · **Release:** v0.13.1 · **Depends on:** Phase 8 (TMDB, shipped
 v0.13.0)
 
 After v0.13.0, users asked how to rebuild an existing library with TMDB trailers. Nothing

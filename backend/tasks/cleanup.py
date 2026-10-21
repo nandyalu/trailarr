@@ -15,6 +15,7 @@ import database.manager.download as download_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
 from database.models.event import EventSource
+from database.models.video_type import is_trailer_type
 from services.trailers import video_analysis
 from services.files.files_handler import FilesHandler
 
@@ -83,6 +84,12 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
             _path = download.path
             # Skip if file has already been deleted or path is missing
             if not download.file_exists:
+                continue
+            # Only the trailers. The scan records the extras that a person
+            # placed (a featurette, a deleted scene) as download rows too.
+            # Trailarr never deletes a file it did not download, unless a
+            # person deletes it from the Files section.
+            if not is_trailer_type(download.video_type):
                 continue
             analyzed_count += 1
             # Check if file exists on disk

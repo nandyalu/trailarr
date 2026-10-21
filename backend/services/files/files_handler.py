@@ -20,6 +20,7 @@ import unicodedata
 
 from app_logger import ModuleLogger
 from database.manager import trailerprofile
+from database.models.video_type import DEFAULT_VIDEO_TYPE
 from services.trailers import video_analysis
 from services.trailers.trailer_file import get_folder_permissions
 
@@ -375,8 +376,13 @@ class FilesHandler:
         """Get a list of trailer folder names.\n
         Returns:
             set[str]: Set with trailer folder names."""
-        # Get the trailer folders from the trailerprofile module
-        trailer_folders = trailerprofile.get_trailer_folders()
+        # The folders of the TRAILER profiles only: this set decides which
+        # folders the delete sweep for a removed media item removes, and
+        # an extras folder, such as `Featurettes/`, may hold files that
+        # Trailarr never downloaded (Phase 9).
+        trailer_folders = trailerprofile.get_trailer_folders(
+            video_type=DEFAULT_VIDEO_TYPE
+        )
         # Add 'trailer' and 'trailers' to the list
         trailer_folders.add("trailer")
         trailer_folders.add("trailers")

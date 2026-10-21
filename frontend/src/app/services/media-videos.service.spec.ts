@@ -49,6 +49,24 @@ describe('MediaService known videos', () => {
     request.flush({});
   });
 
+  it('sends the type as a query parameter when adding a featurette', () => {
+    service.addMediaVideo(7, 'abc12345678', 'it', 'featurette').subscribe();
+
+    const request = http.expectOne((r) => r.url === 'api/v1/media/7/videos' && r.method === 'POST');
+    expect(request.request.params.get('video_type')).toBe('featurette');
+    expect(request.request.params.get('language')).toBe('it');
+    request.flush({});
+  });
+
+  it('omits the type for a trailer, the backend default', () => {
+    service.addMediaVideo(7, 'abc12345678', '', 'trailer').subscribe();
+
+    const request = http.expectOne((r) => r.url === 'api/v1/media/7/videos' && r.method === 'POST');
+    expect(request.request.params.has('video_type')).toBe(false);
+    expect(request.request.params.has('language')).toBe(false);
+    request.flush({});
+  });
+
   it('puts the video id in the path when removing', () => {
     service.deleteMediaVideo(7, 'abc12345678').subscribe();
 

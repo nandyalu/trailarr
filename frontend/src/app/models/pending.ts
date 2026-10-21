@@ -1,6 +1,6 @@
 import {parseDate} from './media';
 
-/** Why Upgrade To TMDB Trailer replaces a trailer, or why it keeps it.
+/** Why Upgrade To TMDB replaces a video, or why it keeps it.
  * Mirrors the backend's UpgradeState; null when the upgrade is off or inert. */
 export type UpgradeState = 'replace_not_tmdb' | 'replace_unknown' | 'matched' | 'awaiting_tmdb' | 'unknown_kept';
 
@@ -16,7 +16,7 @@ export interface MediaPendingProfile {
   satisfied_by: number | null; // download id
   satisfied_via: 'own_download' | 'claim' | null;
   pending: boolean;
-  /** Pending only because Upgrade To TMDB Trailer replaces the trailer. */
+  /** Pending only because Upgrade To TMDB replaces the video. */
   upgrade: boolean;
   upgrade_state: UpgradeState | null;
   backing_off: boolean;
@@ -52,7 +52,8 @@ export interface PendingSummaryItem {
   is_movie: boolean;
   profile_id: number;
   profile_name: string;
-  reason: 'pending' | 'backoff';
+  /** `awaiting_tmdb`: the profile cannot search and no known video suits it, so it waits for TMDB (Phase 9, W3). */
+  reason: 'pending' | 'backoff' | 'awaiting_tmdb';
   /** The trailer is on disk, and the download replaces it with a TMDB one. */
   upgrade: boolean;
   upgrade_state: UpgradeState | null;

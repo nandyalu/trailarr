@@ -156,7 +156,7 @@
 
 @if (fieldConfigDialogOpen()) {
   <app-field-config-dialog
-    [fieldOptions]="selectedView() === 'expanded' ? expandedFieldOptions : tableColumnOptions"
+    [fieldGroups]="fieldGroups()"
     [selectedFields]="selectedView() === 'expanded' ? expandedFields() : tableColumns()"
     (fieldsChanged)="onFieldsChanged($event)"
     (closed)="onFieldConfigDialogClosed()"

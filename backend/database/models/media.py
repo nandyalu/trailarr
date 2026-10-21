@@ -60,7 +60,6 @@ class MediaBase(AppSQLModel):
     overview: str | None = None
     runtime: int = 0
     # website: str | None = None
-    youtube_trailer_id: str | None = None
     folder_path: str | None = None
     imdb_id: str | None = Field(default=None, index=True)
     txdb_id: str = Field(index=True)
@@ -118,12 +117,16 @@ class MediaCreate(MediaBase):
     - year: current year
     - language: "en"
     - runtime: 0
-    - youtube_trailer_id: None
     - monitor: False
     - arr_monitored: False
     """
 
     downloads: list[DownloadCreate] = []
+    arr_video_id: str | None = None
+    """The YouTube id that Radarr reports for the item. Not a column: the
+    sync writes it into the `mediavideo` table as an ARR row
+    (`services/connections/arr_videos.py`). Phase 9 dropped the
+    `media.youtube_trailer_id` column (H9)."""
     # files_info: list[FileFolderInfoCreate] = []
 
 

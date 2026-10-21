@@ -84,6 +84,18 @@ export function getFilterFieldGroups(filterType: keyof typeof FilterType): Filte
   return groups;
 }
 
+/** Labels for the fields whose key does not read well through the
+ * displayTitle pipe. Every other field keeps the pipe's title case. */
+const FILTER_FIELD_LABELS: Record<string, string> = {
+  download_video_type: 'Trailer Type',
+};
+
+/** The label of a field in the field picker, or '' to let the displayTitle
+ * pipe format the key. */
+export function getFilterFieldLabel(filterKey: string): string {
+  return FILTER_FIELD_LABELS[filterKey] ?? '';
+}
+
 // Get all enum values for select options.
 const boolFilterConditions = Object.values(BooleanFilterCondition);
 const dateFilterConditions = Object.values(DateFilterCondition);
@@ -134,6 +146,10 @@ export function getFilterValueType(filterKey: string, filterCondition: string): 
   } else if (stringFilterKeys.includes(filterKey)) {
     if (filterCondition === StringFilterCondition.IS_EMPTY || filterCondition === StringFilterCondition.IS_NOT_EMPTY) {
       return 'none';
+    }
+    if (filterKey === 'download_video_type') {
+      // Rendered as a dropdown of the known video types
+      return 'video_type';
     }
     return 'string';
   }

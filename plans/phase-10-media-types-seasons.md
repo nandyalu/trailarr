@@ -35,16 +35,31 @@ TMDB-sourced only.
 5. **Resolution: TMDB season videos ONLY** (`/tv/{tmdb_id}/season/{n}/videos`,
    candidates stored with `season=N`) — **no YouTube search fallback** (maintainer
    decision). Missing tmdb_id → profile pending, Issue feed.
+
+   **Phase 9 note (Oct 8, 2026):** "no search" is now a per-profile setting, not a
+   rule: `trailerprofile.search_youtube` (default on; turned off when a profile
+   leaves the Trailer type; `always_search` needs it on). Treat `per_season` the
+   same way as a non-trailer type: turning it on turns `search_youtube` off, and a
+   person may turn it back on (a season search query could use `{season_number}`).
+   The "waits for TMDB" state for a search-off profile with no candidate already
+   exists (Phase 9 W3: `awaiting_tmdb` in `services/satisfaction.py`, skipped by the
+   download task, fed to the refresh task); season units reuse it per unit.
 6. **Naming/placement:** decide at execution after checking current player conventions
    (Plex/Jellyfin season-trailer support); default proposal: media-folder `Trailers/`
    with `Season {season_number:02d}` prefix; templates gain `{season_number}`.
+
+   **Phase 9 note:** the per-type names live in `database/models/video_type.py`
+   (`FILE_SUFFIXES`, `FOLDER_NAMES`, the `{video_type}` token in
+   `services/trailers/trailer_file.py`). Plex reads season extras from
+   `Season XX/<type folder>/` (Phase 9 decision 2 research); add the season folder in
+   front of the type folder there, not a prefix in the name.
 7. Season-video refresh calls are gated to media matched by an enabled per-season
    profile (protects TMDB quota — a 500-series library × seasons is the cost center).
 8. **Profile presets + import/export** (adoption item, added July 2026): profiles
    export/import as JSON (customfilter + settings, minus ids), plus a small built-in
    preset gallery ("Compact 1080p", "Original language", "Extras pack") selectable in
    the profile-create flow. Timed here because the profile schema is final after this
-   phase (video_type, for_movies, per_season, language all exist). Import validates
+   phase (video_type, search_youtube, for_movies, per_season, language all exist). Import validates
    against current schema and reports what it created; version-stamp the JSON for
    forward compat.
 
@@ -60,18 +75,28 @@ TMDB-sourced only.
   with maintainer at execution; plan default = disable, don't auto-duplicate.
 - W3. Anime/specials: season 0 skipped by design; document.
 - W4. `season_count=0` series (announced shows): zero units → nothing pending. Good.
-- W5. A season with no TMDB videos: pending forever with "no candidates" long-cadence
-  state (from Phase 9 W3) — Issues surface it; no retry storm.
+- W5. A season with no TMDB videos: pending forever in the `awaiting_tmdb` state
+  (Phase 9 W3, built Oct 8, 2026: no attempt, no backoff, refresh task re-asks TMDB
+  every 7 days) — Issues surface it; no retry storm. Make the state per unit.
 - W6. Attribution/claiming with seasons: unattributed season files (users with existing
   season-trailer collections) — classifier needs season detection from filename
   (`Season 01`, `S01`) to claim into `(profile, season)`; else leave unattributed.
+  Extend `classify_extra_name` in `database/models/video_type.py` (Phase 9), which
+  the scan already calls for every file with no row; claims and attribution already
+  match on `video_type` (`evaluate_satisfaction`, `pick_profile_for_download`,
+  `attribute_unattributed_downloads`), so add the season to the same match.
 - W7. Media flips movie↔series (rare Arr edge): downloads keep season numbers; matching
   changes; no crash — test.
 
 ## Pitfalls
 
 - Every `find_matching_profiles` call site gains the for_movies gate — one helper, not
-  scattered checks.
+  scattered checks. (Phase 9 left `pick_profile_for_download` with a `video_type`
+  argument and the profile sort ascending by `priority`; the docs now say "lowest
+  number first".)
+- Profile editor: the Search section is gated by `searchOn()` and the Plex section by
+  `isTrailerProfile()` (Phase 9); `per_season` adds a third gate. Keep the three notes
+  (`searchNote`, `nonTrailerPlexNote`) in `edit-profile/video-type.ts`.
 - Season-unit expansion must not explode the pending endpoint/matrix UI for 30-season
   shows — matrix groups per profile with a season sub-list, collapsed by default.
 - Batch download endpoints take profile ids — per-season batch semantics defined

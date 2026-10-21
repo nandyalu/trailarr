@@ -98,3 +98,20 @@ class TestFreshness:
             await refresh_videos_if_stale(_media(None), refresher)
 
         manager.mark_videos_refreshed.assert_called_once_with(1)
+
+
+class TestOneRefreshPerItemPerRun:
+    """Code review of Phase 9, finding 4: the re-check before a download
+    refreshes a stale list, and the download must not ask TMDB again for
+    the same item."""
+
+    @pytest.mark.asyncio
+    async def test_the_second_call_is_a_no_op(self):
+        refresher = _refresher()
+        media = _media(None)
+        with patch(f"{PKG}.media_manager"):
+            first = await refresh_videos_if_stale(media, refresher)
+            second = await refresh_videos_if_stale(media, refresher)
+
+        assert (first, second) == (True, False)
+        refresher.refresh_media.assert_awaited_once()

@@ -2,7 +2,9 @@ import {DatePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {MediaPendingProfile} from 'src/app/models/pending';
+import {videoTypeLabel} from 'src/app/models/trailerprofile';
 import {MediaService} from 'src/app/services/media.service';
+import {ProfileService} from 'src/app/services/profile.service';
 
 /** Per-profile download matrix (Phase 3): renders GET /media/{id}/pending —
  * which profiles match this item, which are satisfied by which download,
@@ -17,6 +19,21 @@ import {MediaService} from 'src/app/services/media.service';
 })
 export class PendingComponent {
   private readonly mediaService = inject(MediaService);
+  private readonly profileService = inject(ProfileService);
+
+  /** The type of video a row is about (Phase 9): the type of the download
+   * that satisfies the profile, or else the type the profile downloads. A
+   * download or profile with no stored type is a trailer. */
+  protected typeLabel(profile: MediaPendingProfile): string {
+    const download = profile.satisfied_by
+      ? (this.mediaService.selectedMedia()?.downloads ?? []).find((d) => d.id === profile.satisfied_by)
+      : undefined;
+    if (download) {
+      return videoTypeLabel(download.video_type || 'trailer');
+    }
+    const stored = this.profileService.allProfiles.value().find((p) => p.id === profile.profile_id);
+    return videoTypeLabel(stored?.video_type || 'trailer');
+  }
 
   protected readonly pendingView = computed(() => this.mediaService.mediaPendingResource.value());
   protected readonly profiles = computed(() => this.pendingView()?.profiles ?? []);
@@ -32,7 +49,7 @@ export class PendingComponent {
     if (view && !view.tmdb_asked) {
       return 'Trailarr has not asked TMDB about this item yet; the Refresh Video Lists task will';
     }
-    return 'TMDB lists no trailer that the profile can use, so it stays; Trailarr asks TMDB again every 7 days';
+    return 'TMDB lists no video that the profile can use, so it stays; Trailarr asks TMDB again every 7 days';
   }
 
   protected stateOf(profile: MediaPendingProfile): 'satisfied' | 'backoff' | 'pending' | 'disabled' | 'not-matching' {
@@ -72,11 +89,11 @@ export class PendingComponent {
           default:
             base = 'Satisfied by an existing download';
         }
-        // With Upgrade To TMDB Trailer on, say what the upgrade makes of
-        // the trailer, so nobody wonders why it was not replaced.
+        // With Upgrade To TMDB on, say what the upgrade makes of the
+        // video, so nobody wonders why it was not replaced.
         switch (profile.upgrade_state) {
           case 'matched':
-            return `${base}, and it is a TMDB trailer or a video you chose`;
+            return `${base}, and it is a TMDB video or a video you chose`;
           case 'awaiting_tmdb':
             return `${base}. ${this.awaitingDetail()}`;
           case 'unknown_kept':
@@ -91,11 +108,16 @@ export class PendingComponent {
         if (profile.upgrade) {
           const why =
             profile.upgrade_state === 'replace_unknown'
-              ? 'Trailarr does not know which video the trailer is'
-              : 'the trailer is not a TMDB trailer';
+              ? 'Trailarr does not know which video it is'
+              : 'it is not a TMDB video';
           return this.isMonitored()
-            ? `Will replace the trailer with a TMDB trailer on the next run: ${why}`
-            : `Would replace the trailer with a TMDB trailer (${why}), but this item is not monitored`;
+            ? `Will replace the video with a TMDB video on the next run: ${why}`
+            : `Would replace the video with a TMDB video (${why}), but this item is not monitored`;
+        }
+        if (profile.upgrade_state === 'awaiting_tmdb') {
+          // Search YouTube is off and no known video of the profile's type
+          // suits it: nothing to try until TMDB lists one (Phase 9, W3).
+          return `Waits for TMDB: no known video suits this profile, and Search YouTube is off for it. ${this.awaitingDetail()}`;
         }
         return this.isMonitored() ? 'Will download on the next run' : 'Would download, but this item is not monitored';
       case 'disabled':

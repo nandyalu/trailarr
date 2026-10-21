@@ -49,17 +49,17 @@ class MediaUpdateDC:
     """Download-fact payload for download paths (Phase 4: deliberately has
     NO monitor field — `monitor` is user intent and downloads can't write
     it; see cross-phase invariant #6 in plans/README.md. Phase 5: the
-    stored mirror columns are gone — downloads own only these facts)."""
+    stored mirror columns are gone — downloads own only these facts.
+    Phase 9: the YouTube id lives in the download row and the `mediavideo`
+    table, so the payload is `downloaded_at` alone)."""
 
     id: int
-    yt_id: str | None = None
     downloaded_at: datetime | None = None
 
     def model_dump(self) -> dict:
         """Dump MediaUpdateDC to dictionary."""
         return {
             "id": self.id,
-            "yt_id": self.yt_id,
             "downloaded_at": self.downloaded_at,
         }
 

@@ -20,6 +20,7 @@ interface DownloadSpec {
   profile_id: number;
   resolution: number;
   days_ago: number;
+  video_type?: string;
 }
 
 interface FilterCase {
@@ -37,7 +38,7 @@ function daysAgo(days: number): string {
   return d.toISOString();
 }
 
-function buildMedia(overrides: {downloads?: DownloadSpec[]; added_at_days_ago?: number}): Media {
+function buildMedia(overrides: {downloads?: DownloadSpec[]; added_at_days_ago?: number; video_count?: number}): Media {
   const downloads = (overrides.downloads ?? []).map((spec, i) => ({
     id: i + 1,
     media_id: 1,
@@ -47,6 +48,7 @@ function buildMedia(overrides: {downloads?: DownloadSpec[]; added_at_days_ago?: 
     resolution: spec.resolution ?? 1080,
     file_exists: spec.file_exists ?? true,
     profile_id: spec.profile_id ?? 1,
+    video_type: spec.video_type ?? 'trailer',
     added_at: daysAgo(spec.days_ago ?? 0),
     updated_at: daysAgo(spec.days_ago ?? 0),
   }));
@@ -62,6 +64,9 @@ function buildMedia(overrides: {downloads?: DownloadSpec[]; added_at_days_ago?: 
     updated_at: daysAgo(overrides.added_at_days_ago ?? 1),
     downloads,
     files: null,
+    // `has_videos` reads this count (Phase 9, H9); the backend half reads
+    // the mediavideo table.
+    video_count: overrides.video_count ?? 0,
   } as unknown as Media;
 }
 

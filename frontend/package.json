@@ -1,6 +1,6 @@
 {
   "name": "trailarr",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -12,23 +12,23 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^22.0.5",
-    "@angular/common": "^22.0.5",
-    "@angular/compiler": "^22.0.5",
-    "@angular/core": "^22.0.5",
-    "@angular/forms": "^22.0.5",
-    "@angular/platform-browser": "^22.0.5",
-    "@angular/platform-browser-dynamic": "^22.0.5",
-    "@angular/router": "^22.0.5",
+    "@angular/animations": "^22.2.3",
+    "@angular/common": "^22.2.3",
+    "@angular/compiler": "^22.2.3",
+    "@angular/core": "^22.2.3",
+    "@angular/forms": "^22.2.3",
+    "@angular/platform-browser": "^22.2.3",
+    "@angular/platform-browser-dynamic": "^22.2.3",
+    "@angular/router": "^22.2.3",
     "@popperjs/core": "^2.11.8",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular/build": "^22.0.5",
-    "@angular/cli": "^22.0.5",
-    "@angular/compiler-cli": "^22.0.5",
-    "@angular/localize": "^22.0.5",
+    "@angular/build": "^22.2.3",
+    "@angular/cli": "^22.2.3",
+    "@angular/compiler-cli": "^22.2.3",
+    "@angular/localize": "^22.2.3",
     "jsdom": "^27.4.0",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
@@ -42,5 +42,8 @@
     "esbuild@0.28.2": true,
     "lmdb@3.5.6": true,
     "msgpackr-extract@3.0.4": true
+  },
+  "overrides": {
+    "vite": "8.3.4"
   }
 }

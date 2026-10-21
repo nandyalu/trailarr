@@ -15,7 +15,7 @@
         <th class="col-status" scope="col"></th>
         <th class="col-title" scope="col">Title</th>
         @for (col of activeColumns(); track col.key) {
-          <th [class]="'col-' + col.key" scope="col">{{ col.label }}</th>
+          <th [class]="'col-' + col.key" [class.col-trailer]="col.group === 'trailer'" scope="col">{{ headerLabel(col) }}</th>
         }
       </tr>
     </thead>
@@ -52,13 +52,28 @@
             }
           </td>
           @for (col of activeColumns(); track col.key) {
-            <td [class]="'col-' + col.key">
-              @if (isDateColumn(col.key)) {
-                {{ getDateValue(media, col.key) | date: 'mediumDate' }}
-              } @else if (isRuntimeColumn(col.key)) {
-                {{ media.runtime | durationConvert }}
+            <td [class]="'col-' + col.key" [class.col-trailer]="col.group === 'trailer'">
+              @if (col.group === 'trailer') {
+                <!-- One line per active trailer, newest first, in the order every trailer column shares. -->
+                @let lines = getTrailerLines(col, media);
+                @let more = getTrailerMore(col, media);
+                @if (lines.length === 0) {
+                  {{ EMPTY_VALUE }}
+                }
+                @for (line of lines; track $index) {
+                  <span class="trailer-line">{{ line }}</span>
+                }
+                @if (more > 0) {
+                  @if (!inEditMode()) {
+                    <a class="trailer-line trailer-more" [routerLink]="['/' + RouteMedia, media.id]" (click)="selectedMediaID.set(media.id)">+{{ more }} more</a>
+                  } @else {
+                    <span class="trailer-line trailer-more">+{{ more }} more</span>
+                  }
+                }
+              } @else if (isDateColumn(col)) {
+                {{ (getDateValue(col, media) | date: 'mediumDate') || EMPTY_VALUE }}
               } @else {
-                {{ getCellValue(media, col.key) }}
+                {{ getCellValue(col, media) }}
               }
             </td>
           }

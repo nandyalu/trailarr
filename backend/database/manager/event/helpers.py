@@ -34,9 +34,8 @@ def track_media_added(
 ) -> None:
     """Track events when a new media item is added to Trailarr.
 
-    Creates the following events in order:
-    1. MEDIA_ADDED - Records the media addition
-    2. YOUTUBE_ID_CHANGED - Records initial YouTube ID (if present)
+    Creates the MEDIA_ADDED event. The id that the Arr reports goes into
+    the `mediavideo` table (Phase 9); it is not an event of the media item.
 
     The initial MONITOR_CHANGED event is fired separately by the caller
     once the final monitoring decision is made, so only a single monitor
@@ -64,24 +63,6 @@ def track_media_added(
             f"Trailarr could not record the media added event: {e}",
             **logger.media(media_id),
         )
-
-    # 2. Create youtube_id_changed event if youtube_id exists
-    if media.youtube_trailer_id:
-        try:
-            event_create = EventCreate(
-                media_id=media_id,
-                event_type=EventType.YOUTUBE_ID_CHANGED,
-                source=source,
-                source_detail=source_detail,
-                old_value="",
-                new_value=media.youtube_trailer_id,
-            )
-            create_event(event_create)
-        except Exception as e:
-            logger.warning(
-                f"Trailarr could not record the youtube id changed event: {e}",
-                **logger.media(media_id),
-            )
 
 
 def track_monitor_changed(

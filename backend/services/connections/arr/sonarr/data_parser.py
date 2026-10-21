@@ -22,8 +22,10 @@ class SonarrDataParser(BaseModel):
     )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
-    # Sonarr does not have youtbetrailerid
-    youtube_trailer_id: str | None = Field(
+    # Sonarr reports no trailer id (its metadata comes from TVDB). The
+    # field is kept for parity with Radarr; the sync writes a value into
+    # the `mediavideo` table as an ARR row, never into a media column.
+    arr_video_id: str | None = Field(
         validation_alias="youTubeTrailerId", default=""
     )
     studio: str = Field(default="", validation_alias="network")

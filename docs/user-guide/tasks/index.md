@@ -123,7 +123,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 
 - Runs every 12 hours (first run starts 10 minutes after app launch).
 - Asks TMDB which videos belong to the media items that are waiting for a trailer, so the [Known videos](../library/media-details/index.md#known-videos) list is ready before a download needs it.
-- {{ version_badge("add", "0.13.1") }} Also asks TMDB about the media items whose trailer can go to a TMDB trailer, for profiles with [Upgrade To TMDB Trailer](../settings/profiles/settings/general.md#upgrade-to-tmdb-trailer) on. These items have a trailer, so no download waits for them, and without this task Trailarr would not learn that TMDB has a trailer for them.
+- {{ version_badge("add", "0.13.1") }} Also asks TMDB about the media items whose trailer can go to a TMDB trailer, for profiles with [Upgrade To TMDB](../settings/profiles/settings/general.md#upgrade-to-tmdb) on. These items have a trailer, so no download waits for them, and without this task Trailarr would not learn that TMDB has a trailer for them.
 - Does nothing when no [TMDB API key](../settings/tmdb.md) is set.
 - Asks about at most 200 media items in one run, and leaves an item alone when its videos were read in the last 7 days. A large library fills in over a few runs instead of sending thousands of requests at once.
 
@@ -162,18 +162,15 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 A scheduled run of a task is called Job. You can see queued/running jobs and their progress in real time in the Queued Jobs section.
 
 !!! tip
-    You might sometimes see an error in logs like below and it's normal behaviour. All the tasks are setup such that if that task is already running, it won't start a new one!
-
-    ```
-    WARNING: Tasks: Execution of job "Download Missing Trailers (trigger: interval[1:00:00], next run at: 2025-06-20 11:30:10 CDT)" skipped: maximum number of running instances reached (1)
-    ```
+    A task does not start a new run while a run of the same task is still active. The scheduler skips the new run and waits for the next schedule.
 
 ### Stop Job
 
-A running task/job will show a `Stop` button that can be used to stop the task if needed. Trailarr has predefined stop points in the task flows where the tasks will stop - so it's not a forceful cancellation that might result in data loss.
+{{ version_badge("upd", "0.14.0") }}
 
-!!! note
-    Some tasks like `Trailer Download` can only be cancelled after it reaches a certain point in the flow; so cancellation might not happen immediately.
+A running task/job shows a `Stop` button. Click it to stop the job. Trailarr stops at predefined points in the task flow, so a stop does not lose data.
+
+When a `Trailer Download` job runs `yt-dlp` or `ffmpeg`, a stop ends that process at once, together with the `ffmpeg` that `yt-dlp` starts to merge the streams. Trailarr removes the partial file, and the job ends as `Cancelled`. The trailers that the job put in place before the stop stay.
 
 ### Job Logs
 

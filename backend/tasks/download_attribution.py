@@ -74,16 +74,37 @@ async def attribute_unattributed_downloads() -> None:
         ]
         # Downloads are ordered oldest first; assign matching profiles in
         # priority order so the oldest download gets the highest priority.
+        # A profile takes a file of its own video type only (Phase 9,
+        # wargame W4): a teaser file never goes to a trailer profile.
         for download in downloads:
-            if not available_profiles:
+            profile = next(
+                (
+                    p
+                    for p in available_profiles
+                    if p.video_type == download.video_type
+                ),
+                None,
+            )
+            if profile is None:
                 unclaimed_count += 1
-                # The two causes need different fixes, so name them apart:
+                # The causes need different fixes, so name them apart:
                 # no matching profile → adjust profile filters; all matching
-                # profiles taken → extra/duplicate trailer file for media.
-                if matching_profiles:
+                # profiles taken → extra/duplicate trailer file for media;
+                # no profile of the type → add one, or leave the file.
+                same_type = [
+                    p
+                    for p in matching_profiles
+                    if p.video_type == download.video_type
+                ]
+                if same_type:
                     reason = (
                         "all matching profiles already have a download"
                         " (extra trailer file?)"
+                    )
+                elif matching_profiles:
+                    reason = (
+                        "no matching profile downloads a"
+                        f" {download.video_type.replace('_', ' ')}"
                     )
                 else:
                     reason = "no profile filters match this media"
@@ -94,7 +115,7 @@ async def attribute_unattributed_downloads() -> None:
                     **logger.media(media_id),
                 )
                 continue
-            profile = available_profiles.pop(0)
+            available_profiles.remove(profile)
             download_manager.update_profile_id(download.id, profile.id)
             claimed_count += 1
             logger.info(

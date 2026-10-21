@@ -1,8 +1,8 @@
 """Choosing which video to download for a media item.
 
-Before Phase 8 there was one id per media item, in
-`media.youtube_trailer_id`, and a YouTube search when it was empty. Now
-there is a list of candidates, and this module picks from it.
+Before Phase 8 there was one id per media item, in a column that Phase 9
+dropped (`media.youtube_trailer_id`, H9), and a YouTube search when it was
+empty. Now there is a list of candidates, and this module picks from it.
 
 The order comes from the source: what the user chose, then the curated
 list of TMDB, then the id that Radarr or Sonarr gave, then a result that a
@@ -18,6 +18,7 @@ from config.settings import app_settings
 from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead, VideoSource
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 
 logger = ModuleLogger("TrailerResolver")
 
@@ -57,8 +58,8 @@ def choose_candidates(
         # `Always Search` means what it says: do not take an id from any
         # source, search YouTube with the search query of the profile.
         # That is what it did before the candidates table existed — it
-        # cleared `media.youtube_trailer_id`, the only source there was —
-        # and the documentation has always said it ignores an id you set
+        # cleared the single stored id, the only source there was — and
+        # the documentation has always said it ignores an id you set
         # by hand. A profile that wants one video keeps this off and adds
         # that video; a profile that wants Trailarr to look every time
         # turns it on.
@@ -94,7 +95,7 @@ UPGRADE_SOURCES = (VideoSource.USER, VideoSource.TMDB)
 
 
 def upgrade_enabled(profile: TrailerProfileRead) -> bool:
-    """True when `Upgrade To TMDB Trailer` can do anything for a profile.
+    """True when `Upgrade To TMDB` can do anything for a profile.
 
     It needs the setting on, a TMDB API key, and `Always Search` off:
     Always Search takes nothing from the table, so there is no TMDB
@@ -121,7 +122,7 @@ def upgrade_targets(
     exclude: list[str] | None = None,
     last_tried: str | None = None,
 ) -> list[MediaVideoRead]:
-    """The videos that a profile with `Upgrade To TMDB Trailer` accepts.
+    """The videos that a profile with `Upgrade To TMDB` accepts.
 
     A trailer on disk that is one of these videos stays. A trailer that is
     not one of them is replaced by the first of them that downloads. The
@@ -144,8 +145,16 @@ def upgrade_targets(
     """
     if not upgrade_enabled(profile):
         return []
+    # The candidates can hold every type, when one list serves several
+    # profiles. A profile upgrades to a video of its own type only: a
+    # featurette profile never replaces its featurette with a trailer.
     return choose_candidates(
-        [c for c in candidates if c.source in UPGRADE_SOURCES],
+        [
+            c
+            for c in candidates
+            if c.source in UPGRADE_SOURCES
+            and c.video_type == profile.video_type
+        ],
         profile,
         exclude=exclude,
         last_tried=last_tried,
@@ -189,8 +198,9 @@ def describe_choice(media: MediaRead, candidate: MediaVideoRead) -> str:
         VideoSource.ARR: "the id from Radarr or Sonarr",
         VideoSource.SEARCH: "an earlier YouTube search",
     }.get(candidate.source, "an unknown source")
+    label = video_type_label(candidate.video_type).lower()
     return (
-        f"Trailarr takes the trailer for '{media.title}' from {where}"
+        f"Trailarr takes the {label} for '{media.title}' from {where}"
         f" ({candidate.video_id})."
     )
 

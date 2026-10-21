@@ -2,9 +2,12 @@
 
 import threading
 
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 from services.trailers.trailer import download_trailer
 from services.trailers.trailers import utils
 from exceptions import DownloadFailedError
@@ -34,21 +37,25 @@ async def batch_download_task(
         downloading_count = 1
     if download_count is None:
         download_count = len(media_list)
+    kind = video_type_label(profile.video_type).lower()
     for media in media_list:
         logger.info(
-            f"Trailarr downloads trailer {downloading_count} of"
+            f"Trailarr downloads video {downloading_count} of"
             f" {download_count}."
         )
         try:
             await download_trailer(
                 media, profile, profile.retry_count, stop_event=stop_event
             )
+        except JobCancelledError:
+            # The job was cancelled. Let it reach the scheduler.
+            raise
         except DownloadFailedError as e:
             logger.exception(e)
         except Exception as e:
             logger.exception(
-                f"Trailarr could not download the trailer for '{media.title}':"
-                f" {e}",
+                f"Trailarr could not download the {kind} for"
+                f" '{media.title}': {e}",
                 **logger.media(media.id),
             )
         finally:
@@ -58,8 +65,11 @@ async def batch_download_task(
                 "Trailarr stopped the downloads. A stop was requested."
             )
             return None
-        # Sleep for a random time if more downloads are pending
-        if downloading_count >= download_count:
+        # Sleep for a random time if more downloads are pending. The count
+        # was raised above, so it is the 1-based number of the NEXT item:
+        # more are pending while it is within the total. `>=` here skipped
+        # the last item of every batch of two or more.
+        if downloading_count > download_count:
             return None
         await utils.sleep_between_downloads(downloading_count, logger)
     return None

@@ -22,7 +22,9 @@ class RadarrDataParser(BaseModel):
     )
     overview: str | None = Field(default=None)
     runtime: int = Field(default=0)
-    youtube_trailer_id: str | None = Field(
+    # Not a media column: the sync writes it into the `mediavideo` table
+    # as an ARR row (services/connections/arr_videos.py).
+    arr_video_id: str | None = Field(
         validation_alias="youTubeTrailerId", default=None
     )
     studio: str = Field(default="")

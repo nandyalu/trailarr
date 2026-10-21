@@ -74,8 +74,9 @@ export class MediaComponent implements OnInit {
    * has a trailer, so it says "replace", and why. */
   protected previewReason(item: PendingSummaryItem): string {
     if (item.reason === 'backoff') return 'backing off';
+    if (item.reason === 'awaiting_tmdb') return 'waits for TMDB';
     if (!item.upgrade) return 'would download';
-    return item.upgrade_state === 'replace_unknown' ? 'would replace, video unknown' : 'would replace, not a TMDB trailer';
+    return item.upgrade_state === 'replace_unknown' ? 'would replace, video unknown' : 'would replace, not a TMDB video';
   }
 
   ngOnInit() {

@@ -12,12 +12,14 @@ def create_mock_download(
     download_id: int = 1,
     path: str = "/path/to/trailer.mkv",
     file_exists: bool = True,
+    video_type: str = "trailer",
 ) -> SimpleNamespace:
     """Create a mock download object for testing."""
     return SimpleNamespace(
         id=download_id,
         path=path,
         file_exists=file_exists,
+        video_type=video_type,
     )
 
 
@@ -536,3 +538,53 @@ class TestTrailerCleanup:
             result = await trailer_cleanup()
 
             assert result is None
+
+
+class TestOnlyTheTrailersAreExamined:
+    """Code review of Phase 9, finding 1: the scan records the extras that
+    a person placed as download rows. The cleanup never deletes one, even
+    when its stream check fails: Trailarr did not download it."""
+
+    @pytest.mark.asyncio
+    async def test_a_featurette_that_fails_the_check_is_kept(self):
+        featurette = create_mock_download(
+            download_id=8,
+            path="/path/to/Featurettes/making-of.mkv",
+            video_type="featurette",
+        )
+        trailer = create_mock_download(
+            download_id=9, path="/path/to/corrupted-trailer.mkv"
+        )
+        media = create_mock_media(downloads=[featurette, trailer])
+
+        with (
+            patch(
+                "tasks.cleanup.media_manager.read_all_generator"
+            ) as mock_read,
+            patch(
+                "tasks.cleanup.aiofiles.os.path.exists",
+                new_callable=AsyncMock,
+                return_value=True,
+            ),
+            patch(
+                "tasks.cleanup.video_analysis.verify_trailer_streams",
+                return_value=False,
+            ) as verify,
+            patch("tasks.cleanup.app_settings") as mock_settings,
+            patch(
+                "tasks.cleanup.delete_trailer",
+                new_callable=AsyncMock,
+            ) as mock_delete_trailer,
+            patch("tasks.cleanup.event_manager.track_trailer_deleted"),
+        ):
+            mock_settings.delete_corrupted_trailers = True
+            mock_read.return_value = iter([media])
+
+            await trailer_cleanup()
+
+        # The featurette was not even examined. The trailer was.
+        verify.assert_called_once_with("/path/to/corrupted-trailer.mkv")
+        mock_delete_trailer.assert_called_once_with(
+            "/path/to/corrupted-trailer.mkv", 9
+        )
+        assert featurette.file_exists is True

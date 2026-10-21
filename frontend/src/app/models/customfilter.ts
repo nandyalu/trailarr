@@ -87,14 +87,21 @@ export type FilterCondition =
 // Virtual fields are computed from download/file rows instead of a media
 // column. Every download field uses ANY semantics: the media matches when at
 // least one of its downloads matches. These lists mirror the backend lists in
-// backend/core/base/database/models/filter.py — update both together.
-export const virtualBooleanFilterKeys = ['has_downloads', 'download_file_missing', 'has_unknown_profile_download'];
+// backend/database/models/filter.py — update both together.
+export const virtualBooleanFilterKeys = ['has_downloads', 'download_file_missing', 'has_unknown_profile_download', 'has_videos'];
 export const virtualNumberFilterKeys = ['download_count', 'download_profile', 'download_resolution'];
 export const virtualDateFilterKeys = ['download_added_at'];
+// The type of a download: 'trailer', 'teaser', 'featurette', ... (Phase 9).
+export const virtualStringFilterKeys = ['download_video_type'];
 
 // View-only: profile (TRAILER) filters reject these — a profile filtering on
 // its own downloads is circular. The backend enforces this too.
-export const viewOnlyFilterKeys = [...virtualBooleanFilterKeys, ...virtualNumberFilterKeys, ...virtualDateFilterKeys];
+export const viewOnlyFilterKeys = [
+  ...virtualBooleanFilterKeys,
+  ...virtualNumberFilterKeys,
+  ...virtualDateFilterKeys,
+  ...virtualStringFilterKeys,
+];
 
 export const booleanFilterKeys = ['arr_monitored', 'is_movie', 'media_exists', 'monitor', ...virtualBooleanFilterKeys];
 
@@ -122,7 +129,7 @@ export const stringFilterKeys = [
   'title',
   'title_slug',
   'txdb_id',
-  'youtube_trailer_id',
+  ...virtualStringFilterKeys,
 ];
 
 export const fileFilterKeys = ['has_file', 'has_folder'];

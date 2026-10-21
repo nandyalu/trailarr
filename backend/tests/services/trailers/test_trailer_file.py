@@ -32,7 +32,6 @@ def mock_media():
     media.is_movie = True
     media.folder_path = "/media/movies/Test Movie (2024)"
     media.media_filename = "Test.Movie.2024.1080p.mkv"
-    media.youtube_trailer_id = "dQw4w9WgXcQ"
     media.language = "en"
     media.model_dump.return_value = {
         "id": 1,
@@ -41,7 +40,6 @@ def mock_media():
         "is_movie": True,
         "folder_path": "/media/movies/Test Movie (2024)",
         "media_filename": "Test.Movie.2024.1080p.mkv",
-        "youtube_trailer_id": "dQw4w9WgXcQ",
         "language": "en",
     }
     return media
@@ -62,6 +60,7 @@ def mock_profile():
     profile.audio_format = "aac"
     profile.min_duration = 30
     profile.max_duration = 300
+    profile.video_type = "trailer"
     return profile
 
 

@@ -144,6 +144,34 @@
   text-align: center;
 }
 
+// Trailer columns stack one line per active trailer. Every trailer column
+// of a row has the same line count, so the lines read as a sub-table.
+.trailer-line {
+  display: block;
+  line-height: 1.4;
+}
+
+.trailer-more {
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.col-download_profile {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-download_count {
+  text-align: center;
+}
+
 @media (width < 765px) {
   .media-table td,
   .media-table th {

@@ -180,7 +180,9 @@ def trim_video(
         HTTPException (400): If the file path is invalid. \n
     Returns:
         str: Message indicating the status of the operation."""
-    if not files_service.is_path_safe(file_path):
+    if not files_service.is_path_safe(
+        file_path
+    ) or not files_service.is_path_safe(output_file):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file path.",

@@ -239,17 +239,18 @@ class TestEventHelpers:
         self.media, _, _, _ = result[0]
 
     def test_track_media_added(self):
-        """Test tracking media_added event creates media_added and youtube_id
-        events only — the initial monitor event is fired separately by the
-        caller once the final monitoring decision is made."""
-        # Create a media with youtube_id and monitor for testing
+        """Test tracking media_added event creates the media_added event
+        only — the initial monitor event is fired separately by the caller
+        once the final monitoring decision is made, and the id the Arr
+        reports goes into the mediavideo table, not into an event (Phase 9,
+        H9)."""
         media_data = MediaCreate(
             connection_id=self.connection.id,  # type: ignore
             arr_id=99,
             is_movie=True,
             title="Test Movie For Events",
             txdb_id="tt9999999",
-            youtube_trailer_id="test_yt_id",
+            arr_video_id="test_yt_id",
             monitor=True,
         )
         result = media_manager.create_or_update_bulk([media_data])
@@ -271,12 +272,11 @@ class TestEventHelpers:
         assert len(media_added_events) >= 1
         assert media_added_events[0].new_value == "Radarr"
 
-        # Check youtube_id_changed event
+        # No youtube_id_changed event: the Arr's id is a mediavideo row
         yt_events = [
             e for e in events if e.event_type == EventType.YOUTUBE_ID_CHANGED
         ]
-        assert len(yt_events) >= 1
-        assert yt_events[0].new_value == "test_yt_id"
+        assert yt_events == []
 
         # No monitor_changed event — fired separately by the caller so only
         # a single monitor event is logged per new media item

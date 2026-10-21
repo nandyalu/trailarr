@@ -20,19 +20,22 @@ def _media(
     title="Film",
     folder_path="/media/Film",
     monitor=False,
-    yt_id="",
 ):
     return SimpleNamespace(
         id=media_id,
         title=title,
         folder_path=folder_path,
         monitor=monitor,
-        youtube_trailer_id=yt_id,
     )
 
 
-def _download(download_id, path, file_exists=True):
-    return SimpleNamespace(id=download_id, path=path, file_exists=file_exists)
+def _download(download_id, path, file_exists=True, video_type="trailer"):
+    return SimpleNamespace(
+        id=download_id,
+        path=path,
+        file_exists=file_exists,
+        video_type=video_type,
+    )
 
 
 class TestDeleteTrailers:
@@ -98,41 +101,6 @@ class TestDeleteTrailers:
         assert [c.args[0] for c in mock_mark.call_args_list] == [1, 2]
         # One event for the media item, not one per file
         assert mock_event.call_count == 1
-
-
-class TestSetYoutubeId:
-
-    def test_a_changed_id_is_stored_and_tracked(self):
-        with (
-            patch(
-                f"{PKG}.media_manager.read", return_value=_media(yt_id="old")
-            ),
-            patch(f"{PKG}.media_manager.update_ytid") as mock_update,
-            patch(
-                f"{PKG}.event_manager.track_youtube_id_changed"
-            ) as mock_event,
-        ):
-            msg = media_service.set_youtube_id(42, "newvalue123")
-
-        mock_update.assert_called_once_with(42, "newvalue123")
-        assert mock_event.call_count == 1
-        assert "updated the YouTube ID" in msg
-
-    def test_the_same_id_is_stored_but_not_tracked(self):
-        """Re-saving the same id is not a change worth an event."""
-        with (
-            patch(
-                f"{PKG}.media_manager.read", return_value=_media(yt_id="same")
-            ),
-            patch(f"{PKG}.media_manager.update_ytid") as mock_update,
-            patch(
-                f"{PKG}.event_manager.track_youtube_id_changed"
-            ) as mock_event,
-        ):
-            media_service.set_youtube_id(42, "same")
-
-        mock_update.assert_called_once_with(42, "same")
-        mock_event.assert_not_called()
 
 
 class TestSetMonitoring:

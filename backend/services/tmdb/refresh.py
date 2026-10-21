@@ -55,9 +55,9 @@ class TMDBRefresher:
             media (MediaRead): The media item to refresh.
 
         Returns:
-            int: How many TMDB candidates the media item has now. Zero
-                when TMDB is off, the item has no TMDB id, or TMDB lists
-                no trailer for it.
+            int: How many TMDB candidates the media item has now, of
+                every type. Zero when TMDB is off, the item has no TMDB
+                id, or TMDB lists no video for it.
         """
         if self._disabled:
             return 0
@@ -91,8 +91,11 @@ class TMDBRefresher:
             return 0
 
         candidates = to_candidates(videos, media.id)
+        # One call for every type: a video that TMDB moves from `Teaser`
+        # to `Trailer` changes its row instead of raising on the unique
+        # key (Phase 9).
         added, updated, removed = video_manager.replace_source_rows(
-            media.id, VideoSource.TMDB, candidates
+            media.id, VideoSource.TMDB, candidates, video_type=None
         )
         if added or updated or removed:
             logger.info(

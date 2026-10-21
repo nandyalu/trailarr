@@ -263,9 +263,29 @@ class TestIsTrailerFileFolderAuthoritative:
     ):
         assert (
             await scanner.is_trailer_file(
-                "/m/Movie/Featurettes/movie.mkv", 50 * MB
+                "/m/Movie/Bonus Stuff/movie.mkv", 50 * MB
             )
             is False
+        )
+
+    @pytest.mark.asyncio
+    async def test_extras_folder_of_a_player_is_an_extra(self, scanner):
+        """Phase 9: a folder that Plex or Jellyfin reads holds extras,
+        whatever the profiles say."""
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Featurettes/movie.mkv", 50 * MB
+            )
+            is True
+        )
+
+    @pytest.mark.asyncio
+    async def test_a_player_suffix_is_an_extra_in_any_folder(self, scanner):
+        assert (
+            await scanner.is_trailer_file(
+                "/m/Movie/Movie (2020)-behindthescenes.mkv", 900 * MB
+            )
+            is True
         )
 
 

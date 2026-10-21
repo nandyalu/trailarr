@@ -30,7 +30,7 @@
                   <optgroup [label]="group.label">
                     @for (key of group.keys; track key) {
                       <option [value]="key">
-                        {{ key | displayTitle }}
+                        {{ getFilterFieldLabel(key) || (key | displayTitle) }}
                       </option>
                     }
                   </optgroup>
@@ -77,6 +77,14 @@
                     }
                     @if (isDeletedProfileId(filter.filter_value().value())) {
                       <option [value]="filter.filter_value().value()">Deleted [{{ filter.filter_value().value() }}]</option>
+                    }
+                  </select>
+                }
+                @case ('video_type') {
+                  <select id="filter_value_{{ i }}" [formField]="filter.filter_value">
+                    <option value="" disabled>Select Type</option>
+                    @for (type of videoTypeOptions; track type.value) {
+                      <option [value]="type.value">{{ type.label }}</option>
                     }
                   </select>
                 }
