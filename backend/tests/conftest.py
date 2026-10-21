@@ -1,5 +1,6 @@
 import inspect
 import os
+import sys
 import tempfile
 from unittest.mock import Mock
 from urllib.parse import urlencode, urljoin
@@ -63,6 +64,12 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     global _temp_dir
+    # The tasks package builds the scheduler at import time, and quiv keeps a
+    # database for it in the system temp folder until shutdown(). Stop it here,
+    # while the log handlers still have a data folder to write to.
+    tasks = sys.modules.get("tasks")
+    if tasks is not None:
+        tasks.shutdown_scheduler(timeout=1)
     if _temp_dir:
         _temp_dir.cleanup()
 

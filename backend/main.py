@@ -35,7 +35,7 @@ from database.version_guard import (
 from services.binaries import validate_binary_paths
 from services.trailers.video_v2 import cleanup_stale_temp_downloads
 from services.notifications import dispatcher as notification_dispatcher
-from tasks import scheduler
+from tasks import scheduler, shutdown_scheduler
 from tasks.schedules import schedule_all_tasks
 from frontend import setup_frontend
 
@@ -94,7 +94,7 @@ async def lifespan(app: FastAPI):
     # Before shutdown
     logging.debug("Shutting down the scheduler and flushing logs to DB")
     await notification_dispatcher.stop()
-    scheduler.shutdown(timeout=SCHEDULER_STOP_TIMEOUT)
+    shutdown_scheduler(timeout=SCHEDULER_STOP_TIMEOUT)
     # The last log line of the lifespan goes before the flush. A line
     # after it would write a new WAL frame into logs.db.
     logging.debug("Trailarr stops. The WAL files are written last.")

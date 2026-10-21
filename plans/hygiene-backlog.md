@@ -287,6 +287,13 @@ none justify their own release. Check items off with the release that shipped th
   - **End-to-end scheduler tests** against a real `Quiv()`: the listeners, `/tasks` and
     `/jobs`, `reschedule_task`, `ensure_plex_trailer_refresh_scheduled`, the lifespan,
     cancellation. `wait_for_task()` makes each a short test.
+  - [x] **The scheduler's temp database outlived every interpreter without a lifespan**
+    (found Oct 21, 2026 by a quiv-side review; 173 `quiv_*.db` files sat in `/tmp`).
+    Fixed the same day: `tasks.shutdown_scheduler()` stops quiv once, from the lifespan
+    or from an `atexit` hook, and `tests/conftest.py` calls it before the data folder
+    goes away. Two asks for quiv remain on its side: `shutdown()` is not idempotent (a
+    second call raises `no such table: quiv_job` and recreates the file), and a
+    `weakref.finalize`/`atexit` fallback in `QuivBase.__init__` would cover every user.
   - **When quiv 1.4.0 ships:** scheduler liveness in the health check
     (`scheduler.is_running`); `get_all_tasks(task_name=..., include_run_once=True)` in
     place of the name scan in `ensure_plex_trailer_refresh_scheduled`;
