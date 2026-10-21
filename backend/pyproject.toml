@@ -18,6 +18,7 @@ dependencies = [
     "yt-dlp[curl-cffi,default]==2026.8.19",
     "rich>=15.0.0",
     "apprise>=1.12.0,<2",
+    "greenlet==3.5.6",
 ]
 
 [dependency-groups]
