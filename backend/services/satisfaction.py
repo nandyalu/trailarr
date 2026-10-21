@@ -4,7 +4,7 @@ A profile is satisfied when a download for it exists and its file is still
 on disk. An existing download with no profile can be claimed by a profile
 that matches, so Trailarr does not download the same trailer again.
 
-A profile with `Upgrade To TMDB Trailer` on asks one more thing: is one of
+A profile with `Upgrade To TMDB` on asks one more thing: is one of
 its downloads a video that the upgrade accepts? When TMDB lists a trailer
 for it and none of its downloads is one, it is not satisfied, and the
 download task replaces the trailer (plans/track-tmdb-upgrade.md).
@@ -18,12 +18,13 @@ from database.models.media import MediaRead
 from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
 from services.trailers.resolver import (
+    choose_candidates,
     upgrade_enabled,
     upgrade_keeps,
     upgrade_targets,
 )
 
-# Why `Upgrade To TMDB Trailer` acts on a profile, or why it does not. The
+# Why `Upgrade To TMDB` acts on a profile, or why it does not. The
 # pending view shows these, so a user sees why a trailer is replaced, or
 # why it stays, without reading the log.
 UpgradeState = Literal[
@@ -93,15 +94,15 @@ def evaluate_satisfaction(
 ) -> SatisfactionResult:
     """THE Phase-2 rule: a profile is satisfied iff an active
     (file_exists=True) download exists with its profile_id, or an
-    unattributed active download can be claimed for it. Downloads — not any
-    stored flag — decide what still needs downloading.
+    unattributed active download of its video type can be claimed for it.
+    Downloads — not any stored flag — decide what still needs downloading.
 
     Phase 4 removed the legacy stop-monitoring carve-out: satisfaction is
     purely per-profile ownership now. Users with multiple profiles matching
     the same media get one download per profile — exactly what overlapping
     profiles configure.
 
-    A profile with `Upgrade To TMDB Trailer` on is satisfied only when one
+    A profile with `Upgrade To TMDB` on is satisfied only when one
     of its downloads is a video that the upgrade accepts, or when there is
     no such video to upgrade to. `videos` holds the USER and TMDB rows of
     the media item; without them no upgrade can be decided, and the profile
@@ -111,6 +112,10 @@ def evaluate_satisfaction(
     """
     active = [d for d in media.downloads if d.file_exists]
 
+    # Phase 9: a profile owns its downloads by id, whatever their type: a
+    # download takes the type of its profile, and changes with it. A
+    # claim is different: an unattributed file can only satisfy a profile
+    # of its own type. A featurette on disk never counts as the trailer.
     used_profile_ids = {d.profile_id for d in active if d.profile_id}
     own_download_ids = {}
     for download in active:
@@ -135,11 +140,16 @@ def evaluate_satisfaction(
             _check_upgrade(detail, profile, owned, videos)
             _add(result, profile, detail)
             continue
-        if unattributed:
+        claimable = next(
+            (d for d in unattributed if d.video_type == profile.video_type),
+            None,
+        )
+        if claimable is not None:
             # satisfied by claiming an existing file. The claim stands
             # even when the file is then upgraded: it is the file of
             # this profile either way.
-            claimed = unattributed.pop(0)
+            claimed = claimable
+            unattributed.remove(claimed)
             result.claims.append((claimed.id, profile.id))
             used_profile_ids.add(profile.id)
             detail = ProfileSatisfaction(
@@ -151,11 +161,44 @@ def evaluate_satisfaction(
             _check_upgrade(detail, profile, [claimed], videos)
             _add(result, profile, detail)
             continue
+        detail = ProfileSatisfaction(profile_id=profile.id, satisfied=False)
+        _check_waits_for_tmdb(detail, profile, videos)
         result.unsatisfied.append(profile)
-        result.details.append(
-            ProfileSatisfaction(profile_id=profile.id, satisfied=False)
-        )
+        result.details.append(detail)
     return result
+
+
+def needs_videos(profiles: list[TrailerProfileRead]) -> bool:
+    """Whether `evaluate_satisfaction` needs the known videos for these
+    profiles: an upgrade reads them, and so does a profile that cannot
+    search, to know whether it waits for TMDB."""
+    return any(
+        p.upgrade_to_tmdb or not getattr(p, "search_youtube", True)
+        for p in profiles
+    )
+
+
+def _check_waits_for_tmdb(
+    detail: ProfileSatisfaction,
+    profile: TrailerProfileRead,
+    videos: list[MediaVideoRead] | None,
+) -> None:
+    """Mark a pending profile that has nothing to download yet (W3).
+
+    A profile with `Search YouTube` off takes known videos only. When no
+    known video of its type suits it, there is nothing to try: the
+    download task skips it without a failed attempt, the refresh task
+    asks TMDB about the item again, and the matrix says that the profile
+    waits for TMDB. Without the videos nothing can be decided, and the
+    profile stays plain pending.
+    """
+    if getattr(profile, "search_youtube", True) or videos is None:
+        return
+    candidates = [c for c in videos if c.video_type == profile.video_type]
+    if choose_candidates(candidates, profile):
+        return
+    detail.awaiting_tmdb = True
+    detail.upgrade_state = "awaiting_tmdb"
 
 
 def _check_upgrade(
@@ -164,7 +207,7 @@ def _check_upgrade(
     owned: list,
     videos: list[MediaVideoRead] | None,
 ) -> None:
-    """Apply `Upgrade To TMDB Trailer` to a satisfied profile, in place.
+    """Apply `Upgrade To TMDB` to a satisfied profile, in place.
 
     A download whose video the upgrade accepts keeps the profile
     satisfied, and so does a video the user chose, in any language. With

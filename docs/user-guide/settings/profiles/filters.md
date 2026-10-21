@@ -64,7 +64,6 @@ Here are the available string filters:
 | `Language`       | Language of the media in Radarr/Sonarr. Eg: 'English'                          |
 | `Studio`         | Studio of the media. Eg: 'Village Roadshow Pictures'                           | 
 | `Media Filename` | Filename of the media. Eg: 'the.matrix.1999.1080p.mkv'                         |
-| `YouTube Trailer ID` | YouTube trailer ID of the media. Eg: 'dQw4w9WgXcQ'                         |
 | `Folder Path`    | Folder path of the media. Eg: '/movies/the.matrix'                             |
 | `IMDB ID`        | IMDB ID of the media. Eg: 'tt0133093'                                          |
 | `TXDB ID`        | Legacy combined ID field — TMDB ID for movies, TVDB ID for series, stored as a string. Eg: `'603'` (movie), `'71663'` (series). Prefer `TMDB ID` or `TVDB ID` integer filters instead — they are type-safe, support proper numeric comparisons, and correctly handle Plex-only items with no external ID. |
@@ -112,6 +111,8 @@ Download filters read the download records of each media item. They are grouped 
 | `Download Added At`             | Date    | Date a downloaded video was added.                                           |
 | `Download File Missing`         | Boolean | `true` if a download record exists but its file was deleted from disk.       |
 | `Has Unknown Profile Download`  | Boolean | `true` if a downloaded video on disk has no owning profile.                  |
+| `Has Videos`                    | Boolean | {{ version_badge("add", "0.14.0") }} `true` if the media item has at least one [known video](../../library/media-details/index.md#known-videos). A saved `YouTube Trailer ID` filter with `Is Empty` or `Is Not Empty` became this filter in `v0.14.0`; a filter with another condition was removed, and the log named it. |
+| `Download Type`                 | String  | {{ version_badge("add", "0.14.0") }} The [Video Type](settings/general.md#video-type) of a downloaded video: `trailer`, `teaser`, `clip`, `featurette`, `behind_the_scenes`, `bloopers` or `other`. |
 
 !!! info "A media item matches when ANY download matches"
     Each download filter checks every download of the media item. The media item matches when at least one download matches the condition. For example, `Download Resolution LESS THAN 1080` matches a media item that has a 720p trailer, even when it also has a 4K one. Only downloads whose files exist on disk are checked — except `Download File Missing`, which exists to find the deleted ones.

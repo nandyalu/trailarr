@@ -232,7 +232,8 @@ the release before it.
   tag/untag) targets v0.14.x; Stage 2 (tags in profile filters) ships with Phase 10.
 - `track-tmdb-upgrade.md` — parallel track: profile setting `Upgrade To TMDB Trailer`
   (+ `Delete Replaced Trailer`) to rebuild an existing library with TMDB trailers.
-  DONE (v0.13.1, Oct 4 2026, PR #696). Phase 9 must make its match type-aware.
+  DONE (v0.13.1, Oct 4 2026, PR #696). Phase 9 made its match type-aware
+  (`upgrade_targets` keeps the profile's type).
 - `phase-03-dynamic-status.md` — DONE (v0.10.2, Jul 30 2026, with Phase 4).
 - `phase-04-monitor-intent.md` — DONE (v0.10.2, Jul 30 2026, with Phase 3).
 - `phase-05-drop-columns.md` — DONE (v0.11.0, Aug 9 2026); baking ~2 weeks (to ~Aug 23)
@@ -245,9 +246,11 @@ the release before it.
 - `phase-08-tmdb.md` — DONE (v0.13.0, Sep 24 2026, PR #682). Closed #511. Baking
   ~3–4 weeks before Phase 9 — watch for TMDB-key, `Trailer Language` and Known-videos
   reports.
-- `phase-09-video-types.md` — amended Oct 1, 2026: decision 11 adds the trailer fields
-  (resolution, codecs, language, subtitles, size, profile) to the Expanded and Table
-  views, from one field registry, one block per trailer.
+- `phase-09-video-types.md` — IN PROGRESS: built Oct 7–8, 2026 on `feat/phase9-video-types`
+  (PR #701), with quiv 1.3.0. Read its "Execution notes": decision 5 amended (the
+  `search_youtube` flag), W4 gate not built, W3 built as the `awaiting_tmdb` state,
+  priority docs corrected (lowest number first). Amended Oct 1, 2026: decision 11 adds
+  the trailer fields to the Expanded and Table views, from one field registry.
 - `phase-10-media-types-seasons.md`
 - `phase-11-issues-v1.md`
 - `fix-missing-trailer-scan.md` — DONE (v0.11.5, PR #666, merged Sep 3 2026). Removes

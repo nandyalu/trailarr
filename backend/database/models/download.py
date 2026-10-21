@@ -3,9 +3,13 @@
 from datetime import datetime, timezone
 
 from pydantic import field_validator
-from sqlmodel import Field
+from sqlmodel import Column, Field, String
 
 from database.models.base import AppSQLModel
+from database.models.video_type import (
+    DEFAULT_VIDEO_TYPE,
+    normalize_video_type,
+)
 
 
 def get_current_time():
@@ -48,6 +52,23 @@ class DownloadBase(AppSQLModel):
     youtube_channel: str = "unknownchannel"
     file_exists: bool = True
     profile_id: int = 0  # ID of the TrailerProfile used
+    # The kind of video this file is: 'trailer', 'teaser', 'featurette',
+    # ... (see `video_type.py`). A download takes the type of its profile.
+    # A file found on disk takes the type that its name and folder say.
+    video_type: str = Field(
+        default=DEFAULT_VIDEO_TYPE,
+        sa_column=Column(
+            String,
+            server_default=DEFAULT_VIDEO_TYPE,
+            nullable=False,
+            index=True,
+        ),
+    )
+
+    @field_validator("video_type", mode="before")
+    @classmethod
+    def validate_video_type(cls, value: str | None) -> str:
+        return normalize_video_type(value)
     added_at: datetime  # When trailer was downloaded (from file)
     updated_at: datetime  # When file was last modified (from file)
 
@@ -101,3 +122,4 @@ class DownloadUpdate(AppSQLModel):
 
     file_exists: bool | None = None
     updated_at: datetime | None = None
+    video_type: str | None = None

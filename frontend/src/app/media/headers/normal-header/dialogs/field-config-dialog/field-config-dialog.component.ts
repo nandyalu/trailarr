@@ -1,9 +1,5 @@
 import {AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, input, output, signal, viewChild} from '@angular/core';
-
-export interface FieldOption {
-  key: string;
-  label: string;
-}
+import {FieldOptionGroup} from 'src/app/media/utils/media-fields';
 
 @Component({
   selector: 'app-field-config-dialog',
@@ -13,7 +9,8 @@ export interface FieldOption {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FieldConfigDialogComponent implements AfterViewInit {
-  readonly fieldOptions = input.required<FieldOption[]>();
+  /** The fields to offer, in groups with one heading each (Media, Trailers). */
+  readonly fieldGroups = input.required<FieldOptionGroup[]>();
   readonly selectedFields = input.required<string[]>();
 
   readonly fieldsChanged = output<string[]>();

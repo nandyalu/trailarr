@@ -299,18 +299,6 @@ class PlexConnectionManager:
                         new_value=self.connection_name,
                     )
                 )
-                # YOUTUBE_ID_CHANGED (initial, if present)
-                if media_read.youtube_trailer_id:
-                    pending_events.append(
-                        EventCreate(
-                            media_id=media_read.id,
-                            event_type=EventType.YOUTUBE_ID_CHANGED,
-                            source=EventSource.SYSTEM,
-                            source_detail="PlexRefresh",
-                            old_value="",
-                            new_value=media_read.youtube_trailer_id,
-                        )
-                    )
                 # Initial MONITOR_CHANGED — records the creation default
                 # (monitor_new_media); syncs never change monitor afterwards
                 pending_events.append(

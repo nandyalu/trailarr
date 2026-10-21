@@ -207,9 +207,10 @@ class TestProcessItemChunkEdges:
         assert self.mgr._stats_added == 1
 
     @pytest.mark.asyncio
-    async def test_new_item_with_youtube_id_fires_event(self):
-        """A newly created item with youtube_trailer_id fires a YOUTUBE_ID_CHANGED
-        event in the pending_events list (lines 254-264)."""
+    async def test_new_item_with_arr_video_id_is_created(self):
+        """Phase 9 (H9): `arr_video_id` is not a media column. A value on it
+        does not break the create, and no YOUTUBE_ID_CHANGED event is made
+        for a new Plex item (the Plex sync reports no video id)."""
         item = _movie_item(self._p, 50)
         folder = f"/plex/{self._p}/movies/Film50"
 
@@ -220,7 +221,7 @@ class TestProcessItemChunkEdges:
 
         def _parse_with_yt(*args, **kwargs):
             mc = original_parse(*args, **kwargs)
-            mc.youtube_trailer_id = "dQw4w9WgXcQ"
+            mc.arr_video_id = "dQw4w9WgXcQ"
             return mc
 
         chunk = [(item, self.section, True, folder)]

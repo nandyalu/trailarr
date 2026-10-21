@@ -1,9 +1,9 @@
 """Turning what TMDB lists into the candidates Trailarr can download.
 
 TMDB returns every video it knows for a title: trailers, teasers, clips,
-featurettes and more, mixed together. Phase 8 downloads trailers, so only
-the trailers become rows. Phase 9 adds the other types, and the
-`video_type` column is already there for them.
+featurettes and more, mixed together. Every type becomes a row, with the
+type that TMDB gives mapped to a `VideoType` (Phase 9). A profile of a
+type then reads the rows of that type only.
 
 The order of the TMDB list is not the order Trailarr wants. The first four
 videos of The Matrix (TMDB 603) are featurettes, and the first trailer of
@@ -14,16 +14,13 @@ each group the order of TMDB stays.
 """
 
 from app_logger import ModuleLogger
-from database.models.mediavideo import (
-    VIDEO_TYPE_TRAILER,
-    MediaVideoCreate,
-    VideoSource,
-)
+from database.models.mediavideo import MediaVideoCreate, VideoSource
+from database.models.video_type import video_type_from_tmdb
 from services.tmdb.models import TMDBVideo
 
 logger = ModuleLogger("TMDBVideos")
 
-# The TMDB type that Phase 8 stores. TMDB writes it exactly like this.
+# The TMDB type of a trailer. TMDB writes it exactly like this.
 TMDB_TYPE_TRAILER = "Trailer"
 
 
@@ -42,27 +39,33 @@ def to_candidates(
         season (int | None): The season, when the list is a season list.
 
     Returns:
-        list[MediaVideoCreate]: The trailers, best first, with `sequence`
-            set to the position. An empty list when TMDB lists no trailer.
+        list[MediaVideoCreate]: The videos of every type, best first
+            inside each type, with `sequence` set to the position inside
+            the type. An empty list when TMDB lists nothing.
     """
-    trailers = [
-        (index, video)
+    typed = [
+        (index, video_type_from_tmdb(video.type).value, video)
         for index, video in enumerate(videos)
-        if video.type.strip().lower() == TMDB_TYPE_TRAILER.lower()
     ]
-    # False sorts before True, so `not official` puts an official trailer
-    # first. The index of TMDB breaks the tie and keeps its order.
-    trailers.sort(key=lambda pair: (not pair[1].official, pair[0]))
+    # Group by type, then official first: False sorts before True, so
+    # `not official` puts an official video first. The index of TMDB
+    # breaks the tie and keeps its order.
+    typed.sort(key=lambda item: (item[1], not item[2].official, item[0]))
 
     candidates: list[MediaVideoCreate] = []
-    for sequence, (_, video) in enumerate(trailers):
+    sequence = 0
+    last_type: str | None = None
+    for _, video_type, video in typed:
+        if video_type != last_type:
+            sequence = 0
+            last_type = video_type
         candidates.append(
             MediaVideoCreate(
                 media_id=media_id,
                 video_id=video.key.strip(),
                 source=VideoSource.TMDB,
                 season=season,
-                video_type=VIDEO_TYPE_TRAILER,
+                video_type=video_type,
                 sequence=sequence,
                 language=video.language,
                 name=video.name,
@@ -70,4 +73,5 @@ def to_candidates(
                 published_at=video.published_at,
             )
         )
+        sequence += 1
     return candidates

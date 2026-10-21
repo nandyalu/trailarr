@@ -1,4 +1,5 @@
 import {FileFolderInfo} from './filefolderinfo';
+import {isTrailerType} from './trailerprofile';
 
 /** The video id of a download when nothing shows which video it is: a file
  * Trailarr found on disk, or one saved before it recorded ids. Mirrors
@@ -27,6 +28,9 @@ export interface Download {
   youtube_channel: string;
   file_exists: boolean;
   profile_id: number; // ID of the TrailerProfile used
+  /** The kind of video: 'trailer', 'teaser', ... (Phase 9). 'trailer' when
+   * the backend does not send it yet. */
+  video_type: string;
   media_id: number;
   added_at: Date; // When trailer was downloaded
   updated_at: Date; // When file was last modified
@@ -46,6 +50,7 @@ export function mapDownload(download: any): Download {
   return {
     ...download,
     file_exists: Boolean(download.file_exists),
+    video_type: download.video_type || 'trailer',
     added_at: parseDate(download.added_at),
     updated_at: parseDate(download.updated_at),
   };
@@ -58,12 +63,30 @@ export interface InflightDownload {
   profile_id: number;
 }
 
+/** True for a download of the trailer type. A download with no type is a
+ * trailer: the backend did not send the type, or the row is older than
+ * Phase 9. The scan also records extras (featurettes, deleted scenes, ...)
+ * as downloads, so a type check is needed wherever "has a trailer" is
+ * meant. */
+export function isTrailerDownload(download: Download): boolean {
+  return isTrailerType(download.video_type);
+}
+
+/** True when the item has a trailer on disk: an active download of the
+ * trailer type. An extra of another type does not count, so an item with
+ * only a featurette is still 'missing' and stays off the Home page. The
+ * `has_downloads` and `download_count` FILTERS keep counting every type. */
+export function hasActiveTrailer(downloads: Download[]): boolean {
+  return downloads.some((download) => download.file_exists && isTrailerDownload(download));
+}
+
 /** List-level status is computed from downloads + monitor (the backend
  * stores no status since v0.11.0). 'downloading' comes only from the
- * runtime in-flight overlay (MediaService.downloadingResource). */
+ * runtime in-flight overlay (MediaService.downloadingResource).
+ * 'downloaded' needs a trailer: an extra alone leaves the item 'missing'. */
 export function computeMediaStatus(monitor: boolean, downloads: Download[], downloading = false): string {
   if (downloading) return 'downloading';
-  if (downloads.some((download) => download.file_exists)) return 'downloaded';
+  if (hasActiveTrailer(downloads)) return 'downloaded';
   if (monitor) return 'monitored';
   return 'missing';
 }
@@ -96,7 +119,6 @@ export interface Media {
   season_count: number;
   overview: string;
   runtime: number;
-  youtube_trailer_id: string;
   folder_path: string;
   imdb_id: string;
   txdb_id: string;
@@ -116,6 +138,10 @@ export interface Media {
   downloaded_at: Date;
   downloads: Download[];
   files: FileFolderInfo | null;
+  /** How many videos Trailarr knows for this item (the `mediavideo` rows).
+   * Not a column: the raw list endpoint computes it, and the `has_videos`
+   * filter reads it. Phase 9 dropped `youtube_trailer_id` (H9). */
+  video_count: number;
 
   plex_rating_key: string | null;
   plex_connection_id: number | null;
@@ -139,6 +165,7 @@ export function mapMedia(media: any): Media {
     added_at: parseDate(media.added_at),
     updated_at: parseDate(media.updated_at),
     downloaded_at: parseDate(media.downloaded_at),
+    video_count: Number(media.video_count ?? 0),
     isImageLoaded: false,
   };
 }
@@ -147,7 +174,6 @@ export interface SearchMedia {
   id: number;
   title: string;
   year: number;
-  youtube_trailer_id: string;
   imdb_id: string;
   txdb_id: string;
   tmdb_id: number | null;

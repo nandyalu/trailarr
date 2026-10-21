@@ -431,12 +431,27 @@ class TestABurstBecomesAFewMessages:
         assert "Trailer Deleted — 1 item" in body
 
 
+def _fake_download(
+    youtube_id="ytabc123", file_exists=True, days_ago=0, video_type="trailer"
+):
+    from datetime import datetime, timedelta, timezone
+
+    return SimpleNamespace(
+        youtube_id=youtube_id,
+        file_exists=file_exists,
+        video_type=video_type,
+        added_at=datetime.now(timezone.utc) - timedelta(days=days_ago),
+    )
+
+
 def _fake_media(**overrides):
+    # Phase 9 (H9): the YouTube link comes from the newest download on
+    # disk, not from a media column.
     base = dict(
         id=7,
         title="Test Movie",
         year=2024,
-        youtube_trailer_id="ytabc123",
+        downloads=[_fake_download()],
         poster_path="/images/movies/posters/x.jpg",
         poster_url=None,
         arr_id=0,
@@ -459,11 +474,48 @@ class TestEnrichedNotifications:
         assert "Trailer Downloaded: Test Movie (2024) [#7] — 1080p" in body
         assert "[YouTube](https://www.youtube.com/watch?v=ytabc123)" in body
 
+    def test_link_is_the_newest_known_download(self):
+        """A scanned file (unknown id) and a deleted file give no link; the
+        newest download with an id does."""
+        downloads = [
+            _fake_download("older00000a", days_ago=5),
+            _fake_download("newest0000b", days_ago=1),
+            _fake_download("unknown0000", days_ago=0),
+            _fake_download("deleted000c", file_exists=False, days_ago=0),
+        ]
+        with patch.object(
+            dispatcher.media_manager,
+            "read",
+            return_value=_fake_media(downloads=downloads),
+        ):
+            body = dispatcher._format_batch(
+                [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "")], {}
+            )
+        assert "watch?v=newest0000b" in body
+
+    def test_a_newer_featurette_does_not_supply_the_trailer_link(self):
+        """The link is labelled Trailer, so an extra never fills it
+        (Copilot review on #701)."""
+        downloads = [
+            _fake_download("trailer000a", days_ago=3),
+            _fake_download("featurette0", days_ago=0, video_type="featurette"),
+        ]
+        with patch.object(
+            dispatcher.media_manager,
+            "read",
+            return_value=_fake_media(downloads=downloads),
+        ):
+            body = dispatcher._format_batch(
+                [EventNote("TRAILER_DOWNLOADED", "SYSTEM", 7, "")], {}
+            )
+        assert "watch?v=trailer000a" in body
+        assert "featurette0" not in body
+
     def test_no_youtube_link_without_trailer_id(self):
         with patch.object(
             dispatcher.media_manager,
             "read",
-            return_value=_fake_media(youtube_trailer_id=None),
+            return_value=_fake_media(downloads=[]),
         ):
             body = dispatcher._format_batch(
                 [EventNote("MEDIA_ADDED", "SYSTEM", 7, "")], {}

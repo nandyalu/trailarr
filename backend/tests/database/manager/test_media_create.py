@@ -120,7 +120,7 @@ class TestCreateOrUpdateBulkUpdatePaths:
             is_movie=True,
             title=title,
             txdb_id=txdb_id,
-            youtube_trailer_id=yt_id,
+            arr_video_id=yt_id,
         )
 
     def test_update_existing_item_increments_updated_count(self):
@@ -163,17 +163,19 @@ class TestCreateOrUpdateBulkUpdatePaths:
         assert created2 is False
         assert updated2 is False
 
-    def test_youtube_id_added_counts_as_updated(self):
-        """Adding a youtube_id to an existing item triggers youtube_id change path
-        (lines 239-249) and returns updated=True."""
+    def test_arr_video_id_alone_does_not_count_as_updated(self):
+        """Phase 9 (H9): the id the Arr reports is not a media column. It
+        goes into the mediavideo table through the sync, so a sync that
+        changes nothing but that id leaves the row as it is."""
         mc = self._mc("tt_upd_003", title="YT Movie", yt_id=None)
         media_manager.create_or_update_bulk([mc])
 
         mc2 = self._mc("tt_upd_003", title="YT Movie", yt_id="dQw4w9WgXcQ")
         result2 = media_manager.create_or_update_bulk([mc2])
-        _, created2, updated2, _ = result2[0]
+        media2, created2, updated2, _ = result2[0]
         assert created2 is False
-        assert updated2 is True
+        assert updated2 is False
+        assert not hasattr(media2, "youtube_trailer_id")
 
     def test_invalid_connection_raises(self):
         """_check_connection_exists_bulk raises when connection_id is invalid (line 193)."""

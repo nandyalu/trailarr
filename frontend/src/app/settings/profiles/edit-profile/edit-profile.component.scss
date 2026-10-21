@@ -324,3 +324,24 @@ dialog.delete-dialog {
   padding: 0 0.5rem;
   color: var(--color-on-surface-variant);
 }
+
+/* The Search section of a profile that does not download a trailer: the
+ * search settings do nothing for it, and the banner says so. */
+.type-banner {
+  margin: 0.75rem 0 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-on-surface);
+  background-color: color-mix(in srgb, var(--color-info) 10%, var(--color-surface-container));
+  border: 1px solid color-mix(in srgb, var(--color-info) 35%, transparent);
+  border-left: 3px solid var(--color-info);
+}
+
+/* In place of Skip If Plex Has Trailer on a profile of another type. */
+.type-note {
+  margin: 0.75rem 0 0.5rem;
+  padding: 0 0.5rem;
+  color: var(--color-on-surface-variant);
+}

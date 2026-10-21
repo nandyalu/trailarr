@@ -14,6 +14,7 @@ from database.manager import trailerprofile
 import database.manager.media as media_manager
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 from services.trailers.trailer import download_trailer
 from services.trailers.trailers.batch import batch_download_task
 from services.files.files_handler import FilesHandler
@@ -31,13 +32,18 @@ async def _download_trailer(
     media: MediaRead,
     profile: TrailerProfileRead,
     retry_count: int,
+    video_id: str | None = None,
     *,
     job_id: str | None = None,
     stop_event: threading.Event | None = None,
 ) -> None:
     """Run the async task in a separate event loop."""
     await download_trailer(
-        media, profile, retry_count, stop_event=stop_event
+        media,
+        profile,
+        retry_count,
+        stop_event=stop_event,
+        video_id=video_id,
     )
     return
 
@@ -67,7 +73,9 @@ def download_trailer_by_id(
     profile = trailerprofile.get_trailerprofile(profile_id)
 
     logger.info(
-        f"Trailarr downloads the trailer for '{media.title}'.",
+        f"Trailarr downloads the"
+        f" {video_type_label(profile.video_type).lower()} for"
+        f" '{media.title}'.",
         **logger.media(media_id),
     )
 
@@ -82,23 +90,25 @@ def download_trailer_by_id(
         # If yt_id is provided, always use it,
         # disable retries as retries will download a different trailer
         retry_count = 0
-        media.youtube_trailer_id = yt_id
-    elif profile.always_search:
-        # If always search is enabled, do not use the id from the database
-        media.youtube_trailer_id = None
+    # `Always Search` is applied by the resolver: it skips every known
+    # video and searches YouTube.
 
     # Add Task to scheduler to download trailer
     scheduler.add_task(
-        task_name=f"Download Trailer for {media.title}",
+        task_name=(
+            f"Download {video_type_label(profile.video_type)}"
+            f" for {media.title}"
+        ),
         func=_download_trailer,
         interval=86400.0,
         delay=1,
         run_once=True,
-        args=(media, profile, retry_count),
+        args=(media, profile, retry_count, yt_id or None),
     )
     msg = (
-        "Trailarr started the trailer download in the background for"
-        f" {_type}: '{media.title}'"
+        f"Trailarr started the"
+        f" {video_type_label(profile.video_type).lower()} download in the"
+        f" background for {_type}: '{media.title}'"
     )
     if yt_id:
         msg += f" from video {yt_id}"
@@ -198,11 +208,17 @@ def batch_download_trailers(profile_id: int, media_ids: list[int]) -> None:
 
     # Return if no media to download
     if not media_trailer_list:
-        logger.info("Every monitored media item has its trailer.")
+        logger.info(
+            "Trailarr has no media item to download the"
+            f" {video_type_label(profile.video_type).lower()} for."
+            " It skipped every selected item."
+        )
         return
     # Add Task to scheduler to download trailers
     scheduler.add_task(
-        task_name="Batch Download Trailers",
+        task_name=(
+            f"Batch Download ({video_type_label(profile.video_type)})"
+        ),
         func=_batch_download_task,
         interval=86400.0,
         delay=1,

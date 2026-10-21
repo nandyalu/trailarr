@@ -161,7 +161,6 @@ async def test_refresh_deletes_trailers_not_enabled(monkeypatch, tmp_path):
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -192,7 +191,6 @@ async def test_refresh_deletes_trailers_not_enabled(monkeypatch, tmp_path):
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -306,7 +304,6 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr(
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -337,7 +334,6 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr(
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -444,7 +440,6 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_exists(
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -475,7 +470,6 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_exists(
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -591,7 +585,6 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_deleted
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 
@@ -622,7 +615,6 @@ async def test_refresh_deletes_trailers_for_media_removed_from_arr_media_deleted
         fanart_url=None,
         poster_path=None,
         fanart_path=None,
-        youtube_trailer_id=None,
         imdb_id=None,
     )
 

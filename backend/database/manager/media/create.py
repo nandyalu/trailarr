@@ -5,8 +5,6 @@ from sqlmodel import Session, col, select
 
 from . import base
 import database.manager.connection as connection_manager
-import database.manager.event as event_manager
-from database.models.event import EventSource
 from database.models.media import (
     Media,
     MediaCreate,
@@ -326,7 +324,7 @@ def _create_or_update(
             # exclude_defaults=True,
             exclude_none=True,
             exclude={
-                "youtube_trailer_id",
+                "arr_video_id",
                 "downloaded_at",
                 "created_at",
                 "updated_at",
@@ -337,25 +335,14 @@ def _create_or_update(
         )
         db_media.sqlmodel_update(media_update_data)
         _updated = False
-        if not db_media.youtube_trailer_id and media_create.youtube_trailer_id:
-            event_manager.track_youtube_id_changed(
-                media_id=db_media.id,  # type: ignore
-                old_yt_id=db_media.youtube_trailer_id,
-                new_yt_id=media_create.youtube_trailer_id,
-                source=EventSource.SYSTEM,
-                source_detail="ConnectionRefresh",
-                session=session,
-            )
-            db_media.youtube_trailer_id = media_create.youtube_trailer_id
-            _updated = True
-        elif base.has_updated(
+        if base.has_updated(
             db_media,
             media_create,
             ignore_attrs={
                 "monitor",
                 "updated_at",
                 "downloaded_at",
-                "youtube_trailer_id",
+                "arr_video_id",
                 "created_at",
             },
         ):
@@ -367,8 +354,6 @@ def _create_or_update(
         # Doesn't exist, Create it
         db_media = Media.model_validate(media_create)
         session.add(db_media)
-        # youtube_id tracking for new media is done in connection_manager
-        # after media_added event to ensure correct event ordering
         return db_media, True, False, False
 
 

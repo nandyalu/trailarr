@@ -161,13 +161,11 @@ class TestDownloadsCannotWriteMonitor:
         media_manager.update_download_facts(
             MediaUpdateDC(
                 id=media_id,
-                yt_id="yt123",
                 downloaded_at=downloaded_at,
             )
         )
         media = media_manager.read(media_id)
         assert media.monitor is True  # unchanged despite download facts write
-        assert media.youtube_trailer_id == "yt123"
         assert media.downloaded_at is not None
 
     def test_media_update_dc_has_no_monitor_field(self):

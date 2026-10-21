@@ -2,22 +2,35 @@ import {DatePipe} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
-import {DurationConvertPipe} from 'src/app/shared/pipes/duration-pipe';
 import {ScrollNearEndDirective} from 'src/app/shared/directives/scroll-near-end-directive';
 import {Media} from 'src/app/models/media';
+import {
+  buildTrailerBlock,
+  EMPTY_VALUE,
+  FieldContext,
+  FieldDef,
+  headerLabel,
+  isTrailerField,
+  mediaCellValue,
+  resolveFields,
+  TrailerBlock,
+  trailerCellLines,
+} from 'src/app/media/utils/media-fields';
 import {MediaService} from 'src/app/services/media.service';
+import {ProfileService} from 'src/app/services/profile.service';
 import {RouteMedia} from 'src/routing';
 import {StatusIconComponent} from '../status-icon/status-icon.component';
 
 @Component({
   selector: 'media-table-view',
-  imports: [DatePipe, DisplayTitlePipe, DurationConvertPipe, RouterLink, ScrollNearEndDirective, StatusIconComponent],
+  imports: [DatePipe, DisplayTitlePipe, RouterLink, ScrollNearEndDirective, StatusIconComponent],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableComponent {
   private readonly mediaService = inject(MediaService);
+  private readonly profileService = inject(ProfileService);
 
   protected readonly checkedMediaIDs = this.mediaService.checkedMediaIDs;
   protected readonly defaultDisplayCount = this.mediaService.defaultDisplayCount;
@@ -30,33 +43,29 @@ export class TableComponent {
 
   protected readonly onMediaChecked = this.mediaService.onMediaChecked.bind(this.mediaService);
   protected readonly RouteMedia = RouteMedia;
+  protected readonly EMPTY_VALUE = EMPTY_VALUE;
+  protected readonly headerLabel = headerLabel;
 
-  readonly allColumnDefs: {key: string; label: string}[] = [
-    {key: 'year', label: 'Year'},
-    {key: 'status', label: 'Status'},
-    {key: 'runtime', label: 'Runtime'},
-    {key: 'language', label: 'Language'},
-    {key: 'studio', label: 'Studio'},
-    {key: 'season_count', label: 'Seasons'},
-    {key: 'monitor', label: 'Monitored'},
-    {key: 'arr_monitored', label: 'Arr Monitored'},
-    {key: 'media_exists', label: 'Media Exists'},
-    {key: 'imdb_id', label: 'IMDB ID'},
-    {key: 'txdb_id', label: 'TVDB/TMDB ID'},
-    {key: 'folder_path', label: 'Folder Path'},
-    {key: 'media_filename', label: 'Filename'},
-    {key: 'added_at', label: 'Date Added'},
-    {key: 'updated_at', label: 'Date Updated'},
-    {key: 'downloaded_at', label: 'Date Downloaded'},
-    {key: 'plex_rating_key', label: 'Plex Rating Key'},
-    {key: 'plex_trailer', label: 'Plex Trailer'},
-  ];
+  /** The saved column keys, resolved against the field registry. A key the
+   * registry does not know is dropped. */
+  protected readonly activeColumns = computed(() => resolveFields(this.tableColumns(), 'table'));
 
-  protected readonly activeColumns = computed(() => {
-    const keys = this.tableColumns();
-    return keys
-      .map((k) => this.allColumnDefs.find((d) => d.key === k))
-      .filter((d): d is {key: string; label: string} => d !== undefined);
+  private readonly hasTrailerColumns = computed(() => this.activeColumns().some(isTrailerField));
+
+  /** Profile id -> name, for the Trailer Profile column. */
+  private readonly fieldContext = computed<FieldContext>(() => ({
+    profileNames: new Map(this.profileService.allProfiles.value().map((p) => [p.id, p.customfilter.filter_name])),
+  }));
+
+  /** One trailer order per shown media item, computed once and read by
+   * every trailer cell, so the stacked lines align across the columns. */
+  private readonly trailerBlocks = computed(() => {
+    const blocks = new Map<number, TrailerBlock>();
+    if (!this.hasTrailerColumns()) return blocks;
+    for (const media of this.displayMedia()) {
+      blocks.set(media.id, buildTrailerBlock(media));
+    }
+    return blocks;
   });
 
   onNearEndScroll(): void {
@@ -64,39 +73,31 @@ export class TableComponent {
     this.displayCount.update((count) => count + this.defaultDisplayCount);
   }
 
-  protected isDateColumn(key: string): boolean {
-    return key === 'added_at' || key === 'updated_at' || key === 'downloaded_at';
+  protected isDateColumn(field: FieldDef): boolean {
+    return field.group === 'media' && field.date !== undefined;
   }
 
-  protected isRuntimeColumn(key: string): boolean {
-    return key === 'runtime';
+  protected getDateValue(field: FieldDef, media: Media): Date | null {
+    return field.group === 'media' && field.date ? field.date(media) : null;
   }
 
-  protected getDateValue(media: Media, key: string): Date | null {
-    if (key === 'added_at') return media.added_at;
-    if (key === 'updated_at') return media.updated_at;
-    if (key === 'downloaded_at') return media.downloaded_at;
-    return null;
+  protected getCellValue(field: FieldDef, media: Media): string {
+    if (isTrailerField(field)) return EMPTY_VALUE;
+    return mediaCellValue(field, media) ?? EMPTY_VALUE;
   }
 
-  protected getCellValue(media: Media, key: string): string {
-    switch (key) {
-      case 'year':          return media.year ? String(media.year) : '—';
-      case 'status':        return media.status ? media.status.charAt(0).toUpperCase() + media.status.slice(1) : '—';
-      case 'language':      return media.language || '—';
-      case 'studio':        return media.studio || '—';
-      case 'season_count':  return media.is_movie ? '—' : (media.season_count ? String(media.season_count) : '—');
-      case 'monitor':       return media.monitor ? 'Yes' : 'No';
-      case 'arr_monitored': return media.arr_monitored ? 'Yes' : 'No';
-      case 'media_exists':  return media.media_exists ? 'Yes' : 'No';
-      case 'imdb_id':       return media.imdb_id || '—';
-      case 'txdb_id':       return media.txdb_id || '—';
-      case 'folder_path':   return media.folder_path || '—';
-      case 'media_filename': return media.media_filename || '—';
-      case 'plex_rating_key': return media.plex_rating_key || '—';
-      case 'plex_trailer':  return media.plex_trailer === null ? '—' : media.plex_trailer ? 'Yes' : 'No';
-      default:              return '—';
-    }
+  /** The stacked lines of a trailer cell: one per shown trailer, or the
+   * summary for the count field. Empty when there is no active download. */
+  protected getTrailerLines(field: FieldDef, media: Media): string[] {
+    if (!isTrailerField(field)) return [];
+    const block = this.trailerBlocks().get(media.id) ?? buildTrailerBlock(media);
+    return trailerCellLines(field, block, this.fieldContext());
+  }
+
+  /** How many trailers the cap hides in this cell. Zero for the count field. */
+  protected getTrailerMore(field: FieldDef, media: Media): number {
+    if (!isTrailerField(field) || field.summary) return 0;
+    return this.trailerBlocks().get(media.id)?.more ?? 0;
   }
 
   protected checkAll(checked: boolean): void {

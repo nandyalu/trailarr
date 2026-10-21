@@ -8,7 +8,11 @@ from .read import (
     read_by_profile_id,
     read_unattributed,
 )
-from .update import update, mark_as_deleted, update_profile_id
+from .update import (
+    update,
+    mark_as_deleted,
+    update_profile_id,
+)
 
 __all__ = [
     "create",

@@ -15,6 +15,8 @@ from datetime import datetime, timedelta, timezone
 from contextlib import closing
 from dataclasses import dataclass
 
+from quiv import JobCancelledError
+
 from app_logger import ModuleLogger
 from config.settings import app_settings
 from database.manager import trailerprofile
@@ -31,9 +33,10 @@ from database.models.downloadattempt import (
 )
 from database.models.media import MediaRead
 from database.models.trailerprofile import TrailerProfileRead
+from database.models.video_type import video_type_label
 from services.profiles import find_matching_profiles
-from services.satisfaction import evaluate_satisfaction
-from services.trailers.trailers.pending import read_upgrade_videos
+from services.satisfaction import evaluate_satisfaction, needs_videos
+from services.trailers.trailers.pending import read_known_videos
 from services.trailers import trailer as trailer_downloader
 from services.tmdb.refresh import TMDBRefresher
 from services.trailers.inflight import inflight_registry
@@ -237,7 +240,8 @@ def _build_work_list(
         (attempt.media_id, attempt.profile_id): attempt
         for attempt in attempt_manager.read_all()
     }
-    videos_by_media = read_upgrade_videos(enabled_profiles)
+    videos_needed = needs_videos(enabled_profiles)
+    videos_by_media = read_known_videos(enabled_profiles)
     work_items: list[_WorkItem] = []
     scanned_media = 0
 
@@ -251,9 +255,12 @@ def _build_work_list(
             matching_profiles = find_matching_profiles(media, enabled_profiles)
             if not matching_profiles:
                 continue
-            result = evaluate_satisfaction(
-                media, matching_profiles, videos_by_media.get(media.id)
+            # An item with no rows gets an empty list, not None: an empty
+            # list is an answer, and None would leave the item undecided.
+            videos = (
+                videos_by_media.get(media.id, []) if videos_needed else None
             )
+            result = evaluate_satisfaction(media, matching_profiles, videos)
             if result.claims:
                 # Claims write to the database. A row deleted by a
                 # concurrent Arr refresh must cost this media item, not
@@ -287,10 +294,18 @@ def _build_work_list(
     return work_items, scanned_media
 
 
-def _read_current_eligible_profiles(
+async def _read_current_eligible_profiles(
     media_id: int,
+    refresher: TMDBRefresher | None = None,
 ) -> tuple[MediaRead, list[TrailerProfileRead]]:
-    """Re-read media and profiles before deciding what to download."""
+    """Re-read media and profiles before deciding what to download.
+
+    Args:
+        media_id (int): The media item.
+        refresher (TMDBRefresher | None): The TMDB client of this run.
+            With one, a stale video list is refreshed before the known
+            videos decide anything.
+    """
     media = media_manager.read(media_id)
     if not media.monitor:
         return media, []
@@ -299,8 +314,15 @@ def _read_current_eligible_profiles(
     enabled_profiles = [profile for profile in all_profiles if profile.enabled]
     matching_profiles = find_matching_profiles(media, enabled_profiles)
     videos = None
-    if any(profile.upgrade_to_tmdb for profile in matching_profiles):
-        videos = video_manager.read_candidates(media.id)
+    if needs_videos(matching_profiles):
+        # The known videos decide whether a profile waits for TMDB (W3)
+        # or upgrades. A stale list would drop a profile from this run
+        # on an old answer, so the list is refreshed first. The refresh
+        # marks the item fresh, so `_process_single_media_item` does not
+        # ask TMDB a second time for the same item.
+        if refresher is not None:
+            await refresh_videos_if_stale(media, refresher)
+        videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_profiles, videos)
     if result.claims:
         profiles_by_id = {
@@ -318,7 +340,21 @@ def _read_current_eligible_profiles(
                 f" '{media.title}'.",
                 **logger.media(media.id),
             )
-    return media, _filter_backoff_eligible(media, result.unsatisfied)
+    # W3: a profile that cannot search and has no known video of its type
+    # waits for TMDB. It is not attempted, so it never fails or backs off.
+    waiting = {d.profile_id for d in result.details if d.awaiting_tmdb}
+    unsatisfied = []
+    for profile in result.unsatisfied:
+        if profile.id in waiting:
+            logger.info(
+                f"The profile '{profile.customfilter.filter_name}' waits for"
+                f" TMDB to list a video for '{media.title}'. Search YouTube"
+                " is off for it, so Trailarr does not search.",
+                **logger.media(media.id),
+            )
+            continue
+        unsatisfied.append(profile)
+    return media, _filter_backoff_eligible(media, unsatisfied)
 
 
 _PREVIEW_LOG_LIMIT = 25
@@ -340,8 +376,8 @@ async def _run_preview_pass() -> None:
             # The item has a trailer. "Would download" read as if it had
             # none, and the page says "would replace" for the same item.
             logger.info(
-                f"Preview: Trailarr would replace the trailer of"
-                f" '{item.title}' with a TMDB trailer, with the profile"
+                f"Preview: Trailarr would replace the video of"
+                f" '{item.title}' with a TMDB video, with the profile"
                 f" '{item.profile_name}'.",
                 **logger.media(item.media_id),
             )
@@ -498,8 +534,10 @@ async def download_missing_trailers(
             attempted_pairs.update(proposed_pairs)
 
             try:
-                media, current_profiles = _read_current_eligible_profiles(
-                    work_item.media_id
+                media, current_profiles = (
+                    await _read_current_eligible_profiles(
+                        work_item.media_id, refresher
+                    )
                 )
             except ItemNotFoundError:
                 skipped_items += len(work_item.profile_ids)
@@ -509,6 +547,9 @@ async def download_missing_trailers(
                     **logger.media(work_item.media_id),
                 )
                 continue
+            except JobCancelledError:
+                # The job was cancelled. Let it reach the scheduler.
+                raise
             except Exception:
                 skipped_items += len(work_item.profile_ids)
                 logger.exception(
@@ -557,6 +598,9 @@ async def download_missing_trailers(
                 successful_downloads += downloads
                 skipped_items += skips
                 attempted_downloads += attempts
+            except JobCancelledError:
+                # The job was cancelled. Let it reach the scheduler.
+                raise
             except Exception:
                 logger.exception(
                     f"Trailarr could not process media '{media.title}'.",
@@ -566,7 +610,7 @@ async def download_missing_trailers(
     logger.info(
         "Trailarr finished the missing-trailer task. It scanned"
         f" {scanned_media} media rows, attempted {attempted_downloads}"
-        f" downloads, downloaded {successful_downloads} trailers, and"
+        f" downloads, downloaded {successful_downloads} videos, and"
         f" skipped {skipped_items} profile items."
     )
 
@@ -587,7 +631,7 @@ async def _process_single_media_item(
     never reaches the network, so it must not push the next real download
     further away."""
     logger.info(
-        f"Trailarr examines '{media.title}' for trailer downloads.",
+        f"Trailarr examines '{media.title}' for videos to download.",
         **logger.media(media.id),
     )
     successful_downloads = 0
@@ -618,11 +662,12 @@ async def _process_single_media_item(
             )
 
         _profile_name = profile.customfilter.filter_name
+        _type_label = video_type_label(profile.video_type).lower()
         download_attempted = False
         try:
             logger.info(
-                f"Trailarr downloads a trailer for '{media.title}' with the"
-                f" profile '{_profile_name}'.",
+                f"Trailarr downloads the {_type_label} for '{media.title}'"
+                f" with the profile '{_profile_name}'.",
                 **logger.media(media.id),
             )
             download_successful = await trailer_downloader.download_trailer(
@@ -638,6 +683,10 @@ async def _process_single_media_item(
                 # (attempt record cleared inside download_trailer on success)
                 # Phase 4: profiles no longer stop monitoring on success —
                 # every unsatisfied matching profile gets its download.
+        except JobCancelledError:
+            # The job was cancelled, not the download failed: no attempt
+            # record, no backoff. Let it reach the scheduler.
+            raise
         except (DownloadFailedError, Exception) as e:
             download_attempted = True
             attempt = attempt_manager.record_failure(
@@ -645,14 +694,14 @@ async def _process_single_media_item(
                 profile.id,
                 str(e) or type(e).__name__,
                 # The candidate that this attempt used. `download_trailer`
-                # writes it onto the media object as it resolves, and the
-                # resolver puts it last on the next run so a video that
-                # YouTube no longer has does not block the others.
-                video_id=media.youtube_trailer_id,
+                # puts it on the error it raises, and the resolver puts it
+                # last on the next run so a video that YouTube no longer
+                # has does not block the others.
+                video_id=getattr(e, "video_id", None),
             )
             logger.warning(
-                f"Trailarr could not download a trailer for '{media.title}' with"
-                f" the profile '{_profile_name}'. Attempt"
+                f"Trailarr could not download the {_type_label} for"
+                f" '{media.title}' with the profile '{_profile_name}'. Attempt"
                 f" {attempt.attempt_count}.",
                 **logger.media(media.id),
             )
@@ -683,7 +732,7 @@ def _downloads_to_replace(
     """The trailers that an upgrade of this profile would replace.
 
     An unsatisfied profile that already has a trailer on disk is only
-    unsatisfied because `Upgrade To TMDB Trailer` wants a better one. The
+    unsatisfied because `Upgrade To TMDB` wants a better one. The
     downloads are read again here, because a claim made in this pass is
     in the database but not in `media.downloads`.
 
@@ -733,4 +782,7 @@ async def refresh_videos_if_stale(
             return False
     await refresher.refresh_media(media)
     media_manager.mark_videos_refreshed(media.id)
+    # The item in hand is fresh too, so a second call in the same run
+    # (the re-check before a download, then the download) is a no-op.
+    media.last_videos_refresh = datetime.now(timezone.utc)
     return True

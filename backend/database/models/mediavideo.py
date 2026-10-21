@@ -18,6 +18,7 @@ from sqlalchemy import Column, Enum as sa_Enum, UniqueConstraint
 from sqlmodel import Field
 
 from database.models.base import AppSQLModel
+from database.models.video_type import DEFAULT_VIDEO_TYPE
 
 
 def get_current_time():
@@ -47,10 +48,9 @@ SOURCE_PRECEDENCE: dict[str, int] = {
     VideoSource.SEARCH.value: 3,
 }
 
-# Phase 9 replaces this with the full set of video types. Until then every
-# row is a trailer, and the column exists so that no migration is necessary
-# when the other types arrive.
-VIDEO_TYPE_TRAILER = "trailer"
+# The default type of a row. The full set lives in `video_type.py`; this
+# name stays for the modules that only need the default.
+VIDEO_TYPE_TRAILER = DEFAULT_VIDEO_TYPE
 
 
 class MediaVideoBase(AppSQLModel):
