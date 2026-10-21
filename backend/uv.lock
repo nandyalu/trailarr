@@ -241,15 +241,6 @@ wheels = [
 ]
 
 [[package]]
-name = "async-lru"
-version = "2.3.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e8/1f/989ecfef8e64109a489fff357450cb73fa73a865a92bd8c272170a6922c2/async_lru-2.3.0.tar.gz", hash = "sha256:89bdb258a0140d7313cf8f4031d816a042202faa61d0ab310a0a538baa1c24b6", size = 16332, upload-time = "2026-03-19T01:04:32.413Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/e2/c2e3abf398f80732e58b03be77bde9022550d221dd8781bf586bd4d97cc1/async_lru-2.3.0-py3-none-any.whl", hash = "sha256:eea27b01841909316f2cc739807acea1c623df2be8c5cfad7583286397bb8315", size = 8403, upload-time = "2026-03-19T01:04:30.883Z" },
-]
-
-[[package]]
 name = "attrs"
 version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2511,7 +2502,6 @@ dependencies = [
     { name = "aiosqlite" },
     { name = "alembic" },
     { name = "apprise" },
-    { name = "async-lru" },
     { name = "bcrypt" },
     { name = "fastapi", extra = ["standard-no-fastapi-cloud-cli"] },
     { name = "greenlet" },
@@ -2554,7 +2544,6 @@ requires-dist = [
     { name = "aiosqlite", specifier = "==0.22.1" },
     { name = "alembic", specifier = "==1.20.0" },
     { name = "apprise", specifier = ">=1.12.0,<2" },
-    { name = "async-lru", specifier = "==2.3.0" },
     { name = "bcrypt", specifier = "==5.0.0" },
     { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.143.3" },
     { name = "greenlet", specifier = "==3.5.6" },
