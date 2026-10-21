@@ -835,3 +835,70 @@ class TestDispatcherLifecycle:
     @pytest.mark.asyncio
     async def test_stop_without_start_is_a_noop(self):
         await dispatcher.stop()  # must not raise
+
+
+class TestAppriseTwo:
+    """Apprise 2 picks the Discord format per send from the URL, answers
+    with an AppriseResult, and logs why a send failed. No network:
+    requests.post is intercepted."""
+
+    HTTPS_FORM = "https://discord.com/api/webhooks/123456789012345678/abcDEF_token-1"
+
+    def _send(self, url: str, status_code: int = 200):
+        resp = MagicMock(status_code=status_code, content=b"", headers={}, text="")
+        with patch("requests.post", return_value=resp) as post:
+            result = dispatcher._send_sync(url, "Trailarr", "[YouTube](https://youtu.be/x)")
+        payload = None
+        if post.call_args:
+            raw = post.call_args.kwargs.get("data") or post.call_args.args[1]
+            payload = json.loads(raw)
+        return result, payload
+
+    def test_pasted_https_webhook_sends_a_markdown_embed(self):
+        result, payload = self._send(self.HTTPS_FORM)
+        assert result and result.ok and result.detail == ""
+        assert "[YouTube](https://youtu.be/x)" in payload["embeds"][0]["description"]
+
+    def test_discord_url_keeps_its_own_options(self):
+        url = "discord://123456789012345678/abcDEF_token-1?avatar=no"
+        assert dispatcher._discord_markdown_url(url).endswith("?avatar=no&format=markdown")
+        result, payload = self._send(url)
+        assert result and "embeds" in payload
+
+    def test_a_format_the_user_chose_is_kept(self):
+        url = "discord://123456789012345678/abcDEF_token-1?format=text"
+        assert dispatcher._discord_markdown_url(url) == url
+
+    def test_non_discord_url_is_untouched(self):
+        url = "json://localhost/notify"
+        assert dispatcher._discord_markdown_url(url) == url
+
+    def test_failure_names_the_http_error(self):
+        result, _ = self._send(self.HTTPS_FORM, status_code=400)
+        assert not result
+        assert "did not accept" in result.detail and "400" in result.detail
+
+    def test_invalid_url_is_refused_without_a_send(self):
+        result, payload = self._send("not a url at all")
+        assert not result and payload is None
+        assert "URL" in result.detail
+
+    @pytest.mark.asyncio
+    async def test_dispatch_warning_names_the_reason(self):
+        make_channel(
+            name="generic",
+            url="json://localhost/notify",
+            event_types=["TRAILER_DOWNLOADED"],
+        )
+        dispatcher.enqueue("TRAILER_DOWNLOADED", "SYSTEM", None, "yt0")
+        with (
+            patch.object(
+                dispatcher, "_send_sync",
+                return_value=dispatcher.SendResult(False, "The service did not accept the message. error=400."),
+            ),
+            patch.object(dispatcher.logger, "warning") as warn,
+        ):
+            await dispatcher._dispatch_pending()
+        assert warn.call_count == 1
+        assert "error=400" in warn.call_args[0][0]
+        assert "Test button" in warn.call_args[0][0]
