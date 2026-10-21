@@ -6,6 +6,9 @@ short reason that names the fix, stored in the attempt's ``last_error``
 and shown in the UI and logs. Unknown errors pass through unchanged.
 """
 
+import errno
+
+
 # (signature fragments, classified reason) — first match wins.
 # Fragments are matched case-insensitively against the full error text.
 _SIGNATURES: list[tuple[tuple[str, ...], str]] = [
@@ -90,6 +93,54 @@ _SIGNATURES: list[tuple[tuple[str, ...], str]] = [
         ),
     ),
 ]
+
+
+# A write that the media folder refuses says nothing about the video. The
+# download path reads this before it retries, so it does not burn through
+# the other candidates, and the attempt names the folder and the fix.
+_FOLDER_ERRNOS: dict[int, str] = {
+    errno.EACCES: (
+        "Trailarr cannot write to the folder '{folder}'. Check the owner"
+        " and the permissions of the folder, and the PUID and PGID of the"
+        " container."
+    ),
+    errno.EPERM: (
+        "Trailarr cannot write to the folder '{folder}'. Check the owner"
+        " and the permissions of the folder, and the PUID and PGID of the"
+        " container."
+    ),
+    errno.EROFS: "The folder '{folder}' is on a read-only file system.",
+    errno.ENOSPC: "The disk that holds '{folder}' is full.",
+    errno.EDQUOT: "The disk that holds '{folder}' is full.",
+}
+
+
+def classify_folder_error(exc: BaseException) -> str | None:
+    """The reason with the fix when the error is about the media folder.
+
+    Args:
+        exc: The exception a download raised.
+
+    Returns:
+        A sentence that names the folder and the fix, or None when the
+        error is not a refused write, a read-only mount, or a full disk.
+    """
+    if not isinstance(exc, OSError) or exc.errno not in _FOLDER_ERRNOS:
+        return None
+    folder = str(exc.filename or exc.filename2 or "").strip() or "the media folder"
+    return _FOLDER_ERRNOS[exc.errno].format(folder=folder)
+
+
+def error_text(exc: BaseException) -> str:
+    """The message of an exception followed by its notes.
+
+    A yt-dlp failure keeps the tool's output in a note. The attempt record
+    stores this text, and the signatures above match against it, so the
+    notes have to be part of it.
+    """
+    text = str(exc) or type(exc).__name__
+    notes = [n for n in getattr(exc, "__notes__", []) if n]
+    return "\n".join([text, *notes]) if notes else text
 
 
 def classify_ytdlp_error(error_text: str | None) -> str | None:

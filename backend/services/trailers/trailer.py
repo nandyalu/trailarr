@@ -42,6 +42,7 @@ from services.trailers import (
 )
 from services.trailers.video_analysis import VideoInfo
 from exceptions import DownloadFailedError, StopEventSetError
+from utils.error_classify import classify_folder_error
 
 logger = ModuleLogger("TrailersDownloader")
 
@@ -443,6 +444,16 @@ async def download_trailer(
         )
         raise
     except Exception as e:
+        folder_reason = classify_folder_error(e)
+        if folder_reason:
+            # The folder refused the file. The video is fine, so no other
+            # candidate is tried, and the attempt names the folder.
+            logger.error(
+                f"Trailarr could not save the {kind} for '{media.title}'."
+                f" {folder_reason}",
+                **logger.media(media.id),
+            )
+            raise DownloadFailedError(folder_reason, video_id=video_id)
         logger.exception(
             f"Trailarr could not download the {kind} for"
             f" '{media.title}': {e}",
@@ -474,10 +485,12 @@ async def download_trailer(
                 replace=replace,
             )
         # The attempt record keeps the video this try used, so the
-        # resolver puts it last on the next run.
+        # resolver puts it last on the next run. The cause travels with
+        # the error, so the attempt stores a reason, not only this line.
         raise DownloadFailedError(
             f"Trailarr could not download the {kind} for"
-            f" '{media.title}'.",
+            f" '{media.title}'. {e}",
+            output="\n".join(getattr(e, "__notes__", [])) or None,
             video_id=video_id,
         )
     finally:

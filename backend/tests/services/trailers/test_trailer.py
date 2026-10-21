@@ -502,6 +502,45 @@ class TestDownloadTrailerRetryBehavior:
     @patch("services.trailers.trailer.trailer_search.get_video_id")
     @patch("services.trailers.trailer.download_video")
     @patch("services.trailers.trailer.trailer_file.verify_download")
+    @patch("services.trailers.trailer.trailer_file.move_trailer_to_folder")
+    @patch("services.trailers.trailer.media_manager.update_download_facts")
+    async def test_a_refused_folder_write_does_not_try_another_video(
+        self,
+        mock_update_facts,
+        mock_move,
+        mock_verify,
+        mock_download,
+        mock_get_video_id,
+        mock_media,
+        mock_profile,
+    ):
+        """A folder that refuses the file says nothing about the video:
+        no retry with the next candidate, and the error names the folder
+        and the fix, with the video that the attempt used."""
+        import errno
+
+        mock_get_video_id.side_effect = ["first_id", "second_id", "third_id"]
+        mock_download.return_value = "/tmp/test-trailer.mp4"
+        mock_verify.return_value = (True, {"duration": 90})
+        mock_move.side_effect = PermissionError(
+            errno.EACCES, "Permission denied", "/media/tv/Show (2026)/Trailers"
+        )
+
+        from services.trailers.trailer import download_trailer
+
+        with pytest.raises(DownloadFailedError) as exc:
+            await download_trailer(mock_media, mock_profile, retry_count=2)
+
+        assert mock_get_video_id.call_count == 1
+        assert mock_download.call_count == 1
+        assert "/media/tv/Show (2026)/Trailers" in str(exc.value)
+        assert "PUID" in str(exc.value)
+        assert exc.value.video_id == "first_id"
+
+    @pytest.mark.asyncio
+    @patch("services.trailers.trailer.trailer_search.get_video_id")
+    @patch("services.trailers.trailer.download_video")
+    @patch("services.trailers.trailer.trailer_file.verify_download")
     @patch("services.trailers.trailer.media_manager.update_download_facts")
     async def test_no_retry_when_retry_count_is_zero(
         self,
