@@ -81,7 +81,7 @@ Standard checklist, in addition to each phase's listed pages:
 | v0.12.1 | — | Refresh tasks, health checks, calmer notifications (H22) | ✅ shipped Sep 12, 2026 | — |
 | v0.13.0 | 8 | TMDB integration (media-videos candidates table) + onboarding C + filter counts (#618) + backup retention (E1, #681) | ✅ shipped Sep 24, 2026 | ~4 weeks |
 | v0.13.1 | — | Upgrade To TMDB Trailer (`track-tmdb-upgrade.md`) + failing-downloads view + scheduler worker-slot fix (quiv#86) + logs WAL fix | ✅ shipped Oct 4, 2026 | — |
-| v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) + trailer fields in the Expanded/Table views | ~Oct 22, 2026 | ~4 weeks |
+| v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) + trailer fields in the Expanded/Table views + dependency security fixes | ✅ shipped Oct 20, 2026 | ~4 weeks |
 | v0.15.0 | 10 | Movie/Series profiles + season trailers (+ profile presets) | ~Nov 19, 2026 | ~3 weeks |
 | v1.0.0 | 11 | Issues section + delight items + stabilization | ~Dec 10, 2026 | — |
 
@@ -246,8 +246,9 @@ the release before it.
 - `phase-08-tmdb.md` — DONE (v0.13.0, Sep 24 2026, PR #682). Closed #511. Baking
   ~3–4 weeks before Phase 9 — watch for TMDB-key, `Trailer Language` and Known-videos
   reports.
-- `phase-09-video-types.md` — IN PROGRESS: built Oct 7–8, 2026 on `feat/phase9-video-types`
-  (PR #701), with quiv 1.3.0. Read its "Execution notes": decision 5 amended (the
+- `phase-09-video-types.md` — DONE (v0.14.0, Oct 20 2026, PR #710). Closed #686. Built
+  Oct 7–8, 2026 on `feat/phase9-video-types` (PR #701), with quiv 1.3.0. Baking ~4 weeks
+  before Phase 10. Read its "Execution notes": decision 5 amended (the
   `search_youtube` flag), W4 gate not built, W3 built as the `awaiting_tmdb` state,
   priority docs corrected (lowest number first). Amended Oct 1, 2026: decision 11 adds
   the trailer fields to the Expanded and Table views, from one field registry.
