@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.65">
+      <meta name="generator" content="zensical-0.0.66">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.40d3fdbb.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.1502b751.min.css">
       
         
           
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#v0131-october-4-2026" class="md-skip">
+        <a href="#v0140-october-20-2026" class="md-skip">
           Skip to content
         </a>
       
@@ -2499,6 +2499,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0140-october-20-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.14.0</strong> - <em>October 20, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0131-october-4-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3148,6 +3159,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0140-october-20-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.14.0</strong> - <em>October 20, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0131-october-4-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3591,6 +3613,77 @@
 
   <h1 id="__skip">2026</h1>
 
+<h2 id="v0140-october-20-2026"><strong>v0.14.0</strong> - <em>October 20, 2026</em></h2>
+<p><strong>What's New:</strong> ✨</p>
+<ul>
+<li>
+<p><strong>A profile can download teasers, clips, featurettes, behind-the-scenes videos and bloopers</strong> — set the new <code>Video Type</code> of a profile, and it takes videos of that type from the list that TMDB keeps for each media item — see <a href="../../user-guide/settings/profiles/settings/general/#video-type">Video Type</a> and <a href="../../user-guide/settings/profiles/examples/#example-5-featurettes-profile">Example 5</a>.</p>
+</li>
+<li>
+<p><strong>A profile can be told not to search YouTube</strong> — turn the new <code>Search YouTube</code> off, and the profile takes known videos only and waits for TMDB instead of failing and backing off, which makes an optional second trailer in another language possible; it starts off for every type except Trailer — see <a href="../../user-guide/settings/profiles/settings/search/#search-youtube">Search YouTube</a>.</p>
+</li>
+<li>
+<p><strong>Had a profile with <code>featurette</code> or <code>teaser</code> in its search query?</strong> — it still works as before, and Trailarr names it once in the log at the first start; set its <code>Video Type</code> and its files move with it, with no new downloads — see <a href="../../user-guide/settings/profiles/settings/general/#switch-an-extras-profile">Switch an extras profile</a>.</p>
+</li>
+<li>
+<p><strong>Every download records what it is</strong> — a featurette on disk no longer counts as the trailer, a file that Trailarr finds on disk takes the type that its name and folder say, and the new <code>Download Type</code> view filter and <code>Trailer Type</code> column show it — see <a href="../../user-guide/settings/profiles/filters/#download-filters-view-filters-only">Download Filters</a>.</p>
+</li>
+<li>
+<p><strong>File names and folders that Plex and Jellyfin read</strong> — the new <code>{video_type}</code> placeholder in <code>File Name</code> and <code>Folder Name</code> writes <code>-featurette</code>, <code>-scene</code>, <code>-behindthescenes</code> or <code>-other</code>, and the matching folders — see <a href="../../user-guide/settings/profiles/settings/file/#file-name">File Name</a>.</p>
+</li>
+<li>
+<p><strong>The Expanded and Table views show the fields of your trailers</strong> — turn on resolution, codecs, audio language, subtitles, container, duration, size, the owning profile, the type and the count in <code>Configure Fields</code>, one block per trailer — see <a href="../../user-guide/library/#views">Views</a>.</p>
+</li>
+<li>
+<p><strong>The Known videos list shows every type that TMDB lists</strong> — grouped by type, with a type on each video you add and a <code>Download</code> button per video for a profile of that type — see <a href="../../user-guide/library/media-details/#known-videos">Known videos</a>.</p>
+</li>
+<li>
+<p><strong><code>Maximum Duration</code> goes up to 1200 seconds</strong> — bonus features often run longer than 10 minutes; the default stays 600, and a stored value above 1200 is set to 1200. Thanks <a href="https://github.com/natemartin03">@natemartin03</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/686">#686</a>)</p>
+</li>
+</ul>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>A stop of a task now stops yt-dlp and ffmpeg at once</strong> — a cancelled download job no longer waits for the external tool to finish, the partial file is removed, and the job ends as cancelled — see <a href="../../user-guide/tasks/#stop-job">Stop Job</a>.</p>
+</li>
+<li>
+<p><strong>A second profile for the same video gets the same video</strong> — a profile skipped every video that any profile had on disk, so a 4K profile next to a 1080p one got TMDB's second choice; a profile now skips only the videos it owns.</p>
+</li>
+<li>
+<p><strong>ffprobe no longer hangs a task without limit</strong> — the video analysis calls now stop after 60 seconds, and the silence detection after 600.</p>
+</li>
+<li>
+<p><strong>Trailarr never deletes an extra that it did not download</strong> — the files scan now records the extras a media folder holds, so the <code>Delete</code> actions, the <code>Cleanup</code> task and the removal of a media item from Radarr or Sonarr act on trailers only.</p>
+</li>
+<li>
+<p><strong>A batch download no longer skips its last item</strong> — a <code>Download</code> from the library edit view with two or more items left the last one out; every item downloads now.</p>
+</li>
+<li>
+<p><strong>The video trim API checks its output path</strong> — the <code>files/trim</code> endpoint refused an unsafe input path but passed any output path to ffmpeg; it now refuses an unsafe output path too.</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p><strong>The <code>youtube_trailer_id</code> field of a media item is gone</strong> — the <code>Known videos</code> list is the one record of the videos of a media item; the <code>YouTube Trailer ID</code> box on the media details page is now the add-video form of that list, a saved view filter on the field with <code>Is Empty</code> or <code>Is Not Empty</code> becomes a <code>Has Videos</code> filter and any other condition on it is removed with a log line, and API users read the videos from <code>GET /api/v1/media/{id}/videos</code>, while <code>POST /api/v1/media/{id}/update?yt_id</code> is deprecated and now adds the id as a video you chose — see <a href="../../user-guide/settings/profiles/filters/#download-filters-view-filters-only">Has Videos</a>.</p>
+</li>
+<li>
+<p><strong>A manual download with a YouTube id downloads that video</strong> — the <code>Download</code> dialog's id reached the database but not the download since v0.13.0, so Trailarr downloaded the first video it knew instead; the id now goes straight to the download.</p>
+</li>
+<li>
+<p><strong>The task scheduler is updated to quiv 1.3.0</strong> — a database error no longer stops the scheduler, and a worker slot is never lost (<a href="https://github.com/nandyalu/quiv/issues/86">quiv#86</a>).</p>
+</li>
+<li>
+<p><strong><code>Upgrade To TMDB Trailer</code> is now <code>Upgrade To TMDB</code>, and <code>Delete Replaced Trailer</code> is now <code>Delete Replaced File</code></strong> — the upgrade works for every video type and replaces a video with a TMDB video of the same type, and your settings stay as they are — see <a href="../../user-guide/settings/profiles/settings/general/#upgrade-to-tmdb">Upgrade To TMDB</a>.</p>
+</li>
+<li>
+<p><strong>Messages name the video type</strong> — log lines, pop-ups, task names and download errors say "featurette" or "teaser" for a profile of that type, not "trailer".</p>
+</li>
+<li>
+<p><strong>Dependency updates</strong> — <code>aiohttp</code> 3.14.5 takes three security fixes, FastAPI moves to 0.143.3, SQLAlchemy to 2.1.5 and SQLModel to 0.0.48. Angular moves to 22.2.3, which takes the security fixes of the Angular CLI's MCP server package, and the build tool <code>vite</code> moves to 8.3.4 for its own security fixes.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0131-october-4-2026"><strong>v0.13.1</strong> - <em>October 4, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -4743,7 +4836,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c04ba553.min.js"></script>
+      <script src="../../assets/javascripts/bundle.b7d3f789.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       

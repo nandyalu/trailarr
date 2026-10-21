@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.65">
+      <meta name="generator" content="zensical-0.0.66">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/modern/main.40d3fdbb.min.css">
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/modern/main.1502b751.min.css">
       
         
           
@@ -85,7 +85,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#search-query" class="md-skip">
+        <a href="#search-youtube" class="md-skip">
           Skip to content
         </a>
       
@@ -2097,6 +2097,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#search-youtube" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Search YouTube
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#search-query" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -2890,6 +2901,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#search-youtube" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Search YouTube
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#search-query" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3195,6 +3217,37 @@
 
   <h1 id="__skip">Search</h1>
 
+<h2 id="search-youtube">Search YouTube</h2>
+<p><span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Type</th>
+<th style="text-align: center;">Required</th>
+<th style="text-align: center;">Default</th>
+<th style="text-align: center;">Valid Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Boolean</td>
+<td style="text-align: center;">Yes</td>
+<td style="text-align: center;">true</td>
+<td style="text-align: center;">true or false</td>
+</tr>
+</tbody>
+</table>
+<p>Search YouTube when no known video suits this profile. This is what every profile did before this setting existed: the known videos first (the videos that TMDB lists, the id from Radarr or Sonarr, and videos you added), then a search with the <a href="#search-query">Search Query</a> when none of them suits the profile.</p>
+<p>Turn it off, and the profile takes known videos only. Turning it off also turns <code>Always Search</code> off, because <code>Always Search</code> needs the search. When none suits it, the profile waits: it does not search, does not fail, and does not back off. Trailarr asks TMDB again every seven days with the <code>Refresh Video Lists</code> task, and the <a href="../../../../library/media-details/#download-profiles-section">Download Profiles</a> section of the media details page says that the profile waits for TMDB. This is the setting for a profile that is optional, such as a second trailer in a language that TMDB lists for some titles only.</p>
+<p>The profile editor hides <code>Search Query</code>, <code>Always Search</code>, <code>Include Words in Title</code>, <code>Exclude Words in Title</code> and <code>Allowed Uploader IDs</code> while the search is off. <code>Minimum Duration</code>, <code>Maximum Duration</code> and <code>Yt-dlp Extra Options</code> apply either way.</p>
+<div class="admonition note">
+<p class="admonition-title">Off by default for the other video types</p>
+<p>When you set the <a href="../general/#video-type">Video Type</a> of a profile to something other than <code>Trailer</code>, Trailarr turns <code>Search YouTube</code> off, because a search finds trailers and nothing in a result says that a video is a featurette. Turn it on again when you want the search, for example for interviews, which TMDB has no type for: aim the <code>Search Query</code> and the <code>Include Words</code> at the videos you want, and the downloads take the type of the profile. The editor shows a note on such a profile.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">An optional trailer in a second language</p>
+<p>To keep an English trailer for every movie and a Telugu one where TMDB has it, make two profiles with the same filters: <code>English Trailers</code> with the <a href="../general/#trailer-language">Trailer Language</a> <code>en</code>, and <code>Telugu Trailers</code> with the language <code>te</code> and <code>Search YouTube</code> off. The Telugu profile downloads when TMDB lists a Telugu trailer and waits otherwise, without failed downloads in the log.</p>
+</div>
 <h2 id="search-query">Search Query</h2>
 <table>
 <thead>
@@ -3289,8 +3342,8 @@
 <tr>
 <td style="text-align: center;">Integer</td>
 <td style="text-align: center;">Yes</td>
-<td style="text-align: center;">30</td>
-<td style="text-align: center;">30 - 540</td>
+<td style="text-align: center;">60</td>
+<td style="text-align: center;">30 - 1140</td>
 </tr>
 </tbody>
 </table>
@@ -3310,11 +3363,12 @@
 <td style="text-align: center;">Integer</td>
 <td style="text-align: center;">Yes</td>
 <td style="text-align: center;">600</td>
-<td style="text-align: center;">90 - 600</td>
+<td style="text-align: center;">90 - 1200</td>
 </tr>
 </tbody>
 </table>
 <p>Select the maximum duration of the trailers to download. Trailers with a duration greater than this value will be skipped.</p>
+<p><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> The largest value is <code>1200</code> seconds (20 minutes). It was <code>600</code> before <code>v0.14.0</code>. Bonus features such as featurettes and behind-the-scenes videos often run longer than 10 minutes, so a profile for them can raise this. The default stays <code>600</code>, and no existing profile changes. The limit also applies to a video that TMDB lists: Trailarr checks the duration after the download and removes a video that is too long, then tries the next one in the list.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>If you want to download trailers with a duration of 2 minutes to 5 minutes, set <code>Trailer Minimum Duration</code> to <code>120</code> seconds and <code>Trailer Maximum Duration</code> to <code>300</code> seconds.</p>
@@ -3324,7 +3378,8 @@
 <p>There should be a gap of at least 60 seconds between <code>Trailer Minimum Duration</code> and <code>Trailer Maximum Duration</code>. For example, if <code>Trailer Minimum Duration</code> is set to <code>120</code> seconds, then <code>Trailer Maximum Duration</code> should be set to at least <code>180</code> seconds.</p>
 </div>
 <h2 id="always-search">Always Search</h2>
-<p><span class="twemoji orange" title="Updated in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a></p>
+<p><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a></p>
+<p><code>Always Search</code> needs <a href="#search-youtube">Search YouTube</a> on. It is a mode of the search: search every time, instead of only when no known video suits the profile. Trailarr refuses <code>Always Search</code> on a profile with the search off.</p>
 <table>
 <thead>
 <tr>
@@ -3510,7 +3565,7 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This filter only applies to YouTube search results. If a <code>YouTube Trailer ID</code> is set directly on a media item, it bypasses all search filters including this one.</p>
+<p>This filter only applies to YouTube search results. A video that you add to the <a href="../../../../library/media-details/#known-videos">Known videos</a> of a media item bypasses all search filters including this one.</p>
 </div>
 <h2 id="automatic-exclusions">Automatic Exclusions</h2>
 <p><span class="twemoji orange" title="Updated in v0.10.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0101-july-21-2026">v0.10.1</a></p>
@@ -3521,7 +3576,7 @@
 <li><strong>YouTube Shorts</strong> — vertical videos are skipped.</li>
 <li><strong>Reviews</strong> — videos with "review" in the title are skipped.</li>
 </ul>
-<p>As a second layer of protection, the download command itself also refuses live and upcoming content — this covers trailer URLs provided directly by Radarr or set manually as <code>YouTube Trailer ID</code>, which bypass search filters.</p>
+<p>As a second layer of protection, the download command itself also refuses live and upcoming content — this covers the ids that Radarr reports and the videos that you add by hand, which bypass search filters.</p>
 <p>If a download fails or times out for any reason, its partially downloaded files are deleted immediately, and any leftover temporary files from previous runs are cleaned up automatically at every app startup.</p>
 <h2 id="yt-dlp-extra-options">Yt-dlp Extra Options</h2>
 <table>
@@ -3715,7 +3770,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.c04ba553.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.b7d3f789.min.js"></script>
       
         <script src="../../../../../copyright-year.js"></script>
       

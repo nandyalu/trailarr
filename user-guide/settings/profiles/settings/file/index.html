@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.65">
+      <meta name="generator" content="zensical-0.0.66">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/modern/main.40d3fdbb.min.css">
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/modern/main.1502b751.min.css">
       
         
           
@@ -3271,7 +3271,7 @@
 <tr>
 <td style="text-align: center;">String</td>
 <td style="text-align: center;">Yes</td>
-<td style="text-align: center;">{title} ({year})-trailer.{ext}</td>
+<td style="text-align: center;">{title} ({year})-{video_type}.{ext}</td>
 <td style="text-align: center;">Any string (Max length: 150 characters)</td>
 </tr>
 </tbody>
@@ -3351,8 +3351,60 @@
 <td style="text-align: right;">youtube_id</td>
 <td style="text-align: left;">YouTube ID of the trailer. Eg: 'KbWtUJjMj3Y'</td>
 </tr>
+<tr>
+<td style="text-align: right;">video_type</td>
+<td style="text-align: left;"><span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> The suffix that Plex and Jellyfin read for the <a href="../general/#video-type">Video Type</a> of the profile. Eg: 'trailer', 'featurette'. See the table below.</td>
+</tr>
 </tbody>
 </table>
+<p><span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> A player reads the kind of an extra from the end of its file name, so the <code>{video_type}</code> placeholder writes a name that both Plex and Jellyfin read. Neither player knows a teaser or bloopers, and Plex does not know a clip, so Trailarr writes the nearest name that both read. The download still records its real type. One consequence: when the row of such a file is lost, for example after a media item is removed and added again, the next scan reads the file back by its name, so a teaser file becomes a trailer and a bloopers file becomes other.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Video Type</th>
+<th style="text-align: center;"><code>{video_type}</code> in the file name</th>
+<th style="text-align: center;">Default folder</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Trailer</td>
+<td style="text-align: center;"><code>trailer</code></td>
+<td style="text-align: center;"><code>Trailers</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">Teaser</td>
+<td style="text-align: center;"><code>trailer</code></td>
+<td style="text-align: center;"><code>Trailers</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">Clip</td>
+<td style="text-align: center;"><code>scene</code></td>
+<td style="text-align: center;"><code>Scenes</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">Featurette</td>
+<td style="text-align: center;"><code>featurette</code></td>
+<td style="text-align: center;"><code>Featurettes</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">Behind the Scenes</td>
+<td style="text-align: center;"><code>behindthescenes</code></td>
+<td style="text-align: center;"><code>Behind The Scenes</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">Bloopers</td>
+<td style="text-align: center;"><code>other</code></td>
+<td style="text-align: center;"><code>Other</code></td>
+</tr>
+<tr>
+<td style="text-align: center;">Other</td>
+<td style="text-align: center;"><code>other</code></td>
+<td style="text-align: center;"><code>Other</code></td>
+</tr>
+</tbody>
+</table>
+<p><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> A new profile starts with <code>{title} ({year})-{video_type}.{ext}</code> and the folder <code>{video_type}</code>. A profile that was created before <code>v0.14.0</code> keeps its file name, which ends in <code>-trailer.{ext}</code>, and its folder <code>Trailers</code>. A <code>Featurette</code> profile with that file name writes <code>-trailer</code>, and Plex shows the video as a trailer. Change the file name of such a profile to end in <code>-{video_type}.{ext}</code> to get the right name.</p>
 <div class="admonition info">
 <p class="admonition-title">Info</p>
 <p>Filename will be cleaned to remove restricted characters <code>&lt;&gt;:"/\\|?*\x00-\x1F</code> to ensure compatibility with filesystems.</p>
@@ -3399,12 +3451,13 @@
 <tr>
 <td style="text-align: center;">String</td>
 <td style="text-align: center;">No</td>
-<td style="text-align: left;">Trailers</td>
+<td style="text-align: left;">{video_type}</td>
 <td style="text-align: center;">Any string (Max length: 50 characters)</td>
 </tr>
 </tbody>
 </table>
 <p>This setting allows you to specify the name of the folder where the trailer files will be saved. If <code>Folder Enabled</code> is set to <code>false</code>, this setting will be ignored.</p>
+<p><span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> The folder name takes the <code>{video_type}</code> placeholder, which Trailarr replaces with the folder that both Plex and Jellyfin read for the <a href="../general/#video-type">Video Type</a> of the profile: <code>Trailers</code>, <code>Scenes</code>, <code>Featurettes</code>, <code>Behind The Scenes</code> or <code>Other</code> (see the table under <a href="#file-name">File Name</a>). An empty folder name takes that folder too. A profile that was created before <code>v0.14.0</code> keeps the folder name <code>Trailers</code>.</p>
 <h2 id="custom-save-folder-path">Custom Save Folder Path</h2>
 <table>
 <thead>
@@ -3710,7 +3763,7 @@
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.c04ba553.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.b7d3f789.min.js"></script>
       
         <script src="../../../../../copyright-year.js"></script>
       

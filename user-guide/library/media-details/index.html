@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.65">
+      <meta name="generator" content="zensical-0.0.66">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.40d3fdbb.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/modern/main.1502b751.min.css">
       
         
           
@@ -1446,33 +1446,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#youtube-trailer-id" class="md-nav__link">
+  <a href="#add-a-video" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        YouTube Trailer ID
+        Add a video
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="YouTube Trailer ID">
+    <nav class="md-nav" aria-label="Add a video">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#save-youtube-id" class="md-nav__link">
+  <a href="#search" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Save YouTube ID
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#search-youtube-id" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Search YouTube ID
+        Search
       </span>
     </span>
   </a>
@@ -3082,33 +3071,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#youtube-trailer-id" class="md-nav__link">
+  <a href="#add-a-video" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        YouTube Trailer ID
+        Add a video
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="YouTube Trailer ID">
+    <nav class="md-nav" aria-label="Add a video">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#save-youtube-id" class="md-nav__link">
+  <a href="#search" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Save YouTube ID
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#search-youtube-id" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Search YouTube ID
+        Search
       </span>
     </span>
   </a>
@@ -3455,24 +3433,18 @@
 <div class="admonition tip">
 <p>This status is what Trailarr checks when <strong>Skip if Plex Trailer</strong> is enabled in a profile. If Plex already has a qualifying trailer, Trailarr will skip the download for that media item.</p>
 </div>
-<h2 id="youtube-trailer-id">YouTube Trailer ID</h2>
-<p><a class="glightbox" data-type="image" data-width="100%" href="media-youtube-trailer-id.png"><img alt="Media - YouTube Trailer ID" src="media-youtube-trailer-id.png" /></a></p>
-<p>This is the YouTube video ID present in Trailarr for this Media item, and can be updated here!</p>
-<p>Radarr reports a YouTube trailer id, and Trailarr stores it. Sonarr has no such field, because its metadata comes from TVDB, so for a series this is empty until Trailarr finds a video itself, or until you choose one. Trailarr also writes the video it downloaded here, so the field can hold a video that no Arr ever reported.</p>
-<h3 id="save-youtube-id">Save YouTube ID</h3>
-<p><a class="glightbox" data-type="image" data-width="100%" href="media-save-youtube-trailer-id.png"><img alt="Media - Save YouTube Trailer ID" src="media-save-youtube-trailer-id.png" /></a></p>
-<p>A save button will appear if <code>YouTube Trailer ID</code> value has changed, prompting you to save.</p>
+<h2 id="add-a-video">Add a video</h2>
+<p><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a></p>
+<p>The <code>YouTube Trailer ID</code> box of earlier versions is gone. Add a video to the <a href="#known-videos">Known videos</a> list instead: paste a YouTube link or id, choose its language and its type, and click <code>Add</code>. The video goes to the top of the list, Trailarr tries it before every other source, and no task removes it.</p>
 <div class="admonition note">
-<p>Save only stores the video in Trailarr. It does not download a trailer. Click <code>Download</code> to get it now.</p>
+<p>Adding a video only stores it in Trailarr. It does not download it. Click <code>Download</code> on the row to get it now, or wait for the <code>Download Missing Trailers</code> task.</p>
 </div>
-<p><span class="twemoji orange" title="Updated in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a> A saved id is now a video <strong>you chose</strong>. It goes to the top of the <a href="#known-videos">Known videos</a> list, Trailarr tries it before every other source, and no task removes it — not even when the download of it fails.</p>
-<h3 id="search-youtube-id">Search YouTube ID</h3>
-<p><a class="glightbox" data-type="image" data-width="100%" href="media-search-youtube-trailer-id.png"><img alt="Media - Search YouTube Trailer ID" src="media-search-youtube-trailer-id.png" /></a></p>
-<p>A search button will appear if <code>YouTube Trailer ID</code> is not available for the <code>Media</code> in Trailarr.</p>
-<p>This can be used to let Trailarr search for a trailer for the <code>Media</code> by selecting a <code>Profile</code>.</p>
+<p>The <strong>type</strong> says what the video is: a trailer, a teaser, a clip, a featurette, a behind-the-scenes video, bloopers or other. A profile uses the videos of its own <a href="../../settings/profiles/settings/general/#video-type">Video Type</a> only, so a featurette you add is for your featurette profile and never becomes the trailer.</p>
+<h3 id="search">Search</h3>
+<p>The <code>Search</code> button lets Trailarr search YouTube for a trailer with a <code>Profile</code> that you select. The result is added to the list as a search result. Only a trailer profile can search: a profile of another type takes its videos from TMDB, and the button refuses it.</p>
 <h2 id="known-videos">Known videos</h2>
 <p><span class="twemoji golden" title="Added in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a></p>
-<p>Every video that Trailarr can download for this media item, in the order it tries them:</p>
+<p>Every video that Trailarr can download for this media item, grouped by type, with the trailers first. Inside a type, the list is in the order Trailarr tries them:</p>
 <table>
 <thead>
 <tr>
@@ -3487,7 +3459,7 @@
 </tr>
 <tr>
 <td><strong>TMDB</strong></td>
-<td>A trailer from the list that TMDB curates. Needs a <a href="../../settings/tmdb/">TMDB API key</a>.</td>
+<td>A video from the list that TMDB curates, of any type. Needs a <a href="../../settings/tmdb/">TMDB API key</a>.</td>
 </tr>
 <tr>
 <td><strong>Radarr / Sonarr</strong></td>
@@ -3501,20 +3473,21 @@
 </table>
 <p>Trailarr takes the first video that works. When a download fails, that video moves to the end of the list for the next run, so a video that YouTube no longer has does not block the ones behind it.</p>
 <p>Click the title to watch a video on YouTube. Click the cross to remove one. A video you chose comes back only when you add it again; a video from TMDB comes back with the next refresh.</p>
+<p><span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> Each row shows the <strong>type</strong> of the video, and a <code>Download</code> button. The button downloads that video now with a profile that you pick from the profiles of the same type, so a featurette row offers your featurette profiles. Until <code>v0.14.0</code> the list held trailers only; the update marks every list as stale, and the other types arrive with the next <code>Refresh Video Lists</code> run.</p>
 <p><span class="twemoji golden" title="Added in v0.13.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0130-september-24-2026">v0.13.0</a> The <strong>Language</strong> box next to the YouTube ID records which language your video is in. A profile that asks for that language can then use it, which is how one media item serves an Italian profile and an English one — see <a href="../../settings/profiles/settings/general/#trailer-language">Trailer Language</a>. Leave it empty if the video suits a profile that takes any language.</p>
 <h2 id="action-buttons">Action Buttons</h2>
 <p>There are up to 2 action buttons that can appear depending on the selected Media.</p>
 <h3 id="watch">Watch</h3>
 <ul>
-<li>Appears when the selected Media has a YouTube Trailer ID set.</li>
-<li>Will open the video in YouTube in a new tab when clicked.</li>
+<li><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> Appears when the <a href="#known-videos">Known videos</a> list has at least one video.</li>
+<li>Opens the first known trailer, the one a trailer download would take, in YouTube in a new tab. When the list holds no trailer, it opens its first video.</li>
 </ul>
 <h3 id="download">Download</h3>
 <p><span class="twemoji orange" title="Updated in v0.9.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v091-beta-may-04-2026">v0.9.1</a></p>
 <ul>
 <li>Always visible for all Media items.</li>
 <li>Clicking on this will open a dialog asking you to select a Profile to use for download.</li>
-<li>This will schedule a task for Trailarr to download a trailer for this Media, uses <code>YouTube Trailer ID</code> if provided/existing.</li>
+<li>This will schedule a task for Trailarr to download a trailer for this Media, with the first <a href="#known-videos">known video</a> that the profile can use.</li>
 </ul>
 <div class="admonition tip">
 <p class="admonition-title">Multiple trailers</p>
@@ -3529,8 +3502,8 @@
 <p>This section shows, for <strong>every</strong> Trailer Profile, exactly where it stands with this media item:</p>
 <ul>
 <li><strong>Not matching</strong> — the profile's filters do not apply to this item (or the profile is disabled).</li>
-<li><strong>Satisfied</strong> — the profile already owns a downloaded video (its own download, or an existing file it claimed). <span class="twemoji orange" title="Updated in v0.13.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0131-october-4-2026">v0.13.1</a> With <a href="../../settings/profiles/settings/general/#upgrade-to-tmdb-trailer">Upgrade To TMDB Trailer</a> on, the row also says whether the download is a TMDB trailer, or why the upgrade keeps it: the item has no TMDB id, TMDB was not asked yet, TMDB lists nothing in the language of the profile, or the video of the trailer is unknown.</li>
-<li><strong>Pending</strong> — the profile matches but has no download yet; it will download on the next task run. With the upgrade on, the row says that the download replaces the trailer, and why.</li>
+<li><strong>Satisfied</strong> — the profile already owns a downloaded video (its own download, or an existing file it claimed). <span class="twemoji orange" title="Updated in v0.13.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0131-october-4-2026">v0.13.1</a> With <a href="../../settings/profiles/settings/general/#upgrade-to-tmdb">Upgrade To TMDB</a> on, the row also says whether the download is a TMDB trailer, or why the upgrade keeps it: the item has no TMDB id, TMDB was not asked yet, TMDB lists nothing in the language of the profile, or the video of the trailer is unknown.</li>
+<li><strong>Pending</strong> — the profile matches but has no download yet; it will download on the next task run. With the upgrade on, the row says that the download replaces the trailer, and why. <span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> A profile of a <a href="../../settings/profiles/settings/general/#video-type">Video Type</a> other than <code>Trailer</code> stays pending while TMDB lists no video of its type for the item, and the row says that it waits for TMDB; such a profile never searches YouTube.</li>
 <li><strong>Backing off</strong> — previous download attempts failed; shows the attempt count, when the next retry is due, and <span class="twemoji orange" title="Updated in v0.13.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0131-october-4-2026">v0.13.1</a> the reason of the last failure with the fix, when Trailarr knows it. A manual download bypasses the wait.</li>
 </ul>
 <p>The matrix is computed with the exact same rule the download task uses, so what you see here is precisely what the engine will do next — there is no separate bookkeeping that could disagree with it.</p>
@@ -3547,7 +3520,8 @@
 - Duration
 - Downloaded At (date and time)
 - Profile name used for download (clickable, opens the Profile details)
-- Link to the YouTube video (clickable, opens in new tab)</p>
+- Link to the YouTube video (clickable, opens in new tab)
+- <span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> The type of the video: trailer, teaser, clip, featurette, behind the scenes, bloopers or other. A download takes the type of its profile. A file that Trailarr found on disk takes the type that its name and folder say, following the names that Plex and Jellyfin use (<code>-featurette</code>, <code>Featurettes/</code>, ...).</p>
 <div class="admonition tip">
 <p>If the trailer was downloaded using an older version of Trailarr ( <code>&lt; 0.6.0-beta</code>), some of the above details may not be available.</p>
 </div>
@@ -3561,6 +3535,7 @@
 <p class="admonition-title">Assigning a profile to an <code>Unknown</code> download</p>
 <p><span class="twemoji golden" title="Added in v0.9.9"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v099-july-05-2026">v0.9.9</a>
 Trailarr automatically links <code>Unknown</code> downloads to a matching profile: a one-time <strong>Attribute Trailer Downloads</strong> task runs shortly after startup, and the files-scan task does the same for new trailer files it finds. It checks which profiles apply to the media item (by the profile's filters, ignoring state conditions like <code>has_downloads</code>) and assigns them in priority order. If no profile could be matched automatically — either no profile's filters match the media, or all matching profiles already own a download for it — the <code>Unknown</code> label becomes a dropdown: click it and pick the profile that should own the download. The assignment is recorded as a <a href="../../events/#download-attributed"><strong>Download Attributed</strong></a> event.</p>
+<p><span class="twemoji orange" title="Updated in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a> A profile takes a file of its own type only: a featurette found on disk is never given to a trailer profile, and it stays <code>Unknown</code> until a featurette profile matches the item, or until you assign it. When you assign a file to a profile by hand, the file takes the type of that profile, because you say what the file is.</p>
 </div>
 <h2 id="files-section">Files Section</h2>
 <p><span class="twemoji orange" title="Updated in v0.6.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v065-beta-january-04-2026">v0.6.5</a></p>
@@ -3765,7 +3740,7 @@ Trailarr automatically links <code>Unknown</code> downloads to a matching profil
       <script id="__config" type="application/json">{"annotate":null,"base":"../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.c04ba553.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.b7d3f789.min.js"></script>
       
         <script src="../../../copyright-year.js"></script>
       

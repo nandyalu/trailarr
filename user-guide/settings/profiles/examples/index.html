@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.65">
+      <meta name="generator" content="zensical-0.0.66">
     
     
       
@@ -34,7 +34,7 @@
       
         
       
-      <link rel="stylesheet" href="../../../../assets/stylesheets/modern/main.40d3fdbb.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/modern/main.1502b751.min.css">
       
         
           
@@ -2286,6 +2286,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example-5-featurettes-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example 5: Featurettes Profile
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 5: Featurettes Profile">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#result_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Result
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2990,6 +3018,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example-5-featurettes-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example 5: Featurettes Profile
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 5: Featurettes Profile">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#result_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Result
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3263,7 +3319,7 @@ Older versions used a <code>Trailer Exists = false</code> filter here to prevent
 <li>
 <p>Change the following <code>Settings</code>:</p>
 <ul>
-<li>Set <code>Priority</code> to <code>1</code> which is higher than the <a href="#example-1-movie-trailers-profile">Movie Trailers</a> profile, so that this profile is used first for matching movies.</li>
+<li>Leave <code>Priority</code> at <code>0</code>. Both profiles download their own trailer for a Spanish movie, so the priority does not pick one of them. It only decides which profile goes first, and which one claims a trailer that is already on disk — see <a href="../settings/general/#priority">Priority</a>.</li>
 <li>Set <code>Include Words in Title</code> to <code>Español</code>.</li>
 <li>Set <code>Search Query</code> to <code>{title} {year} {is_movie} Tráiler en español</code>.</li>
 <li>Set <code>Always Search</code> to <code>true</code>.</li>
@@ -3324,6 +3380,52 @@ Older versions used a <code>Trailer Exists = false</code> filter here to prevent
 <li><strong>Deleted trailer files</strong>: <code>Download File Missing</code> <code>Equals</code> <code>true</code> — download records whose file was deleted from disk.</li>
 <li><strong>Owned by one profile</strong>: <code>Download Profile</code> <code>Equals</code> + pick a profile — media whose downloads came from that profile.</li>
 </ul>
+<h2 id="example-5-featurettes-profile">Example 5: Featurettes Profile</h2>
+<p><span class="twemoji golden" title="Added in v0.14.0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0140-october-20-2026">v0.14.0</a></p>
+<p>A profile that downloads the featurettes of your movies next to their trailers. It needs a <a href="../../tmdb/">TMDB API key</a>.</p>
+<ul>
+<li>Create a profile by clicking on the <code>Add New</code> button in the <code>Profiles</code> page.</li>
+<li>Name the profile <code>Movie Featurettes</code>.</li>
+<li>
+<p>Set the below <code>Filter</code>s:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">ID</th>
+<th style="text-align: center;">Filter By</th>
+<th style="text-align: center;">Condition</th>
+<th style="text-align: center;">Filter Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">Is Movie</td>
+<td style="text-align: center;">Equals</td>
+<td style="text-align: center;">true</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Click <code>Create</code> to create the profile.</p>
+</li>
+<li>
+<p>Change the following <code>Settings</code>:</p>
+<ul>
+<li>Set <code>Video Type</code> to <code>Featurette</code>. The search settings disappear: a featurette comes from TMDB only.</li>
+<li>Set <code>Maximum Duration</code> to <code>1200</code>, because a featurette often runs longer than a trailer.</li>
+<li>Set <code>Folder Enabled</code> to <code>true</code> and <code>Folder Name</code> to <code>{video_type}</code>, so the file lands in a <code>Featurettes</code> folder that Plex and Jellyfin read.</li>
+<li>Set <code>File Name</code> to <code>{title} ({year})-{video_type}.{ext}</code>, so the file name ends in <code>-featurette</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="result_2">Result</h3>
+<p>For every movie, this profile downloads the first featurette that TMDB lists, next to the trailer that the <a href="#example-1-movie-trailers-profile">Movie Trailers</a> profile downloads. A movie that TMDB lists no featurette for waits, and its media details page says so. One profile downloads one featurette per movie.</p>
+<div class="admonition tip">
+<p class="admonition-title">Had a profile with <code>featurette</code> in its search query?</p>
+<p>See <a href="../settings/general/#switch-an-extras-profile">Switch an extras profile</a>. Set its <code>Video Type</code> instead of making a new profile, and its existing files stay with it.</p>
+</div>
 
 
 
@@ -3485,7 +3587,7 @@ Older versions used a <code>Trailer Exists = false</code> filter here to prevent
       <script id="__config" type="application/json">{"annotate":null,"base":"../../../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.c04ba553.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.b7d3f789.min.js"></script>
       
         <script src="../../../../copyright-year.js"></script>
       
