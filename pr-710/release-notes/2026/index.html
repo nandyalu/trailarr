@@ -3658,6 +3658,9 @@
 <li>
 <p><strong>A batch download no longer skips its last item</strong> — a <code>Download</code> from the library edit view with two or more items left the last one out; every item downloads now.</p>
 </li>
+<li>
+<p><strong>The video trim API checks its output path</strong> — the <code>files/trim</code> endpoint refused an unsafe input path but passed any output path to ffmpeg; it now refuses an unsafe output path too.</p>
+</li>
 </ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
 <ul>
