@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.13.5"
 
 [[package]]
@@ -739,7 +739,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.143.3"
+version = "0.162.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -749,9 +749,9 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/38/d5/b0aeb0b303650ac87b0411de4aaf3f901b06042dcc3fb00f30b97b7ff585/fastapi-0.143.3.tar.gz", hash = "sha256:b9ab567ee57afb4454004ce04c889f8f0160ac47946b99795887cd6e88484848", size = 469834, upload-time = "2026-10-16T14:14:13.31Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/eb/2cf8c80abf09b2800aef0a83b41066fbfda8ee5495b7a08b9d1af40f7046/fastapi-0.162.0.tar.gz", hash = "sha256:6a22c1e2e6e32e0633ee7e170f00009a29b8228b16feb219ee42f32fd8d88a8f", size = 527867, upload-time = "2026-10-23T18:47:33.264Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/1a/03d246befcf307219bb2161c97d8c5d314f84125bf7dd245730a28589828/fastapi-0.143.3-py3-none-any.whl", hash = "sha256:75e8bd68e2f52f77d29b2879749c257d64de2d85282d25270caf2bfccce5efe5", size = 144849, upload-time = "2026-10-16T14:14:11.763Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/4f/3f2c25c9b43970b5e9a08beb5e04776247edea684ddc0930f4f02f0bb6cb/fastapi-0.162.0-py3-none-any.whl", hash = "sha256:3785963de305dd09912426cb81f2d230fce98ab3521cdfe97265c8d14983128c", size = 148912, upload-time = "2026-10-23T18:47:31.734Z" },
 ]
 
 [package.optional-dependencies]
@@ -759,6 +759,7 @@ standard-no-fastapi-cloud-cli = [
     { name = "email-validator" },
     { name = "fastapi-cli", extra = ["standard-no-fastapi-cloud-cli"] },
     { name = "httpx" },
+    { name = "httpx2" },
     { name = "jinja2" },
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-sdk" },
@@ -2546,7 +2547,7 @@ requires-dist = [
     { name = "alembic", specifier = "==1.20.0" },
     { name = "apprise", specifier = "==2.0.1" },
     { name = "bcrypt", specifier = "==5.0.0" },
-    { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.143.3" },
+    { name = "fastapi", extras = ["standard-no-fastapi-cloud-cli"], specifier = "==0.162.0" },
     { name = "greenlet", specifier = "==3.5.6" },
     { name = "pillow", specifier = "==13.0.0" },
     { name = "quiv", specifier = "==1.3.0" },
@@ -3026,7 +3027,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/94/e5/389cdd675cfb847d49bd8901944b06abae7dde1385767738f159ea11f8c3/zensical-0.0.66-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:edd3be5e9d6cceaccaed2fdc53d4e02d02db004706e49389cbce6f96c92c4e4d", size = 15425564, upload-time = "2026-09-28T09:48:07.374Z" },
     { url = "https://files.pythonhosted.org/packages/0d/8d/8ad9cff38c92a728466666654f3063ebbcad54ffc252d4d35a58bf890007/zensical-0.0.66-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:fa2aca4e1d3ecafd2444904183894bf5c4afb2d3541bb3ffc88f324b24d93444", size = 15097798, upload-time = "2026-09-28T09:48:09.836Z" },
     { url = "https://files.pythonhosted.org/packages/fa/20/3d95d7fcd29d4b662615ac055c1bc35b13bd9adf5243d95f7996b082a4ba/zensical-0.0.66-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8cdcd5482450defb3da9fa7538ae87c849354c72ab4c3d45f18cbd3762788a47", size = 15388458, upload-time = "2026-09-28T09:48:12.377Z" },
-    { url = "https://files.pythonhosted.org/packages/7b/44/27cb13e5690233b0b01368d25a0f07efe60f84ca076fd897b6a598ea224b/zensical-0.0.66-cp310-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f2976572c867859a65f2ce73af017425417109e64aa081b2faa274ca28d06fcf", size = 15461069, upload-time = "2026-09-28T09:48:16.124Z" },
     { url = "https://files.pythonhosted.org/packages/20/65/5c7aef820f0f775932d61d0f2c13a88066daacb82eea9c06e1cab1f0f1c5/zensical-0.0.66-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e2c672393e4de4abde78c0f06a975eeef00d8d3d0fc19541d2a9e4155776be41", size = 15733416, upload-time = "2026-09-28T09:48:18.725Z" },
     { url = "https://files.pythonhosted.org/packages/06/48/93e35db88ce5a3d8e453d9b87e1b9c72ddca49b87fb614defbac9b888ec1/zensical-0.0.66-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:04911b79ad4b468a3234b16d3b0fcb6fb7d61dd4f5ea34cb2a8cc1a240cc1b39", size = 15564602, upload-time = "2026-09-28T09:48:21.407Z" },
     { url = "https://files.pythonhosted.org/packages/48/dd/4bf42e4135b0651bd43174458d94471a482dbdcd87f6b2afc199cae2f01c/zensical-0.0.66-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:9fb539cb7f3153c050b412d917330d1d5f86ba4e997bca59479d22ef98a5273d", size = 15967451, upload-time = "2026-09-28T09:48:23.665Z" },
