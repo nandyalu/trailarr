@@ -27,7 +27,7 @@ dev = [
     "mkdocs-github-changelog==0.1.1",
     "mkdocs-glightbox==0.5.2",
     "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
+    "pytest-asyncio==1.4.1",
     "pytest-cov==7.1.0",
     "pytest-timeout==2.4.0",
     "zensical==0.0.73",
@@ -40,7 +40,7 @@ docs = [
 testing = [
     "aioresponses==0.7.9",
     "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
+    "pytest-asyncio==1.4.1",
     "pytest-cov==7.1.0",
     "pytest-timeout==2.4.0",
 ]
