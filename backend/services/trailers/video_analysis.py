@@ -367,6 +367,8 @@ def get_silence_timestamps(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            # ffmpeg cuts long metadata lines, which can split a character
+            errors="replace",
             timeout=FFMPEG_TIMEOUT,
         )
         silence_start = None
@@ -388,11 +390,11 @@ def get_silence_timestamps(
                     duration = (hours * 3600) + (minutes * 60) + seconds
             if "silence_start" in line:
                 silence_start = float(
-                    re.search(r"silence_start: (\d+\.\d+)", line).group(1)  # type: ignore
+                    re.search(r"silence_start: (-?\d+(?:\.\d+)?)", line).group(1)  # type: ignore
                 )
             if "silence_end" in line:
                 silence_end = float(
-                    re.search(r"silence_end: (\d+\.\d+)", line).group(1)  # type: ignore
+                    re.search(r"silence_end: (-?\d+(?:\.\d+)?)", line).group(1)  # type: ignore
                 )
         if not silence_start or not silence_end or not duration:
             logger.debug(f"No silence detected in the video: {file_path}")
