@@ -584,3 +584,38 @@ class TestSilenceTimestamps:
         )
 
         assert self._timestamps(stderr) == (122.0, 126.0)
+
+    def test_a_cut_character_in_the_output_is_not_an_error(self):
+        # ffmpeg cuts a long metadata line, here an embedded YouTube
+        # description, in the middle of "ä" (0xc3 0xa4). A real child
+        # process writes the bytes, so the decoding is the real one.
+        import sys
+
+        import quiv
+
+        from services.trailers.video_analysis import get_silence_timestamps
+
+        stderr = (
+            b"  Duration: 00:02:06.00, start: 0.000000, bitrate: 1622 kb/s\n"
+            b"    DESCRIPTION     : Coming-of-age-Geschichten \xc3\n"
+            b"[Parsed_silencedetect_0 @ 0x1] silence_start: 120\n"
+            b"[Parsed_silencedetect_0 @ 0x1] silence_end: 126"
+            b" | silence_duration: 6\n"
+        )
+        script = f"import sys; sys.stderr.buffer.write({stderr!r})"
+        real_run = quiv.run_subprocess
+
+        def run_fake_ffmpeg(args, **kwargs):
+            return real_run([sys.executable, "-c", script], **kwargs)
+
+        with (
+            patch(
+                "services.trailers.video_analysis.quiv.run_subprocess",
+                side_effect=run_fake_ffmpeg,
+            ),
+            patch("services.trailers.video_analysis.logger") as logger,
+        ):
+            result = get_silence_timestamps("/path/to/trailer.mkv")
+
+        logger.exception.assert_not_called()
+        assert result == (122.0, 126.0)

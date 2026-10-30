@@ -367,6 +367,8 @@ def get_silence_timestamps(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            # ffmpeg cuts long metadata lines, which can split a character
+            errors="replace",
             timeout=FFMPEG_TIMEOUT,
         )
         silence_start = None
