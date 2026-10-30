@@ -1,7 +1,7 @@
 # Phase 9 — Video Types
 
-**Status:** IN PROGRESS — started Oct 7, 2026 on branch `feat/phase9-video-types` (see
-"Execution notes" at the end) · **Release:** v0.14.0, target ~Oct 22, 2026 · **Depends on:** Phases 5 (clean flags),
+**Status:** DONE — shipped in v0.14.0 on Oct 20, 2026 (PR #710); started Oct 7, 2026 on
+branch `feat/phase9-video-types` (see "Execution notes" at the end) · **Release:** v0.14.0, Oct 20, 2026 · **Depends on:** Phases 5 (clean flags),
 7 (paths), 8 (TMDB — non-trailer types are TMDB-only by construction).
 Refreshed against the v0.13.0 code on Sep 24, 2026. Paths, names and claims below match
 the `dev` branch at commit `e31cf7d2`. Items marked **Refresh note** record a conflict

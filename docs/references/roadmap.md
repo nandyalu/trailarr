@@ -29,7 +29,7 @@ Each phase ships on its own, is verified against real libraries, and keeps your 
 | **v0.11.3** | August 21, 2026 ✅ | Phase 6 — Filter by downloads & files |
 | **v0.12.0** | September 10, 2026 ✅ | Phase 7 — Internal reorganization for long-term maintainability |
 | **v0.13.0** | September 24, 2026 ✅ | Phase 8 — TMDB integration |
-| **v0.14.0** | October 2026 | Phase 9 — Video types |
+| **v0.14.0** | October 20, 2026 ✅ | Phase 9 — Video types |
 | **v0.15.0** | November 2026 | Phase 10 — Movie/Series profiles + season trailers |
 | **v1.0.0** | December 2026 | Phase 11 — Issues section + stabilization |
 
@@ -91,7 +91,7 @@ Add your own **TMDB API key** and Trailarr resolves trailers from TMDB's curated
 
 *What you'll notice:* far more accurate trailer picks, fewer wrong downloads. Without an API key, everything works exactly as before.
 
-### Phase 9 — Video types — `v0.14.0`
+### Phase 9 — Video types — `v0.14.0` ✅
 
 Profiles gain a **video type**: trailer, teaser, clip, featurette, and more. Non-trailer types download exclusively from TMDB's curated lists (no YouTube guessing), and every download records its type — so a featurette is never miscounted as your trailer. If you've been using hacky profiles for extras, this is the release where the app starts doing it natively; it will detect those profiles and suggest settings. The **Expanded** and **Table** views of the library also gain the fields of your trailers: resolution, video and audio codecs, language, subtitles, size, duration and the owning profile, shown as one block per trailer.
 

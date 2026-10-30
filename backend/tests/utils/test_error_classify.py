@@ -68,3 +68,48 @@ class TestTheTwoListsAgree:
         assert is_video_unavailable(
             "ERROR: [youtube] abc: This video is not available"
         )
+
+
+class TestFolderErrors:
+    """A refused write, a read-only mount, or a full disk is about the
+    folder, not the video."""
+
+    def test_permission_denied_names_the_folder_and_the_fix(self):
+        import errno
+
+        from utils.error_classify import classify_folder_error
+
+        exc = PermissionError(errno.EACCES, "Permission denied", "/media/tv/Show (2026)/Trailers")
+        reason = classify_folder_error(exc)
+        assert reason is not None
+        assert "/media/tv/Show (2026)/Trailers" in reason
+        assert "PUID" in reason and "owner" in reason
+
+    def test_read_only_and_full_disk(self):
+        import errno
+
+        from utils.error_classify import classify_folder_error
+
+        assert "read-only" in classify_folder_error(OSError(errno.EROFS, "ro", "/media"))
+        assert "full" in classify_folder_error(OSError(errno.ENOSPC, "full", "/media"))
+
+    def test_other_errors_are_not_folder_errors(self):
+        import errno
+
+        from utils.error_classify import classify_folder_error
+
+        assert classify_folder_error(OSError(errno.ENOENT, "missing", "/x")) is None
+        assert classify_folder_error(RuntimeError("boom")) is None
+        assert classify_folder_error(FileNotFoundError("gone")) is None
+
+    def test_error_text_includes_the_notes(self):
+        from exceptions import DownloadFailedError
+        from utils.error_classify import classified_error, error_text
+
+        exc = DownloadFailedError(
+            "Error downloading video. yt-dlp command failed with exit code 1",
+            output="STDERR:\nERROR: Sign in to confirm you're not a bot",
+        )
+        text = error_text(exc)
+        assert text.startswith("Error downloading video.")
+        assert classified_error(text).startswith("YouTube requires a sign-in")

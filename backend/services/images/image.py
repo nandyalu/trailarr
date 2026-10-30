@@ -6,6 +6,7 @@ that the web UI asks for.
 """
 
 import asyncio
+from functools import lru_cache
 import hashlib
 from io import BytesIO
 from pathlib import Path
@@ -13,7 +14,6 @@ import threading
 import aiohttp
 import aiofiles.os
 from PIL import Image
-from async_lru import alru_cache
 
 from app_logger import ModuleLogger
 from config.settings import app_settings
@@ -38,18 +38,20 @@ def _url_to_fs_path(url_path: str) -> Path:
     return IMAGES_PATH / rel
 
 
-@alru_cache
-async def get_base_path(is_movie: bool, is_poster: bool) -> Path:
-    """Get the base path for saving images. \n
+@lru_cache
+def get_base_path(is_movie: bool, is_poster: bool) -> Path:
+    """Get the base path for saving images, and create it once. \n
+    The cache is synchronous on purpose. The scheduler runs each job on its
+    own event loop, and an async cache clears itself on every loop change
+    and warns about it. The folder only has to exist once per process. \n
     Args:
         is_movie (bool): Whether the media type is movie or show.
         is_poster (bool): Whether the image is a poster or fanart."""
     base_path = STATIC_PATH_MOVIES if is_movie else STATIC_PATH_SHOWS
     base_path = base_path / "posters" if is_poster else base_path / "fanart"
-    # Create directories if they don't exist
     try:
-        await aiofiles.os.makedirs(base_path, exist_ok=True)
-    except Exception:
+        base_path.mkdir(parents=True, exist_ok=True)
+    except OSError:
         logger.error(
             f"Trailarr could not create the images folder '{base_path}'."
         )
@@ -87,7 +89,7 @@ async def download_needed(is_movie: bool, media: MediaImage) -> bool:
         media (MediaImage): Media image object."""
     if not media.image_url:
         return False
-    base_path = await get_base_path(is_movie, media.is_poster)
+    base_path = get_base_path(is_movie, media.is_poster)
     filename = get_md5_filename(media.image_url)
     file_path = base_path / f"{filename}.jpg"
     # Check if a poster/artwork already exists

@@ -526,3 +526,96 @@ class TestSubprocessGuards:
         ):
             with pytest.raises(quiv.JobCancelledError):
                 remove_silence_at_end("/path/to/trailer.mp4")
+
+
+class TestSilenceTimestamps:
+    """ffmpeg writes a whole second without a decimal point."""
+
+    @staticmethod
+    def _silence_output(*lines: str) -> str:
+        detect = "[Parsed_silencedetect_0 @ 0x14cf800021c0]"
+        return "\n".join(
+            line if line.startswith("  Duration") else f"{detect} {line}"
+            for line in lines
+        )
+
+    def _timestamps(self, stderr: str):
+        from services.trailers.video_analysis import get_silence_timestamps
+
+        with (
+            patch(
+                "services.trailers.video_analysis.quiv.run_subprocess"
+            ) as run,
+            patch("services.trailers.video_analysis.logger") as logger,
+        ):
+            run.return_value.stderr = stderr
+            result = get_silence_timestamps("/path/to/trailer.mkv")
+        logger.exception.assert_not_called()
+        return result
+
+    def test_silence_at_the_start_is_not_an_error(self):
+        # Real output for a trailer that starts with 6 s of silence.
+        stderr = self._silence_output(
+            "  Duration: 00:02:40.80, start: 0.000000, bitrate: 2945 kb/s",
+            "silence_start: 0",
+            "silence_end: 6.285986 | silence_duration: 6.285986",
+            "silence_start: 78.334331",
+            "silence_end: 84.040771 | silence_duration: 5.70644",
+        )
+
+        assert self._timestamps(stderr) == (None, None)
+
+    def test_silence_at_the_end_after_silence_at_the_start(self):
+        stderr = self._silence_output(
+            "  Duration: 00:02:06.39, start: 0.000000, bitrate: 1622 kb/s",
+            "silence_start: 0",
+            "silence_end: 4.5 | silence_duration: 4.5",
+            "silence_start: 120.634376",
+            "silence_end: 126.386 | silence_duration: 5.751624",
+        )
+
+        assert self._timestamps(stderr) == (122.634376, 126.386)
+
+    def test_whole_seconds_at_the_end(self):
+        stderr = self._silence_output(
+            "  Duration: 00:02:06.00, start: 0.000000, bitrate: 1622 kb/s",
+            "silence_start: 120",
+            "silence_end: 126 | silence_duration: 6",
+        )
+
+        assert self._timestamps(stderr) == (122.0, 126.0)
+
+    def test_a_cut_character_in_the_output_is_not_an_error(self):
+        # ffmpeg cuts a long metadata line, here an embedded YouTube
+        # description, in the middle of "ä" (0xc3 0xa4). A real child
+        # process writes the bytes, so the decoding is the real one.
+        import sys
+
+        import quiv
+
+        from services.trailers.video_analysis import get_silence_timestamps
+
+        stderr = (
+            b"  Duration: 00:02:06.00, start: 0.000000, bitrate: 1622 kb/s\n"
+            b"    DESCRIPTION     : Coming-of-age-Geschichten \xc3\n"
+            b"[Parsed_silencedetect_0 @ 0x1] silence_start: 120\n"
+            b"[Parsed_silencedetect_0 @ 0x1] silence_end: 126"
+            b" | silence_duration: 6\n"
+        )
+        script = f"import sys; sys.stderr.buffer.write({stderr!r})"
+        real_run = quiv.run_subprocess
+
+        def run_fake_ffmpeg(args, **kwargs):
+            return real_run([sys.executable, "-c", script], **kwargs)
+
+        with (
+            patch(
+                "services.trailers.video_analysis.quiv.run_subprocess",
+                side_effect=run_fake_ffmpeg,
+            ),
+            patch("services.trailers.video_analysis.logger") as logger,
+        ):
+            result = get_silence_timestamps("/path/to/trailer.mkv")
+
+        logger.exception.assert_not_called()
+        assert result == (122.0, 126.0)

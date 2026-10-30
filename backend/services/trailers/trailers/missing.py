@@ -44,6 +44,7 @@ from services.trailers.trailers import utils
 from services.files.files_handler import FilesHandler, is_disk_available
 from tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError, ItemNotFoundError
+from utils.error_classify import error_text
 
 logger = ModuleLogger("TrailerDownloadTasks")
 
@@ -692,7 +693,7 @@ async def _process_single_media_item(
             attempt = attempt_manager.record_failure(
                 media.id,
                 profile.id,
-                str(e) or type(e).__name__,
+                error_text(e),
                 # The candidate that this attempt used. `download_trailer`
                 # puts it on the error it raises, and the resolver puts it
                 # last on the next run so a video that YouTube no longer

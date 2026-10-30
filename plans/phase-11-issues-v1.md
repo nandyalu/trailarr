@@ -21,6 +21,14 @@ stabilization checklist.
    - `no-candidates` — profiles in the `awaiting_tmdb` state: `search_youtube` off and no known video of their type (Phase 9 W3, `services/satisfaction.py`); per unit after Phase 10. Already skipped by the download task and re-asked by the refresh task; the feed only surfaces them.
    - `unmatched-monitored` — monitored media matching zero enabled profiles.
    - `unattributed-download` — profile_id=0 active rows (formalizes v0.9.9 banner).
+   - `folder-not-writable` — (added Oct 21, 2026) a media folder that refused a write.
+     v0.14.1 classifies `PermissionError`, `EROFS` and `ENOSPC` in the download path
+     (`utils/error_classify.classify_folder_error`) and stores the folder and the fix on
+     the attempt record. This issue reads those attempts; the Health page gets a sibling
+     entry ("N media folders refused a write since <date>") from the same records. The
+     Connection Doctor's permission probe checks the connection roots only, so a
+     root-owned child folder (the Oct 21 production case: 133 of 282 series folders)
+     passes it. The Issues badge in the nav is the nudge; no front-page banner.
    - `folder-unreachable` — files-scan disk-unavailable skips (the two TODO comments in
      the scan code are wired here) + persistent health-report entries.
    - `missing-tmdb-id` — media where a profile with `search_youtube` off (any type) or a per-season profile matches, and tmdb_id is null.

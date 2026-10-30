@@ -139,8 +139,11 @@ async def delete_channel(channel_id: int) -> str:
 )
 async def test_channel(channel_id: int) -> str:
     """Send a test notification to a channel immediately."""
+    reason = ""
     try:
-        success = await dispatcher.send_test(channel_id)
+        result = await dispatcher.send_test(channel_id)
+        success = bool(result)
+        reason = getattr(result, "detail", "")
     except ItemNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
@@ -154,8 +157,8 @@ async def test_channel(channel_id: int) -> str:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=(
-                "Test notification failed — check the Apprise URL for this"
-                " channel"
+                "Test notification failed — "
+                + (reason or "check the Apprise URL for this channel")
             ),
         )
     return "Test notification sent!"

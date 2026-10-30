@@ -453,9 +453,52 @@ def _post_discord_sync(
     return response.status_code < 300
 
 
+@dataclass(frozen=True)
+class SendResult:
+    """The outcome of one send. `ok` is the verdict. `detail` says why the
+    send failed, in Apprise's own words, which name no secret."""
+
+    ok: bool
+    detail: str = ""
+
+    def __bool__(self) -> bool:
+        return self.ok
+
+
+def _discord_markdown_url(url: str) -> str:
+    """Discord renders rich embeds (clickable [YouTube](…) links, colored
+    strip) in markdown mode only. Apprise 2 picks the format per send from
+    the URL's `format=` option, so add it to a Discord URL that has none."""
+    if "format=" in url.lower() or _discord_webhook_url(url) is None:
+        return url
+    return f"{url}{'&' if '?' in url else '?'}format=markdown"
+
+
+def _apprise_failure(result) -> str:
+    """One sentence on why Apprise did not deliver: its status, then the
+    last warning or error line that the services logged."""
+    status = getattr(getattr(result, "status", None), "name", "FAILURE")
+    text = {
+        "NOMATCH": "No service accepted the message.",
+        "TIMEOUT": "The service did not answer in time.",
+        "PARTIAL": "Some services did not accept the message.",
+    }.get(status, "The service did not accept the message.")
+    logs = getattr(result, "logs", None)
+    entries = logs() if callable(logs) else (logs or [])
+    last = ""
+    for entry in reversed([str(e) for e in entries]):
+        for level in (" - ERROR - ", " - WARNING - "):
+            if level in entry:
+                last = entry.split(level, 1)[1].strip()
+                break
+        if last:
+            break
+    return f"{text} {last}".strip()
+
+
 def _send_sync(
     url: str, title: str, body: str, attach: str | None = None
-) -> bool:
+) -> SendResult:
     """Blocking Apprise send — run via asyncio.to_thread. Services without
     attachment support simply send the text message."""
     import apprise
@@ -470,24 +513,17 @@ def _send_sync(
         image_url_logo=_LOGO_URL,
     )
     notifier = apprise.Apprise(asset=asset)
-    if not notifier.add(url):
-        return False
-    # Discord only renders rich embeds (clickable [YouTube](…) links,
-    # colored strip) in markdown mode, which otherwise needs an explicit
-    # ?format=markdown on the URL — default it so users don't have to.
-    from apprise.plugins.discord import NotifyDiscord
-
-    for server in notifier:
-        if isinstance(server, NotifyDiscord):
-            server.notify_format = apprise.NotifyFormat.MARKDOWN
-    return bool(
-        notifier.notify(
-            title=title, body=body, body_format="markdown", attach=attach
-        )
+    if not notifier.add(_discord_markdown_url(url)):
+        return SendResult(False, "Apprise does not accept this URL.")
+    result = notifier.notify(
+        title=title, body=body, body_format="markdown", attach=attach
     )
+    if result:
+        return SendResult(True)
+    return SendResult(False, _apprise_failure(result))
 
 
-async def send_test(channel_id: int) -> bool:
+async def send_test(channel_id: int) -> SendResult:
     """Send an immediate test message to one channel (user-triggered)."""
     url = channel_manager.get_url(channel_id)
     return await asyncio.to_thread(
@@ -593,10 +629,13 @@ async def _dispatch_pending(force: bool = False) -> None:
                     _send_sync, url, "Trailarr", body, attach
                 )
             if not ok:
+                reason = getattr(ok, "detail", "")
                 logger.warning(
                     "Trailarr could not send a notification to channel"
-                    f" {channel_id}. Check its Apprise URL with the Test"
-                    " button in Settings."
+                    f" {channel_id}."
+                    + (f" {reason}" if reason else "")
+                    + " Check its Apprise URL with the Test button in"
+                    " Settings."
                 )
         except Exception as e:
             logger.warning(
