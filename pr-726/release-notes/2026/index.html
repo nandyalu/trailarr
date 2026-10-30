@@ -3653,10 +3653,10 @@
 <p><strong>The image refresh no longer prints a cache warning</strong> — the task scheduler runs each job on its own event loop, and the async cache on the images folder helper cleared itself and warned on every run; the helper now uses a plain cache, and the <code>async-lru</code> package is removed.</p>
 </li>
 <li>
-<p><strong><code>Remove Silence</code> works on a trailer that starts with silence</strong> — ffmpeg writes a whole second without a decimal point, for example <code>silence_start: 0</code>, and Trailarr could not read it; the silence detection stopped with an error, and the trailer kept the silence at its end. Trailarr now reads whole seconds too.</p>
+<p><strong><code>Remove Silence</code> works on a trailer that starts with silence</strong> — ffmpeg writes a whole second without a decimal point, for example <code>silence_start: 0</code>, and Trailarr could not read it; the silence detection stopped with an error, and the trailer kept the silence at its end. Trailarr now reads whole seconds too. Thanks <a href="https://github.com/kris-anderson">@kris-anderson</a> for finding the cause and the fix! (<a href="https://github.com/nandyalu/trailarr/issues/724">#724</a>, <a href="https://github.com/nandyalu/trailarr/pull/725">#725</a>)</p>
 </li>
 <li>
-<p><strong><code>Remove Silence</code> works on a trailer with a long description</strong> — ffmpeg cuts a long metadata line, such as the YouTube description that <code>Embed Metadata</code> writes into the file, and the cut can split a character in two; Trailarr read the output of ffmpeg as strict UTF-8, so the silence detection stopped with an error. Trailarr now replaces a broken character and reads the rest.</p>
+<p><strong><code>Remove Silence</code> works on a trailer with a long description</strong> — ffmpeg cuts a long metadata line, such as the YouTube description that <code>Embed Metadata</code> writes into the file, and the cut can split a character in two; Trailarr read the output of ffmpeg as strict UTF-8, so the silence detection stopped with an error. Trailarr now replaces a broken character and reads the rest. Thanks <a href="https://github.com/kris-anderson">@kris-anderson</a>! (<a href="https://github.com/nandyalu/trailarr/pull/725">#725</a>)</p>
 </li>
 </ul>
 <p><strong>Other Changes:</strong> ⚙️</p>
@@ -3665,7 +3665,7 @@
 <p><strong>A failed notification says why</strong> — the log warning and the error of the <strong>Test</strong> button name the reason the service gave, such as <code>error=404</code>, instead of only pointing at the Apprise URL — see <a href="../../user-guide/settings/notifications/">Notifications</a>.</p>
 </li>
 <li>
-<p><strong>Dependency updates</strong> — Pillow moves to 13.0.0, which takes ten security fixes for the image decoders (<a href="https://github.com/nandyalu/trailarr/pull/711">#711</a>). Apprise moves to 2.0.1, the first release of Apprise v2, and Trailarr adds <code>format=markdown</code> to a Discord URL that has none, so the Test message keeps its rich embed (<a href="https://github.com/nandyalu/trailarr/pull/698">#698</a>). yt-dlp moves to 2026.10.21, which adds the <code>tv_samsung</code> client to its default YouTube clients (<a href="https://github.com/nandyalu/trailarr/pull/722">#722</a>). Angular moves to 22.2.4, and the build tool <code>vite</code> moves to 8.3.5.</p>
+<p><strong>Dependency updates</strong> — Pillow moves to 13.0.0, which takes ten security fixes for the image decoders (<a href="https://github.com/nandyalu/trailarr/pull/711">#711</a>). Apprise moves to 2.0.1, the first release of Apprise v2, and Trailarr adds <code>format=markdown</code> to a Discord URL that has none, so the Test message keeps its rich embed (<a href="https://github.com/nandyalu/trailarr/pull/698">#698</a>). yt-dlp moves to 2026.10.21, which adds the <code>tv_samsung</code> client to its default YouTube clients (<a href="https://github.com/nandyalu/trailarr/pull/722">#722</a>). FastAPI moves to 0.162.0 (<a href="https://github.com/nandyalu/trailarr/pull/723">#723</a>), the task scheduler quiv to 1.4.0 (<a href="https://github.com/nandyalu/trailarr/pull/715">#715</a>), and Alembic to 1.20.1 (<a href="https://github.com/nandyalu/trailarr/pull/720">#720</a>). Angular moves to 22.2.4, and the build tool <code>vite</code> moves to 8.3.5.</p>
 </li>
 </ul>
 <hr />
