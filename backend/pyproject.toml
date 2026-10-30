@@ -14,7 +14,7 @@ dependencies = [
     "pillow==13.0.0",
     "quiv==1.4.0",
     "sqlmodel==0.0.48",
-    "yt-dlp[curl-cffi,default]==2026.10.21",
+    "yt-dlp[curl-cffi,default]==2026.10.26",
     "rich>=15.0.0",
     "apprise==2.0.1",
     "greenlet==3.5.6",
