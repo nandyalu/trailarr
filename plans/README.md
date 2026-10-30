@@ -82,6 +82,7 @@ Standard checklist, in addition to each phase's listed pages:
 | v0.13.0 | 8 | TMDB integration (media-videos candidates table) + onboarding C + filter counts (#618) + backup retention (E1, #681) | ✅ shipped Sep 24, 2026 | ~4 weeks |
 | v0.13.1 | — | Upgrade To TMDB Trailer (`track-tmdb-upgrade.md`) + failing-downloads view + scheduler worker-slot fix (quiv#86) + logs WAL fix | ✅ shipped Oct 4, 2026 | — |
 | v0.14.0 | 9 | Video types (trailer/teaser/clip/featurette…) + trailer fields in the Expanded/Table views + dependency security fixes | ✅ shipped Oct 20, 2026 | ~4 weeks |
+| v0.14.1 | — | Unplanned fixes (a refused folder write, Remove Silence timestamps #725) + Apprise 2, FastAPI 0.162, quiv 1.4.0, and the Pillow 13 and Brotli security fixes | ✅ shipped Oct 29, 2026 | — |
 | v0.15.0 | 10 | Movie/Series profiles + season trailers (+ profile presets) | ~Nov 19, 2026 | ~3 weeks |
 | v1.0.0 | 11 | Issues section + delight items + stabilization | ~Dec 10, 2026 | — |
 
