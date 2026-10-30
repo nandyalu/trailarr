@@ -13,6 +13,7 @@
         <link rel="canonical" href="https://nandyalu.github.io/trailarr/references/roadmap/">
       
       
+      
         <link rel="prev" href="../../release-notes/2024/">
       
       
@@ -23,7 +24,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.66">
+      <meta name="generator" content="zensical-0.0.73">
     
     
       
@@ -34,12 +35,12 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.1502b751.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.4ab2de0c.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.812a03bb.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.b60ce83d.min.css">
       
       
 
@@ -81,14 +82,11 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#trailarr-roadmap-to-v100" class="md-skip">
-          Skip to content
-        </a>
-      
+      <a href="#__skip" class="md-skip">
+        Skip to content
+      </a>
     </div>
     <div data-md-component="announce">
       
@@ -106,9 +104,10 @@
   <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="Trailarr Docs">
 
     </a>
-    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+    <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+      <span class="md-visually-hidden">Navigation</span>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -170,9 +169,10 @@
     
       
       
-        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+        <label class="md-header__button md-icon" for="__search">
           
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          <span class="md-visually-hidden">Search</span>
         </label>
         <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
   <button type="button" class="md-search__button">
@@ -2758,7 +2758,7 @@
   <a href="#phase-9-video-types-v0140" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 9 — Video types — <code>v0.14.0</code>
+        Phase 9 — Video types — <code>v0.14.0</code> ✅
       </span>
     </span>
   </a>
@@ -3056,7 +3056,7 @@
   <a href="#phase-9-video-types-v0140" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Phase 9 — Video types — <code>v0.14.0</code>
+        Phase 9 — Video types — <code>v0.14.0</code> ✅
       </span>
     </span>
   </a>
@@ -3187,8 +3187,10 @@
 
               
               <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
                 
                   
+
   
   
 
@@ -3255,7 +3257,7 @@
 </tr>
 <tr>
 <td><strong>v0.14.0</strong></td>
-<td>October 2026</td>
+<td>October 20, 2026 ✅</td>
 <td>Phase 9 — Video types</td>
 </tr>
 <tr>
@@ -3306,7 +3308,7 @@ release, that's a bug — please report it.</p>
 <h3 id="phase-8-tmdb-integration-v0130">Phase 8 — TMDB integration — <code>v0.13.0</code> ✅</h3>
 <p>Add your own <strong>TMDB API key</strong> and Trailarr resolves trailers from TMDB's curated video lists (with your preferred language, set per profile) before falling back to YouTube search. Radarr/Sonarr-provided IDs and manual selections all feed one per-media list of known videos, refreshed periodically.</p>
 <p><em>What you'll notice:</em> far more accurate trailer picks, fewer wrong downloads. Without an API key, everything works exactly as before.</p>
-<h3 id="phase-9-video-types-v0140">Phase 9 — Video types — <code>v0.14.0</code></h3>
+<h3 id="phase-9-video-types-v0140">Phase 9 — Video types — <code>v0.14.0</code> ✅</h3>
 <p>Profiles gain a <strong>video type</strong>: trailer, teaser, clip, featurette, and more. Non-trailer types download exclusively from TMDB's curated lists (no YouTube guessing), and every download records its type — so a featurette is never miscounted as your trailer. If you've been using hacky profiles for extras, this is the release where the app starts doing it natively; it will detect those profiles and suggest settings. The <strong>Expanded</strong> and <strong>Table</strong> views of the library also gain the fields of your trailers: resolution, video and audio codecs, language, subtitles, size, duration and the owning profile, shown as one block per trailer.</p>
 <h3 id="phase-10-movieseries-profiles-season-trailers-v0150">Phase 10 — Movie/Series profiles + season trailers — <code>v0.15.0</code></h3>
 <p>Profiles become explicitly <strong>for movies or for series</strong>. Series profiles can enable <strong>season-specific trailers</strong> — one trailer per season, up to the show's season count, sourced from TMDB. Existing profiles are classified automatically from their names and filters; the few that can't be classified are set to movies and disabled for you to review and re-enable.</p>
@@ -3493,11 +3495,12 @@ YouTube cookies). So a <strong>Setup &amp; Health track</strong> runs alongside 
 </footer>
       
     </div>
-    <div class="md-dialog" data-md-component="dialog">
+    <div class="md-dialog" data-md-component="dialog" role="status" aria-atomic="true">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+      
+<div class="md-progress" data-md-component="progress" role="progressbar" aria-label="Loading"></div>
     
     
     
@@ -3507,10 +3510,10 @@ YouTube cookies). So a <strong>Setup &amp; Health track</strong> runs alongside 
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.b7d3f789.min.js"></script>
+      <script src="../../assets/javascripts/bundle.77dd0ce9.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       

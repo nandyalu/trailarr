@@ -13,6 +13,7 @@
         <link rel="canonical" href="https://nandyalu.github.io/trailarr/release-notes/2026/">
       
       
+      
         <link rel="prev" href="../../troubleshooting/faq/">
       
       
@@ -23,7 +24,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.66">
+      <meta name="generator" content="zensical-0.0.73">
     
     
       
@@ -34,12 +35,12 @@
       
         
       
-      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.1502b751.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/modern/main.4ab2de0c.min.css">
       
         
           
         
-        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.812a03bb.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/modern/palette.b60ce83d.min.css">
       
       
 
@@ -81,14 +82,11 @@
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <label class="md-overlay" for="__drawer" aria-hidden="true"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#v0140-october-20-2026" class="md-skip">
-          Skip to content
-        </a>
-      
+      <a href="#__skip" class="md-skip">
+        Skip to content
+      </a>
     </div>
     <div data-md-component="announce">
       
@@ -106,9 +104,10 @@
   <img src="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-512.png" alt="Trailarr Docs">
 
     </a>
-    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+    <label class="md-header__button md-icon" for="__drawer">
       
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+      <span class="md-visually-hidden">Navigation</span>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -170,9 +169,10 @@
     
       
       
-        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+        <label class="md-header__button md-icon" for="__search">
           
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          <span class="md-visually-hidden">Search</span>
         </label>
         <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
   <button type="button" class="md-search__button">
@@ -2499,6 +2499,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0141-october-29-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.14.1</strong> - <em>October 29, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0140-october-20-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3159,6 +3170,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0141-october-29-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.14.1</strong> - <em>October 29, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0140-october-20-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3605,14 +3627,48 @@
 
               
               <article class="md-content__inner md-typeset">
+                <a id="__skip" tabindex="-1"></a>
                 
                   
+
   
   
 
 
-  <h1 id="__skip">2026</h1>
+  <h1>2026</h1>
 
+<h2 id="v0141-october-29-2026"><strong>v0.14.1</strong> - <em>October 29, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong><code>Upgrade To TMDB</code> is in the General section of a profile</strong> — it sat in the Subtitle section with <code>Delete Replaced File</code> and <code>Replace Unknown Videos</code>; the three settings are now the last settings of General, where the docs describe them.</p>
+</li>
+<li>
+<p><strong>A folder that refuses the file is reported as a folder problem</strong> — a download that reached the media folder and could not write there was reported as a failed download, and the task tried two more videos before it gave up; Trailarr now stops at the first refused write, and the failing download names the folder and the fix (the owner and permissions of the folder, and the PUID and PGID of the container). A read-only mount and a full disk are reported the same way.</p>
+</li>
+<li>
+<p><strong>A failing download shows the reason yt-dlp gave</strong> — the attempt record stored only "Trailarr could not download the trailer", so the pending view could not show the classified reason, such as the sign-in request; the reason travels with the error now.</p>
+</li>
+<li>
+<p><strong>The image refresh no longer prints a cache warning</strong> — the task scheduler runs each job on its own event loop, and the async cache on the images folder helper cleared itself and warned on every run; the helper now uses a plain cache, and the <code>async-lru</code> package is removed.</p>
+</li>
+<li>
+<p><strong><code>Remove Silence</code> works on a trailer that starts with silence</strong> — ffmpeg writes a whole second without a decimal point, for example <code>silence_start: 0</code>, and Trailarr could not read it; the silence detection stopped with an error, and the trailer kept the silence at its end. Trailarr now reads whole seconds too. Thanks <a href="https://github.com/kris-anderson">@kris-anderson</a> for finding the cause and the fix! (<a href="https://github.com/nandyalu/trailarr/issues/724">#724</a>, <a href="https://github.com/nandyalu/trailarr/pull/725">#725</a>)</p>
+</li>
+<li>
+<p><strong><code>Remove Silence</code> works on a trailer with a long description</strong> — ffmpeg cuts a long metadata line, such as the YouTube description that <code>Embed Metadata</code> writes into the file, and the cut can split a character in two; Trailarr read the output of ffmpeg as strict UTF-8, so the silence detection stopped with an error. Trailarr now replaces a broken character and reads the rest. Thanks <a href="https://github.com/kris-anderson">@kris-anderson</a>! (<a href="https://github.com/nandyalu/trailarr/pull/725">#725</a>)</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li>
+<p><strong>A failed notification says why</strong> — the log warning and the error of the <strong>Test</strong> button name the reason the service gave, such as <code>error=404</code>, instead of only pointing at the Apprise URL — see <a href="../../user-guide/settings/notifications/">Notifications</a>.</p>
+</li>
+<li>
+<p><strong>Dependency updates</strong> — Pillow moves to 13.0.0, which takes ten security fixes for the image decoders (<a href="https://github.com/nandyalu/trailarr/pull/711">#711</a>). Brotli moves to 1.2.1, which fixes a critical out-of-bounds write in its decoder (<a href="https://github.com/advisories/GHSA-9v8h-qqgm-4m35">CVE-2026-111497</a>). Apprise moves to 2.0.1, the first release of Apprise v2, and Trailarr adds <code>format=markdown</code> to a Discord URL that has none, so the Test message keeps its rich embed (<a href="https://github.com/nandyalu/trailarr/pull/698">#698</a>). yt-dlp moves to 2026.10.21, which adds the <code>tv_samsung</code> client to its default YouTube clients (<a href="https://github.com/nandyalu/trailarr/pull/722">#722</a>). FastAPI moves to 0.162.0 (<a href="https://github.com/nandyalu/trailarr/pull/723">#723</a>), the task scheduler quiv to 1.4.0 (<a href="https://github.com/nandyalu/trailarr/pull/715">#715</a>), and Alembic to 1.20.1 (<a href="https://github.com/nandyalu/trailarr/pull/720">#720</a>). Angular moves to 22.2.4, and the build tool <code>vite</code> moves to 8.3.5.</p>
+</li>
+</ul>
+<hr />
 <h2 id="v0140-october-20-2026"><strong>v0.14.0</strong> - <em>October 20, 2026</em></h2>
 <p><strong>What's New:</strong> ✨</p>
 <ul>
@@ -4819,11 +4875,12 @@
 </footer>
       
     </div>
-    <div class="md-dialog" data-md-component="dialog">
+    <div class="md-dialog" data-md-component="dialog" role="status" aria-atomic="true">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+      
+<div class="md-progress" data-md-component="progress" role="progressbar" aria-label="Loading"></div>
     
     
     
@@ -4833,10 +4890,10 @@
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.b7d3f789.min.js"></script>
+      <script src="../../assets/javascripts/bundle.77dd0ce9.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       
