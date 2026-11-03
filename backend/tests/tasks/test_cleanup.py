@@ -27,12 +27,14 @@ def create_mock_media(
     media_id: int = 1,
     title: str = "Test Media",
     downloads: list | None = None,
+    folder_path: str = "/media/movies/Test Media (2025)",
 ) -> SimpleNamespace:
     """Create a mock media object for testing."""
     return SimpleNamespace(
         id=media_id,
         title=title,
         downloads=downloads or [],
+        folder_path=folder_path,
     )
 
 
@@ -87,6 +89,20 @@ class TestDeleteTrailer:
 
 class TestTrailerCleanup:
     """Tests for the trailer_cleanup function."""
+
+    @pytest.fixture(autouse=True)
+    def storage_is_there(self):
+        """The folders hold files, and no deleted download is back on disk.
+        test_cleanup_storage.py tests the storage guard and the restore."""
+        with (
+            patch("tasks.cleanup.folder_has_entries", return_value=True),
+            patch(
+                "tasks.cleanup.download_manager"
+                ".read_deleted_without_live_copy",
+                return_value=[],
+            ),
+        ):
+            yield
 
     @pytest.mark.asyncio
     async def test_cleanup_empty_media_list(self):

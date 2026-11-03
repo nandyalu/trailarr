@@ -1,6 +1,6 @@
 """Change a trailer download that is already stored."""
 
-from sqlmodel import Session
+from sqlmodel import Session, col, select
 
 from . import base
 from database.models.download import (
@@ -70,6 +70,43 @@ def mark_as_deleted(
     # Commit the changes to the database
     _session.add(download_db)
     _session.commit()
+
+
+@write_session
+def mark_as_restored(
+    download_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> bool:
+    """
+    Mark a deleted download as on disk again.
+    The disk scan can record the same file while the Cleanup Task examines
+    it. So this checks again, under the write lock, that no active download
+    has the path. Two active downloads for one file are a duplicate.
+    Args:
+        download_id (int): The ID of the download to restore.
+        _session (Session, optional): A session to use for the database connection. Defaults to None.
+    Returns:
+        bool: True when the download was restored. False when it is active
+            already, or when an active download has its path.
+    Raises:
+        ItemNotFoundError: If the download with the given ID is not found.
+    """
+    download_db = base._get_db_item(download_id, _session)
+    if download_db.file_exists:
+        return False
+    active_copy = _session.exec(
+        select(Download.id)
+        .where(Download.path == download_db.path)
+        .where(col(Download.file_exists).is_(True))
+        .limit(1)
+    ).first()
+    if active_copy is not None:
+        return False
+    download_db.file_exists = True
+    _session.add(download_db)
+    _session.commit()
+    return True
 
 
 @write_session

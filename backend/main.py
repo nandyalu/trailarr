@@ -28,7 +28,7 @@ from api.utils import format_google_docstring
 from api.v1.routes import api_v1_router
 from api.v1.websockets import ws_manager
 from config.settings import app_settings
-from database.engine import flush_records_to_db
+from database.engine import flush_records_to_db, optimize_database
 from database.version_guard import (
     ensure_db_not_from_newer_version,
 )
@@ -81,6 +81,8 @@ async def lifespan(app: FastAPI):
     cleanup_stale_temp_downloads()
     # Empty a WAL file that an earlier version let grow too large (#687)
     _flush_wal_files()
+    # Update the statistics that SQLite uses to choose an index (#732)
+    optimize_database()
     # Schedule all tasks
     logging.debug("Scheduling tasks")
     schedule_all_tasks()
