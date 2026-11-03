@@ -73,6 +73,26 @@ def mark_as_deleted(
 
 
 @write_session
+def mark_as_restored(
+    download_id: int,
+    *,
+    _session: Session = None,  # type: ignore
+) -> None:
+    """
+    Mark a deleted download as on disk again.
+    Args:
+        download_id (int): The ID of the download to restore.
+        _session (Session, optional): A session to use for the database connection. Defaults to None.
+    Raises:
+        ItemNotFoundError: If the download with the given ID is not found.
+    """
+    download_db = base._get_db_item(download_id, _session)
+    download_db.file_exists = True
+    _session.add(download_db)
+    _session.commit()
+
+
+@write_session
 def update_profile_id(
     download_id: int,
     profile_id: int,

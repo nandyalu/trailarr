@@ -42,6 +42,9 @@ class TestRunStartupPasses:
         async def fake_scan_guard():
             order.append("scan-guard")
 
+        async def fake_restore():
+            order.append("restore")
+
         with (
             patch(f"{PKG}._pass_attribute_downloads", side_effect=fake_attr),
             patch(f"{PKG}._pass_full_scan_guard", side_effect=fake_scan_guard),
@@ -51,13 +54,14 @@ class TestRunStartupPasses:
                 [
                     ("attribute-downloads-v0.9.9", fake_attr, "always"),
                     ("full-scan-before-downloads-v0.10", fake_scan_guard, "once"),
+                    ("restore-returned-trailers-v0.14.2", fake_restore, "once"),
                 ],
             ),
         ):
             assert downloads_ready() is False
             await run_startup_passes()
 
-        assert order == ["attribute", "scan-guard"]
+        assert order == ["attribute", "scan-guard", "restore"]
         assert downloads_ready() is True
 
     @pytest.mark.asyncio

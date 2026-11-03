@@ -30,7 +30,9 @@ stabilization checklist.
      root-owned child folder (the Oct 21 production case: 133 of 282 series folders)
      passes it. The Issues badge in the nav is the nudge; no front-page banner.
    - `folder-unreachable` — files-scan disk-unavailable skips (the two TODO comments in
-     the scan code are wired here) + persistent health-report entries.
+     the scan code are wired here), the Cleanup Task's empty-or-missing-folder skips
+     (the TODO in `tasks/cleanup.py`, added in v0.14.2 for #733) + persistent
+     health-report entries.
    - `missing-tmdb-id` — media where a profile with `search_youtube` off (any type) or a per-season profile matches, and tmdb_id is null.
    - `profile-needs-review` — Ph 10 classification disables + Ph 9 hacky-profile
      detections (`tasks/profile_nudge.py::nudge_extras_profiles()` is log-only and

@@ -1,10 +1,15 @@
 """Daily cleanup: old log entries, and trailers that are gone or broken.
 
 The trailer part reads what is on disk. A file that no longer exists is
-marked deleted. A file with no audio or no video is deleted, but only when
-the user turned that on.
+marked deleted, but only when the folder that holds it still has files:
+an empty or missing folder means that the storage is not there (#733). A
+deleted download whose file is back on disk is marked active again. A file
+with no audio or no video is deleted, but only when the user turned that
+on.
 """
 
+import asyncio
+import os
 import threading
 
 import aiofiles.os
@@ -15,9 +20,10 @@ import database.manager.download as download_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
 from database.models.event import EventSource
-from database.models.video_type import is_trailer_type
+from database.models.video_type import is_trailer_type, video_type_label
 from services.trailers import video_analysis
-from services.files.files_handler import FilesHandler
+from services.files.files_handler import FilesHandler, folder_has_entries
+from utils.path_utils import is_subpath
 
 logger = ModuleLogger("CleanupTasks")
 
@@ -50,12 +56,76 @@ async def delete_trailer(trailer_path: str, download_id: int):
     return None
 
 
+def _storage_folder(media_folder: str, trailer_path: str) -> str:
+    """The folder that must hold files before a missing trailer counts as
+    deleted: the media folder for a trailer inside it, else the folder of
+    the trailer itself (a custom folder)."""
+    if media_folder and is_subpath(media_folder, trailer_path):
+        return media_folder
+    return os.path.dirname(trailer_path)
+
+
+async def restore_returned_trailers(
+    stop_event: threading.Event | None = None,
+) -> int:
+    """Mark a deleted download as active again when its file is back.
+
+    A download is marked deleted when its file is not on disk. When the
+    storage was only out of reach, the file comes back, but nothing set the
+    download back, and the profile downloaded the same video again under a
+    "Trailer 2" name (#733).
+
+    A download is restored when a file is at its path, no active download
+    has that path, and the size of the file is the size of the download.
+    A file of another size is another file. The disk scan records it.
+
+    Returns:
+        int: The number of restored downloads.
+    """
+    restored = 0
+    seen: set[str] = set()
+    for download in download_manager.read_deleted_without_live_copy():
+        if stop_event and stop_event.is_set():
+            break
+        # The list is newest first, so the newest row of a path is restored.
+        if download.path in seen:
+            continue
+        seen.add(download.path)
+        try:
+            stat = await aiofiles.os.stat(download.path)
+        except OSError:
+            continue
+        if not os.path.isfile(download.path) or stat.st_size != download.size:
+            continue
+        download_manager.mark_as_restored(download.id)
+        event_manager.track_trailer_detected(
+            media_id=download.media_id,
+            source=EventSource.SYSTEM,
+            source_detail="CleanupTask",
+        )
+        media = media_manager.read(download.media_id)
+        logger.info(
+            f"The {video_type_label(download.video_type).lower()} file of"
+            f" '{media.title}' is on disk again. Trailarr marks it as"
+            f" active. Path: '{download.path}'.",
+            **logger.media(download.media_id),
+        )
+        restored += 1
+    if restored:
+        logger.info(
+            f"Trailarr found {restored} deleted files on disk again and"
+            " marked them as active."
+        )
+    return restored
+
+
 async def trailer_cleanup(stop_event: threading.Event | None = None):
     """
     Cleanup failed trailers (without audio), delete them and set monitor status to True.
     Also cleanup any residual files left in '/tmp' directory.
     """
     logger.info("Trailarr checks the trailer files on disk.")
+    await restore_returned_trailers(stop_event)
     # Get all media from the database that are downloaded
     media_with_trailers = media_manager.read_all_generator(
         downloaded_only=True
@@ -64,6 +134,7 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
     # Analyze the trailer files and remove the ones without audio
     analyzed_count = 0
     file_missing_count = 0
+    storage_missing_count = 0
     verification_failed_count = 0
     for media in media_with_trailers:
         # Skip media with no downloads
@@ -94,6 +165,28 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
             analyzed_count += 1
             # Check if file exists on disk
             if not _path or not await aiofiles.os.path.exists(_path):
+                # An empty or missing folder means that the storage is not
+                # there, for example a network share that did not mount.
+                # The file is probably still on the share, so the download
+                # stays active (#733). A folder that is really gone is the
+                # job of the disk scan.
+                # TODO: once the planned "Issues" section exists, raise an
+                # issue here to surface this to the user.
+                folder = (
+                    _storage_folder(media.folder_path, _path) if _path else ""
+                )
+                if folder and not await asyncio.to_thread(
+                    folder_has_entries, folder
+                ):
+                    storage_missing_count += 1
+                    logger.info(
+                        f"The trailer file for '{media.title}' is not on"
+                        f" disk, and the folder '{folder}' is empty or"
+                        " missing. Trailarr does not mark the trailer as"
+                        f" deleted. Path: '{_path}'.",
+                        **logger.media(media.id),
+                    )
+                    continue
                 file_missing_count += 1
                 logger.info(
                     f"The trailer file for '{media.title}' is not on disk."
@@ -152,4 +245,12 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
         f" {file_missing_count} files were not on disk."
         f" {verification_failed_count} files did not pass the check."
     )
+    if storage_missing_count:
+        logger.warning(
+            f"Trailarr did not find the files of {storage_missing_count}"
+            " trailers, and their folders are empty or missing. Trailarr"
+            " did not mark them as deleted. If the media is on a network"
+            " drive, make sure that the drive is mounted before Trailarr"
+            " starts."
+        )
     return None

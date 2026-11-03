@@ -136,3 +136,33 @@ def read_unattributed(
     )
     db_downloads = _session.exec(statement).all()
     return base.convert_to_read_list(db_downloads)
+
+
+@read_session
+def read_deleted_without_live_copy(
+    *,
+    _session: Session = None,  # type: ignore
+) -> list[DownloadRead]:
+    """
+    Get the deleted downloads whose path no active download has.
+    The Cleanup Task restores such a download when its file is on disk
+    again (#733). An active download with the same path is a newer record
+    of the file at that path, so the deleted rows of that path stay deleted.
+    Args:
+        _session (Session, optional=None): A session to use for the \
+            database connection. A new session is created if not provided.
+    Returns:
+        list[DownloadRead]: List of downloads (read-only), newest first.
+    """
+    live_paths = select(Download.path).where(
+        col(Download.file_exists).is_(True)
+    )
+    statement = (
+        select(Download)
+        .where(col(Download.file_exists).is_(False))
+        .where(Download.path != "")
+        .where(col(Download.path).not_in(live_paths))
+        .order_by(desc(Download.id))
+    )
+    db_downloads = _session.exec(statement).all()
+    return base.convert_to_read_list(db_downloads)
