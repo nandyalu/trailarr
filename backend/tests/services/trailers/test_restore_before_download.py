@@ -159,6 +159,28 @@ class TestCheckBeforeDownload:
         assert _detected(media_id) == []
 
 
+    @pytest.mark.asyncio
+    async def test_a_restore_by_another_task_is_seen(self, tmp_path):
+        """The Cleanup Task restores the row while this check examines the
+        file: this check restores nothing, but it must read the item
+        again."""
+        trailer = tmp_path / "Movie-trailer.mkv"
+        trailer.write_bytes(b"7 bytes")
+        profile = _profile()
+        media_id = _media(tmp_path)
+        download_id = _download(media_id, trailer, profile.id)
+        download_manager.mark_as_deleted(download_id)
+
+        async def cleanup_wins(*_args, **_kwargs) -> int:
+            download_manager.mark_as_restored(download_id)
+            return 0
+
+        with patch.object(
+            missing, "restore_returned_files", side_effect=cleanup_wins
+        ):
+            assert await _eligible(media_id, profile) == []
+
+
 class TestRestoreReturnedFiles:
     @pytest.mark.asyncio
     async def test_only_the_newest_row_of_a_path_is_restored(self, tmp_path):
