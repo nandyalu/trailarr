@@ -63,9 +63,14 @@ class FileFolderInfo(FileFolderInfoBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id", ondelete="CASCADE")
+    media_id: int = Field(
+        foreign_key="media.id", ondelete="CASCADE", index=True
+    )
     parent_id: int | None = Field(
-        foreign_key="filefolderinfo.id", default=None, nullable=True
+        foreign_key="filefolderinfo.id",
+        default=None,
+        nullable=True,
+        index=True,
     )
     children: list["FileFolderInfo"] = Relationship(cascade_delete=True)
 

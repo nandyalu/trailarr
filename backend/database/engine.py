@@ -12,7 +12,7 @@ import threading
 from sqlalchemy.exc import OperationalError as SAOperationalError
 import time
 from typing import Any, Generator
-from sqlalchemy import event, QueuePool, StaticPool
+from sqlalchemy import event, QueuePool, StaticPool, text
 from sqlmodel import SQLModel, Session, create_engine
 
 from app_logger import ModuleLogger
@@ -86,6 +86,42 @@ def flush_records_to_db() -> bool:
         done = truncate_wal(connection, busy_timeout_ms=STOP_BUSY_TIMEOUT_MS)
         connection.commit()
     return done
+
+
+# 0x10002: run ANALYZE where it helps (0x02), and look at every table, not
+# only the tables that this connection used (0x10000, SQLite 3.46.0).
+_OPTIMIZE = text("PRAGMA optimize=0x10002")
+
+
+def optimize_database() -> bool:
+    """Bring the statistics of the query planner up to date.
+
+    SQLite reads these statistics to choose an index. Statistics from a
+    small library, or none at all, can make it choose an index that does
+    not help, and a lookup for one media item then reads a whole table
+    (#732). The pragma analyzes each table that was never analyzed, or
+    whose size changed much since its last analysis. When nothing
+    changed, it does nothing.
+
+    This runs at the start of the app and in the daily Cleanup Task.
+    ANALYZE writes to the database, so it takes the write lock.
+
+    Returns:
+        bool: False when SQLite could not update the statistics.
+    """
+    try:
+        with db_write_lock:
+            with engine.connect() as connection:
+                connection.execute(_OPTIMIZE)
+                connection.commit()
+    except (SAOperationalError, SQLiteOperationalError) as e:
+        logger.warning(
+            "Trailarr could not update the statistics of the database."
+            f" SQLite tries again at the next Cleanup Task. Error: {e}"
+        )
+        return False
+    logger.debug("Trailarr updated the statistics of the database.")
+    return True
 
 
 @contextmanager

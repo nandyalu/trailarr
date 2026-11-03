@@ -5,12 +5,14 @@ so that a restart does not run everything at once: the attribution pass
 runs at 60 seconds, the disk scan at 480, the download run at 900.
 """
 
+import asyncio
 import threading
 from typing import Callable
 
 from app_logger import ModuleLogger
 from config.logging_context import with_logging_context
 from config.settings import app_settings
+from database.engine import optimize_database
 from database.manager.task_config import (
     create_task_config,
     get_task_config,
@@ -73,6 +75,9 @@ async def _cleanup_trailers(
     """Cleanup trailers without audio."""
     await delete_old_logs()
     await trailer_cleanup(stop_event=stop_event)
+    # The library changes size over time. Update the statistics that SQLite
+    # uses to choose an index (#732).
+    await asyncio.to_thread(optimize_database)
 
 
 @with_logging_context

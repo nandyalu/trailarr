@@ -83,7 +83,9 @@ class Download(DownloadBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id", ondelete="CASCADE")
+    media_id: int = Field(
+        foreign_key="media.id", ondelete="CASCADE", index=True
+    )
 
     @field_validator("added_at", "updated_at", mode="after")
     @classmethod
