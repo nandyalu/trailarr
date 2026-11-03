@@ -91,7 +91,9 @@ export class EditConnectionComponent {
     required(schema.api_key, {message: 'API Key is required.'});
     pattern(schema.api_key, /^[a-zA-Z0-9]*$/, {message: 'API Key must be alphanumeric.'});
     minLength(schema.api_key, 32, {message: 'API Key must be at least 32 characters long.'});
-    maxLength(schema.api_key, 50, {message: 'API Key cannot be longer than 50 characters.'});
+    // Radarr and Sonarr make a 32-character key, but a person can set a
+    // longer one in config.xml, for example 64 characters (#734).
+    maxLength(schema.api_key, 128, {message: 'API Key cannot be longer than 128 characters.'});
     required(schema.arr_type, {message: 'ARR Type is required.'});
     required(schema.name, {message: 'Connection Name is required.'});
     minLength(schema.name, 3, {message: 'Connection Name must be at least 3 characters long.'});
