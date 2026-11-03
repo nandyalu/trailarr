@@ -212,8 +212,11 @@ class TestRestoreReturnedTrailers:
         assert _exists(download_id) is False
 
     @pytest.mark.asyncio
-    async def test_a_file_of_another_size_stays_deleted(self, tmp_path):
-        """Another file at the same path: the disk scan records it."""
+    async def test_a_changed_file_that_is_not_a_video_stays_deleted(
+        self, tmp_path
+    ):
+        """Another size: ffprobe examines the file, and it is no video.
+        test_restore_matching.py tests an edited video."""
         trailer = tmp_path / "Movie-trailer.mkv"
         trailer.write_bytes(b"a different file")
         media_id = _media(tmp_path)

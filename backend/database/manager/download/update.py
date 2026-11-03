@@ -1,5 +1,7 @@
 """Change a trailer download that is already stored."""
 
+import os
+
 from sqlmodel import Session, col, select
 
 from . import base
@@ -75,6 +77,7 @@ def mark_as_deleted(
 @write_session
 def mark_as_restored(
     download_id: int,
+    new_path: str | None = None,
     *,
     _session: Session = None,  # type: ignore
 ) -> bool:
@@ -85,6 +88,8 @@ def mark_as_restored(
     has the path. Two active downloads for one file are a duplicate.
     Args:
         download_id (int): The ID of the download to restore.
+        new_path (str | None): The path of the file when it is not the
+            stored path: the file was renamed or moved. None keeps the path.
         _session (Session, optional): A session to use for the database connection. Defaults to None.
     Returns:
         bool: True when the download was restored. False when it is active
@@ -95,15 +100,18 @@ def mark_as_restored(
     download_db = base._get_db_item(download_id, _session)
     if download_db.file_exists:
         return False
+    path = new_path or download_db.path
     active_copy = _session.exec(
         select(Download.id)
-        .where(Download.path == download_db.path)
+        .where(Download.path == path)
         .where(col(Download.file_exists).is_(True))
         .limit(1)
     ).first()
     if active_copy is not None:
         return False
     download_db.file_exists = True
+    download_db.path = path
+    download_db.file_name = os.path.basename(path)
     _session.add(download_db)
     _session.commit()
     return True

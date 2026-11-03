@@ -493,9 +493,10 @@ class TestRenameAndHashDetection:
         assert (new, missing, renamed) == (0, 0, 1)
 
     @pytest.mark.asyncio
-    async def test_hash_mismatch_falls_through_to_new_and_missing(self):
-        """When hashes don't match, a new disk path and a missing download are
-        NOT reconciled as a rename — normal new+missing handling applies."""
+    async def test_renamed_and_edited_trailer_keeps_its_download(self):
+        """A file moved under the same name with new content (for example
+        new tracks) does not match by hash, but it matches by its file name:
+        the same row takes the new path and the new analysis (#733)."""
         old_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
         new_path = "/media/Test Movie (2025)/Trailers/Test Movie-trailer.mkv"
         existing_dl = SimpleNamespace(
@@ -504,6 +505,8 @@ class TestRenameAndHashDetection:
             file_exists=True,
             file_hash="abc123",
             profile_id=1,
+            youtube_id="dQw4w9WgXcQ",
+            video_type="trailer",
             updated_at=datetime.now(tz=timezone.utc),
         )
         media = make_mock_media(downloads=[existing_dl])
@@ -511,6 +514,7 @@ class TestRenameAndHashDetection:
         mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
         mock_scanner.check_media_exists = AsyncMock(return_value=True)
         mock_scanner.get_trailer_paths = MagicMock(return_value={new_path})
+        video_info = SimpleNamespace(youtube_id=None, size=123)
 
         with (
             patch("tasks.files_scan.files_manager.update"),
@@ -519,6 +523,60 @@ class TestRenameAndHashDetection:
                 "tasks.files_scan.compute_file_hash",
                 return_value="different_hash",
             ),
+            patch("tasks.files_scan.probe", AsyncMock(return_value=video_info)),
+            patch(
+                "tasks.files_scan.reanalyze_trailer_download",
+                AsyncMock(return_value=True),
+            ) as mock_reanalyze,
+            patch(
+                "tasks.files_scan.record_new_trailer_download"
+            ) as mock_record,
+            patch(
+                "tasks.files_scan.download_manager.mark_as_deleted"
+            ) as mock_delete,
+            patch("tasks.files_scan.event_manager.track_trailer_renamed"),
+        ):
+            new, missing, renamed, modified, unavailable = await scan_media_folder(media, scanner=mock_scanner)
+
+        mock_reanalyze.assert_called_once_with(
+            existing_dl, new_path, video_info=video_info, with_hash=True
+        )
+        mock_record.assert_not_called()
+        mock_delete.assert_not_called()
+        assert (new, missing, renamed) == (0, 0, 1)
+
+    @pytest.mark.asyncio
+    async def test_an_unrelated_file_falls_through_to_new_and_missing(self):
+        """Another name, another hash and no YouTube id: a new disk path and
+        a missing download are NOT reconciled — normal new+missing handling
+        applies."""
+        old_path = "/media/Test Movie (2025)/Test Movie-trailer.mkv"
+        new_path = "/media/Test Movie (2025)/Trailers/Other-trailer.mkv"
+        existing_dl = SimpleNamespace(
+            id=7,
+            path=old_path,
+            file_exists=True,
+            file_hash="abc123",
+            profile_id=1,
+            youtube_id="dQw4w9WgXcQ",
+            video_type="trailer",
+            updated_at=datetime.now(tz=timezone.utc),
+        )
+        media = make_mock_media(downloads=[existing_dl])
+        mock_scanner = MagicMock()
+        mock_scanner.get_folder_files = AsyncMock(return_value=MagicMock())
+        mock_scanner.check_media_exists = AsyncMock(return_value=True)
+        mock_scanner.get_trailer_paths = MagicMock(return_value={new_path})
+        video_info = SimpleNamespace(youtube_id=None, size=123)
+
+        with (
+            patch("tasks.files_scan.files_manager.update"),
+            patch("tasks.files_scan.media_manager.update_media_exists"),
+            patch(
+                "tasks.files_scan.compute_file_hash",
+                return_value="different_hash",
+            ),
+            patch("tasks.files_scan.probe", AsyncMock(return_value=video_info)),
             patch(
                 "tasks.files_scan.rename_trailer_download"
             ) as mock_rename,
@@ -535,6 +593,7 @@ class TestRenameAndHashDetection:
 
         mock_rename.assert_not_called()
         mock_record.assert_called_once()
+        assert mock_record.call_args.kwargs["video_info"] is video_info
         mock_delete.assert_called_once_with(existing_dl.id)
         assert (new, missing, renamed) == (1, 1, 0)
 
@@ -800,7 +859,7 @@ class TestNewTrailerAttribution:
             await scan_media_folder(media, scanner=mock_scanner)
 
         mock_record.assert_called_once_with(
-            media, 5, trailer_path, video_type="trailer"
+            media, 5, trailer_path, video_info=None, video_type="trailer"
         )
 
     @pytest.mark.asyncio
@@ -843,7 +902,7 @@ class TestNewTrailerAttribution:
             await scan_media_folder(media, scanner=mock_scanner)
 
         mock_record.assert_called_once_with(
-            media, 0, new_path, video_type="trailer"
+            media, 0, new_path, video_info=None, video_type="trailer"
         )
 
     @pytest.mark.asyncio
@@ -890,7 +949,7 @@ class TestNewTrailerAttribution:
             await scan_media_folder(media, scanner=mock_scanner)
 
         mock_record.assert_called_once_with(
-            media, 5, new_path, video_type="trailer"
+            media, 5, new_path, video_info=None, video_type="trailer"
         )
 
 

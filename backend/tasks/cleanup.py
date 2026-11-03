@@ -20,9 +20,10 @@ import database.manager.download as download_manager
 import database.manager.event as event_manager
 import database.manager.media as media_manager
 from database.models.event import EventSource
-from database.models.video_type import is_trailer_type, video_type_label
+from database.models.video_type import is_trailer_type
 from services.trailers import video_analysis
 from services.files.files_handler import FilesHandler, folder_has_entries
+from services.files.restore import restore_if_on_disk
 from utils.path_utils import is_subpath
 
 logger = ModuleLogger("CleanupTasks")
@@ -68,16 +69,11 @@ def _storage_folder(media_folder: str, trailer_path: str) -> str:
 async def restore_returned_trailers(
     stop_event: threading.Event | None = None,
 ) -> int:
-    """Mark a deleted download as active again when its file is back.
+    """Mark the deleted downloads whose files are back as active again.
 
-    A download is marked deleted when its file is not on disk. When the
-    storage was only out of reach, the file comes back, but nothing set the
-    download back, and the profile downloaded the same video again under a
-    "Trailer 2" name (#733).
-
-    A download is restored when a file is at its path, no active download
-    has that path, and the size of the file is the size of the download.
-    A file of another size is another file. The disk scan records it.
+    See `services/files/restore.py` for the rule (#733). This pass looks at
+    the whole library. The download task looks at one media item just
+    before it downloads for it.
 
     Returns:
         int: The number of restored downloads.
@@ -91,30 +87,8 @@ async def restore_returned_trailers(
         if download.path in seen:
             continue
         seen.add(download.path)
-        try:
-            stat = await aiofiles.os.stat(download.path)
-        except OSError:
-            continue
-        if not os.path.isfile(download.path) or stat.st_size != download.size:
-            continue
-        if not download_manager.mark_as_restored(download.id):
-            continue
-        # As in the disk scan: no event for an extra. An event is permanent,
-        # and it goes to the channels that subscribe to it.
-        if is_trailer_type(download.video_type):
-            event_manager.track_trailer_detected(
-                media_id=download.media_id,
-                source=EventSource.SYSTEM,
-                source_detail="CleanupTask",
-            )
-        media = media_manager.read(download.media_id)
-        logger.info(
-            f"The {video_type_label(download.video_type).lower()} file of"
-            f" '{media.title}' is on disk again. Trailarr marks it as"
-            f" active. Path: '{download.path}'.",
-            **logger.media(download.media_id),
-        )
-        restored += 1
+        if await restore_if_on_disk(download, "CleanupTask"):
+            restored += 1
     if restored:
         logger.info(
             f"Trailarr found {restored} deleted files on disk again and"

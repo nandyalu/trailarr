@@ -42,6 +42,10 @@ from services.tmdb.refresh import TMDBRefresher
 from services.trailers.inflight import inflight_registry
 from services.trailers.trailers import utils
 from services.files.files_handler import FilesHandler, is_disk_available
+from services.files.restore import (
+    restore_candidates,
+    restore_returned_files,
+)
 from tasks.startup_passes import downloads_ready
 from exceptions import DownloadFailedError, ItemNotFoundError
 from utils.error_classify import error_text
@@ -325,6 +329,19 @@ async def _read_current_eligible_profiles(
             await refresh_videos_if_stale(media, refresher)
         videos = video_manager.read_candidates(media.id, video_type=None)
     result = evaluate_satisfaction(media, matching_profiles, videos)
+    # The last check before a download: a deleted download whose file is
+    # on disk again counts again, so the profile may need no download. A
+    # network share can come back between two runs of the Cleanup Task
+    # (#733). The item is read again even when this restored nothing: the
+    # Cleanup Task or the disk scan can restore the same row in the
+    # meantime, and this item is then out of date. A restore cannot change
+    # the matching profiles: a profile filter cannot use download fields.
+    if result.unsatisfied and restore_candidates(media):
+        await restore_returned_files(
+            media, "DownloadMissingTrailers", search_folder=True
+        )
+        media = media_manager.read(media_id)
+        result = evaluate_satisfaction(media, matching_profiles, videos)
     if result.claims:
         profiles_by_id = {
             profile.id: profile
