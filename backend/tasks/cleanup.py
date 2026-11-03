@@ -97,12 +97,16 @@ async def restore_returned_trailers(
             continue
         if not os.path.isfile(download.path) or stat.st_size != download.size:
             continue
-        download_manager.mark_as_restored(download.id)
-        event_manager.track_trailer_detected(
-            media_id=download.media_id,
-            source=EventSource.SYSTEM,
-            source_detail="CleanupTask",
-        )
+        if not download_manager.mark_as_restored(download.id):
+            continue
+        # As in the disk scan: no event for an extra. An event is permanent,
+        # and it goes to the channels that subscribe to it.
+        if is_trailer_type(download.video_type):
+            event_manager.track_trailer_detected(
+                media_id=download.media_id,
+                source=EventSource.SYSTEM,
+                source_detail="CleanupTask",
+            )
         media = media_manager.read(download.media_id)
         logger.info(
             f"The {video_type_label(download.video_type).lower()} file of"

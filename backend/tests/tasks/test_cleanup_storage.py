@@ -241,6 +241,42 @@ class TestRestoreReturnedTrailers:
         assert _exists(old) is False
         assert _exists(new) is True
 
+    def test_the_restore_checks_again_under_the_write_lock(self, tmp_path):
+        """The disk scan recorded the file after the Cleanup Task read the
+        deleted downloads: the restore must not make a second active row."""
+        trailer = tmp_path / "Movie-trailer.mkv"
+        media_id = _media(tmp_path)
+        old = _download(media_id, trailer, size=7)
+        download_manager.mark_as_deleted(old)
+        _download(media_id, trailer, size=7)
+
+        assert download_manager.mark_as_restored(old) is False
+        assert _exists(old) is False
+
+    def test_an_active_download_is_not_restored_again(self, tmp_path):
+        media_id = _media(tmp_path)
+        download_id = _download(media_id, tmp_path / "Movie-trailer.mkv")
+
+        assert download_manager.mark_as_restored(download_id) is False
+
+    @pytest.mark.asyncio
+    async def test_a_returned_extra_is_restored_without_an_event(
+        self, tmp_path
+    ):
+        """As in the disk scan: no trailer event for an extra."""
+        extra = tmp_path / "Movie-featurette.mkv"
+        extra.write_bytes(b"7 bytes")
+        media_id = _media(tmp_path)
+        download_id = _download(
+            media_id, extra, size=7, video_type="featurette"
+        )
+        download_manager.mark_as_deleted(download_id)
+
+        await restore_returned_trailers()
+
+        assert _exists(download_id) is True
+        assert _events(media_id, EventType.TRAILER_DETECTED) == 0
+
     @pytest.mark.asyncio
     async def test_only_the_newest_row_of_a_path_is_restored(self, tmp_path):
         trailer = tmp_path / "Movie-trailer.mkv"
@@ -264,8 +300,10 @@ class TestRestorePass:
             in startup_passes.DOWNLOADS_REQUIRED_PASSES
         )
 
-    def test_the_restore_pass_runs_once(self):
+    def test_the_restore_pass_runs_at_every_start(self):
+        """The storage can be away at the first start of v0.14.2, and the
+        files come back only after a later start."""
         policies = {name: policy for name, _f, policy in startup_passes.REGISTRY}
         assert (
-            policies[startup_passes.PASS_RESTORE_RETURNED_TRAILERS] == "once"
+            policies[startup_passes.PASS_RESTORE_RETURNED_TRAILERS] == "always"
         )

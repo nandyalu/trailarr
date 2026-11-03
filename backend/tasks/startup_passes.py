@@ -96,13 +96,18 @@ async def _pass_video_type_nudge() -> None:
 
 async def _pass_restore_returned_trailers() -> None:
     """Restore the downloads that were marked deleted while their files
-    stayed on disk, once, at the first start of v0.14.2 (#733).
+    stayed on disk (#733). Runs at every start.
 
     Before v0.14.2, the Cleanup Task marked every trailer deleted when the
     storage did not mount, and the next download run got the same videos
     again. The Cleanup Task restores such a download every day, but it
     runs hours after the start, and the download run comes first. So this
-    pass runs before the first download.
+    pass runs before the download run. At the first start of v0.14.2, the
+    download run waits for it.
+
+    It runs at every start, not once: when the storage is not mounted at
+    the first start, the pass finds nothing, and the files come back only
+    after a later start.
     """
     from tasks.cleanup import restore_returned_trailers
 
@@ -115,7 +120,11 @@ REGISTRY: list[tuple[str, Callable[[], Awaitable[None]], str]] = [
     (PASS_FULL_SCAN_GUARD, _pass_full_scan_guard, "once"),
     (PASS_SETUP_STATE, _pass_setup_state, "once"),
     (PASS_VIDEO_TYPE_NUDGE, _pass_video_type_nudge, "once"),
-    (PASS_RESTORE_RETURNED_TRAILERS, _pass_restore_returned_trailers, "once"),
+    (
+        PASS_RESTORE_RETURNED_TRAILERS,
+        _pass_restore_returned_trailers,
+        "always",
+    ),
 ]
 
 

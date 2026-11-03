@@ -157,7 +157,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 - Cleans up broken, incomplete, or audio-less trailers from your library.
 - If a media item is marked as trailer existing but has no downloaded trailers, it will be marked as not having trailers. Does not change monitoring status.
 - If a media item has downloaded trailers but file does not exist, the download record will be marked as file deleted. Does not change monitoring status. Trailarr does this only when the folder that holds the trailer still has files. For a trailer in the media folder or in its subfolder, that folder is the media folder. For a trailer in a custom folder, it is the folder of the trailer.
-- If a download record is marked as file deleted, and its file is on disk again at the same path with the same size, Trailarr marks the record as active again. A new download of the same video is then not necessary. The first start of `v0.14.2` does this once too, before the first download.
+- If a download record is marked as file deleted, and its file is on disk again at the same path with the same size, Trailarr marks the record as active again. A new download of the same video is then not necessary. Trailarr also does this at each start, before the first download run.
 - Updates the statistics that the database uses to find data quickly, after the library grows or shrinks.
 - Helps keep your storage clean and avoids playback issues.
 

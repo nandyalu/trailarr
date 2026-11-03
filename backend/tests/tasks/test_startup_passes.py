@@ -54,7 +54,7 @@ class TestRunStartupPasses:
                 [
                     ("attribute-downloads-v0.9.9", fake_attr, "always"),
                     ("full-scan-before-downloads-v0.10", fake_scan_guard, "once"),
-                    ("restore-returned-trailers-v0.14.2", fake_restore, "once"),
+                    ("restore-returned-trailers-v0.14.2", fake_restore, "always"),
                 ],
             ),
         ):
