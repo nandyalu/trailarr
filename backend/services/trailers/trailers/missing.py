@@ -331,7 +331,7 @@ async def _read_current_eligible_profiles(
     # network share can come back between two runs of the Cleanup Task
     # (#733).
     if result.unsatisfied and await restore_returned_files(
-        media, "DownloadMissingTrailers"
+        media, "DownloadMissingTrailers", search_folder=True
     ):
         media = media_manager.read(media_id)
         result = evaluate_satisfaction(media, matching_profiles, videos)

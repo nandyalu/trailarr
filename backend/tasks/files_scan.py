@@ -38,6 +38,12 @@ from services.trailers.trailers.service import (
     rename_trailer_download,
 )
 from services.files.media_scanner import MediaScanner
+from services.files.restore import (
+    find_matching_download,
+    probe,
+    restore_candidates,
+    take_back,
+)
 from services.files.files_handler import is_disk_available
 
 logger = ModuleLogger("TrailersFilesScan")
@@ -116,10 +122,12 @@ async def _process_trailer_changes(
     additionally checked (cheap ctime pre-check, then hash) for in-place
     content edits made outside the app.
 
-    Known limitation: a file that is both renamed *and* edited in the same
-    scan window won't hash-match any missing download, so it falls through
-    to "new" + "missing" rather than being recognized as one change — only
-    pure renames and pure in-place edits are detected.
+    A disk path that matches no hash is then matched by the rules of
+    `services/files/restore.py` (#733): the file name, then the YouTube id in
+    the metadata of the file. The candidates are the missing downloads, then
+    the deleted downloads of the media item. So a file that was renamed and
+    edited, for example with new tracks, keeps its download, and a deleted
+    download whose file is back takes it again. Either one is analyzed again.
 
     Returns:
         tuple[int, int, int, int]: (new_trailer_count, missing_trailer_count,
@@ -136,7 +144,12 @@ async def _process_trailer_changes(
     # missing downloads by content hash, so the same row is updated in place
     # instead of deleting the old record and creating a brand-new one.
     renamed_count = 0
+    restored_count = 0
     claimed_ids: set[int] = set()
+    restored_ids: set[int] = set()
+    restored_profile_ids: set[int] = set()
+    deleted_downloads = restore_candidates(media)
+    infos_by_path = {}
     still_new_paths = []
     # The classifier runs only for a file with no row: a file that
     # Trailarr made keeps the type its profile gave it (decision 6).
@@ -180,6 +193,68 @@ async def _process_trailer_changes(
                     source_detail="FilesScan",
                 )
                 continue
+        if match:
+            # The hash matched, but the rename was not written.
+            still_new_paths.append(t_path)
+            continue
+        # No hash match: the file name or the YouTube id. The ffprobe is
+        # the one that `record_new_trailer_download` needs anyway.
+        candidates = [
+            d for d in missing_downloads if d.id not in claimed_ids
+        ] + [d for d in deleted_downloads if d.id not in restored_ids]
+        if candidates:
+            video_info = await probe(t_path)
+            infos_by_path[t_path] = video_info
+            match = find_matching_download(
+                t_path, video_info.youtube_id if video_info else None,
+                candidates,
+            )
+        if match and match.file_exists:
+            # A trailer that was renamed and edited: the same row takes the
+            # new path and the new analysis.
+            if await reanalyze_trailer_download(
+                match,
+                t_path,
+                video_info=infos_by_path.get(t_path),
+                with_hash=is_trailer_type(match.video_type),
+            ):
+                renamed_count += 1
+                claimed_ids.add(match.id)
+                logger.info(
+                    f"The trailer file for '{media.title}' has a new name"
+                    " and changed content. Trailarr recorded the change."
+                    f" Old path: '{match.path}'. New path: '{t_path}'.",
+                    **logger.media(media.id),
+                )
+                event_manager.track_trailer_renamed(
+                    media_id=media.id,
+                    old_path=match.path,
+                    new_path=t_path,
+                    source=source,
+                    source_detail="FilesScan",
+                )
+                continue
+        elif match:
+            # A deleted download whose file is back, maybe with a new name
+            # or new content. A file of another size is analyzed again.
+            video_info = infos_by_path.get(t_path)
+            same_file = (
+                match.path == t_path
+                and video_info is not None
+                and video_info.size == match.size
+            )
+            if await take_back(
+                match,
+                t_path,
+                None if same_file else video_info,
+                "FilesScan",
+                media.title,
+            ):
+                restored_count += 1
+                restored_ids.add(match.id)
+                if match.profile_id:
+                    restored_profile_ids.add(match.profile_id)
+                continue
         still_new_paths.append(t_path)
 
     # New trailer files found on disk that are not yet recorded as downloads.
@@ -200,7 +275,7 @@ async def _process_trailer_changes(
             d.profile_id
             for d in existing_downloads
             if d.profile_id and d.id not in _stale_ids
-        }
+        } | restored_profile_ids
     for t_path in still_new_paths:
         new_count += 1
         _type_value = types_by_path[t_path]
@@ -224,7 +299,11 @@ async def _process_trailer_changes(
         #    that subscribe to it.
         # The ffprobe stays: the row needs the duration and the streams.
         await record_new_trailer_download(
-            media, _profile_id, t_path, video_type=_type_value
+            media,
+            _profile_id,
+            t_path,
+            video_info=infos_by_path.get(t_path),
+            video_type=_type_value,
         )
         if not is_trailer_type(_type_value):
             continue
@@ -285,7 +364,13 @@ async def _process_trailer_changes(
                     source_detail="FilesScan",
                 )
 
-    return new_count, missing_count, renamed_count, modified_count
+    # A restored download is a trailer found on disk, so it counts as new.
+    return (
+        new_count + restored_count,
+        missing_count,
+        renamed_count,
+        modified_count,
+    )
 
 
 async def scan_media_folder(

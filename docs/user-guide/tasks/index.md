@@ -65,6 +65,8 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 | A new trailer file appears | Recorded as a new download. |
 | An existing trailer is renamed or moved | Recognized by comparing file content, not just the name/path — the existing download record is updated in place, keeping its history. Logged as a [**Trailer Renamed**](../events/index.md#trailer-renamed) event. |
 | An existing trailer's content changes but keeps the same name (e.g. re-encoded outside the app) | Detected via a content-hash mismatch — the file's metadata (size, resolution, codecs, duration) is refreshed automatically. Logged as a [**Trailer Modified**](../events/index.md#trailer-modified) event. |
+| An existing trailer is renamed or moved, and its content changes too (e.g. new audio tracks) | {{ version_badge("add", "0.14.2") }} Recognized by its file name or by the YouTube id in its metadata — see [Matching a file to a download](#matching-a-file-to-a-download). The existing download record takes the new path, and its metadata is refreshed. Logged as a [**Trailer Renamed**](../events/index.md#trailer-renamed) event. |
+| A trailer that was marked as deleted is on disk again | {{ version_badge("add", "0.14.2") }} The deleted download record is active again, also when the file has a new name or new content — see [Matching a file to a download](#matching-a-file-to-a-download). Logged as a [**Trailer Detected**](../events/index.md#trailer-detected) event. |
 | An existing trailer is deleted | The download record is marked as missing. Logged as a [**Trailer Deleted**](../events/index.md#trailer-deleted) event. |
 
 !!! note "How trailers are detected"
@@ -81,6 +83,18 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
     {{ version_badge("add", "0.9.9") }}
     Renaming or editing a trailer file used to look identical to "the old one was deleted and a new one appeared", which lost the file's history. The scan now recognizes these cases (see table above) and updates the existing record in place instead.
 
+#### Matching a file to a download
+
+{{ version_badge("add", "0.14.2") }}
+
+A trailer file can change outside Trailarr: you can rename it, move it to another folder, or change its tracks with another tool. Trailarr matches a file to an existing download by one of these rules, in this order:
+
+1. The file is at the path of the download.
+2. The file has the file name of the download, in another folder.
+3. The file has the YouTube id of the download in its metadata. A trailer that Trailarr downloaded with [Embed Metadata](../settings/profiles/settings/file.md#embed-metadata) on has one.
+
+If the file and the download both have a YouTube id, and the ids are not the same, the file is another video, and rules 1 and 2 do not apply. When the path or the size of the file changed, Trailarr analyzes the file again and updates the resolution, codecs, size and duration of the download. The YouTube id, the profile and the history of the download stay.
+
 !!! note "Network drive protection from `v0.9.9`"
     {{ version_badge("add", "0.9.9") }}
     If your media is stored on a network drive (SMB/NFS) that temporarily disconnects, the scan can no longer tell "the drive is offline" apart from "someone deleted all the trailers" — until now. Before marking any trailers as missing, the scan checks that the underlying storage is actually reachable. If it looks unreachable, that media item is skipped for this run (with an error logged) and retried on the next scheduled run, instead of incorrectly marking its trailers as missing.
@@ -94,7 +108,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 - Downloads are tracked per profile: a profile that already has its downloaded video never downloads again, so monitored media is not re-downloaded — you can keep media monitored forever. Existing trailers on disk that Trailarr is not yet tracking are claimed by the highest-priority matching profile instead of being downloaded again.
 - Downloading no longer turns monitoring off — the monitor toggle stays exactly as you set it.
 - If a trailer file is deleted from disk, the next files scan notices it and the owning profile becomes unsatisfied — the trailer is downloaded again on the following run.
-- {{ version_badge("add", "0.14.2") }} Just before it downloads for a media item, Trailarr looks for a deleted download of that item whose file is on disk again, at the same path and with the same size. If it finds one, it marks the download as active again, and the profile does not download the same video again. This helps when a network drive comes back while Trailarr runs.
+- {{ version_badge("add", "0.14.2") }} Just before it downloads for a media item, Trailarr looks for a deleted download of that item whose file is on disk again. It examines the path of the download, and it searches the folder of the media item for the file with a new name — see [Matching a file to a download](#matching-a-file-to-a-download). If it finds the file, it marks the download as active again, and the profile does not download the same video again. This helps when a network drive comes back while Trailarr runs.
 - {{ version_badge("add", "0.10.1") }} If the storage backing a media folder is unreachable (e.g. a disconnected network drive), the item is skipped with a *Storage unreachable* reason — it is not counted as a failed download attempt, and is simply retried on the next run once the storage is back.
 - {{ version_badge("upd", "0.11.5") }} The task scans the library in sweeps, so media and profiles that become eligible during a long run can still be downloaded in that run; profile changes apply to media items whose download has not started, while trailers already downloaded keep the profile settings used to download them.
 - Uses yt-dlp and ffmpeg for downloading and conversion.
@@ -158,7 +172,7 @@ For each media item, the scan compares the trailer file(s) it finds on disk to w
 - Cleans up broken, incomplete, or audio-less trailers from your library.
 - If a media item is marked as trailer existing but has no downloaded trailers, it will be marked as not having trailers. Does not change monitoring status.
 - If a media item has downloaded trailers but file does not exist, the download record will be marked as file deleted. Does not change monitoring status. Trailarr does this only when the folder that holds the trailer still has files. For a trailer in the media folder or in its subfolder, that folder is the media folder. For a trailer in a custom folder, it is the folder of the trailer.
-- If a download record is marked as file deleted, and its file is on disk again at the same path with the same size, Trailarr marks the record as active again. A new download of the same video is then not necessary. Trailarr also does this at each start, and just before a download for the media item.
+- If a download record is marked as file deleted, and its file is on disk again at the same path, Trailarr marks the record as active again. If the file changed, for example its tracks, Trailarr analyzes it again — see [Matching a file to a download](#matching-a-file-to-a-download). A new download of the same video is then not necessary. Trailarr also does this at each start, and just before a download for the media item.
 - Updates the statistics that the database uses to find data quickly, after the library grows or shrinks.
 - Helps keep your storage clean and avoids playback issues.
 

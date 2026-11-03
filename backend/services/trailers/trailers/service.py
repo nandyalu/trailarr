@@ -280,31 +280,47 @@ async def rename_trailer_download(
 
 
 async def reanalyze_trailer_download(
-    download: DownloadRead, file_path: str
+    download: DownloadRead,
+    file_path: str,
+    video_info: VideoInfo | None = None,
+    with_hash: bool = True,
 ) -> bool:
     """Recompute physical-file metadata for a download whose file content
-    changed in place on disk (same path, different hash — e.g. the user
-    re-encoded or trimmed it outside the app). Refreshes hash, size, codecs,
-    and duration, while deliberately preserving provenance fields
-    (youtube_id, youtube_channel, profile_id, added_at, path, media_id) since
-    an external edit doesn't change how/when we originally got this trailer.
+    changed on disk (e.g. the user re-encoded or trimmed it outside the app,
+    or changed its tracks). Refreshes hash, size, codecs, and duration,
+    while deliberately preserving provenance fields (youtube_id,
+    youtube_channel, profile_id, added_at, media_id) since an external edit
+    doesn't change how/when we originally got this trailer.
+
+    The row takes `file_path` and is marked as on disk: the file can have a
+    new name, and a deleted download can come back (#733).
     Args:
         download (DownloadRead): The existing download record.
-        file_path (str): The file's (unchanged) path on disk.
+        file_path (str): The file's path on disk.
+        video_info (VideoInfo | None): The ffprobe result of the file, when
+            the caller has it already. None runs ffprobe.
+        with_hash (bool): Whether to read the whole file for its hash.
+            Trailarr hashes the trailers only, as in
+            `record_new_trailer_download`.
     Returns:
         bool: True if the re-analysis succeeded, False otherwise.
     """
     try:
-        media_info = get_media_info(file_path)
+        media_info = video_info or get_media_info(file_path)
         if not media_info:
             logger.error(f"Failed to get media info for {file_path}")
             return False
 
         file_stat = os.stat(file_path)
-        metadata = _extract_metadata_fields(media_info, file_path)
+        metadata = _extract_metadata_fields(
+            media_info, file_path, with_hash=with_hash
+        )
 
         updated = download.model_dump()
         updated.update(metadata)
+        updated["path"] = file_path
+        updated["file_name"] = os.path.basename(file_path)
+        updated["file_exists"] = True
         updated["updated_at"] = datetime.fromtimestamp(
             file_stat.st_ctime, tz=timezone.utc
         )
