@@ -3666,6 +3666,9 @@
 <p><strong>A network drive that did not mount no longer marks your trailers deleted</strong> — the <code>Cleanup</code> task marked every trailer deleted when the drive showed an empty folder, and the next download run got the same videos again as <code>Trailer 2</code> files; Trailarr now keeps a trailer when its folder is empty or missing, and it marks a deleted trailer active again when its file is back on disk — see <a href="../../user-guide/tasks/#trailer-cleanup">Trailer Cleanup</a>. Thanks <a href="https://github.com/Shyrka973">@Shyrka973</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/733">#733</a>)</p>
 </li>
 <li>
+<p><strong>A renamed or edited trailer keeps its download</strong> — the files scan knew a renamed trailer only by its content, so a trailer that you renamed and changed, for example with new audio tracks, became a new download, and the old one was marked deleted; Trailarr now also matches a file by its file name and by the YouTube id in its metadata, and it analyzes the file again — see <a href="../../user-guide/tasks/#matching-a-file-to-a-download">Matching a file to a download</a>.</p>
+</li>
+<li>
 <p><strong>The scan, refresh and download tasks are much faster on a large library</strong> — three database indexes were missing, so each lookup for one media item read a whole table, and on a library of 88,000 items these tasks ran for hours; Trailarr now adds the indexes and keeps the statistics of the database up to date. Thanks <a href="https://github.com/sittingmongoose">@sittingmongoose</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/732">#732</a>)</p>
 </li>
 <li>

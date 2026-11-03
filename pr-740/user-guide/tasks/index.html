@@ -1573,6 +1573,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Scan All Media Folders">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matching-a-file-to-a-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Matching a file to a download
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -3107,6 +3124,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Scan All Media Folders">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#matching-a-file-to-a-download" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Matching a file to a download
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -3369,6 +3403,14 @@
 <td>Detected via a content-hash mismatch — the file's metadata (size, resolution, codecs, duration) is refreshed automatically. Logged as a <a href="../events/#trailer-modified"><strong>Trailer Modified</strong></a> event.</td>
 </tr>
 <tr>
+<td>An existing trailer is renamed or moved, and its content changes too (e.g. new audio tracks)</td>
+<td><span class="twemoji golden" title="Added in v0.14.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0142-tbd">v0.14.2</a> Recognized by its file name or by the YouTube id in its metadata — see <a href="#matching-a-file-to-a-download">Matching a file to a download</a>. The existing download record takes the new path, and its metadata is refreshed. Logged as a <a href="../events/#trailer-renamed"><strong>Trailer Renamed</strong></a> event.</td>
+</tr>
+<tr>
+<td>A trailer that was marked as deleted is on disk again</td>
+<td><span class="twemoji golden" title="Added in v0.14.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0142-tbd">v0.14.2</a> The deleted download record is active again, also when the file has a new name or new content — see <a href="#matching-a-file-to-a-download">Matching a file to a download</a>. Logged as a <a href="../events/#trailer-detected"><strong>Trailer Detected</strong></a> event.</td>
+</tr>
+<tr>
 <td>An existing trailer is deleted</td>
 <td>The download record is marked as missing. Logged as a <a href="../events/#trailer-deleted"><strong>Trailer Deleted</strong></a> event.</td>
 </tr>
@@ -3392,6 +3434,15 @@ A video file counts as a trailer if either of the following is true:</p>
 <p><span class="twemoji golden" title="Added in v0.9.9"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v099-july-05-2026">v0.9.9</a>
 Renaming or editing a trailer file used to look identical to "the old one was deleted and a new one appeared", which lost the file's history. The scan now recognizes these cases (see table above) and updates the existing record in place instead.</p>
 </div>
+<h4 id="matching-a-file-to-a-download">Matching a file to a download</h4>
+<p><span class="twemoji golden" title="Added in v0.14.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0142-tbd">v0.14.2</a></p>
+<p>A trailer file can change outside Trailarr: you can rename it, move it to another folder, or change its tracks with another tool. Trailarr matches a file to an existing download by one of these rules, in this order:</p>
+<ol>
+<li>The file is at the path of the download.</li>
+<li>The file has the file name of the download, in another folder.</li>
+<li>The file has the YouTube id of the download in its metadata. A trailer that Trailarr downloaded with <a href="../settings/profiles/settings/file/#embed-metadata">Embed Metadata</a> on has one.</li>
+</ol>
+<p>If the file and the download both have a YouTube id, and the ids are not the same, the file is another video, and rules 1 and 2 do not apply. When the path or the size of the file changed, Trailarr analyzes the file again and updates the resolution, codecs, size and duration of the download. The YouTube id, the profile and the history of the download stay.</p>
 <div class="admonition note">
 <p class="admonition-title">Network drive protection from <code>v0.9.9</code></p>
 <p><span class="twemoji golden" title="Added in v0.9.9"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v099-july-05-2026">v0.9.9</a>
@@ -3405,7 +3456,7 @@ If your media is stored on a network drive (SMB/NFS) that temporarily disconnect
 <li>Downloads are tracked per profile: a profile that already has its downloaded video never downloads again, so monitored media is not re-downloaded — you can keep media monitored forever. Existing trailers on disk that Trailarr is not yet tracking are claimed by the highest-priority matching profile instead of being downloaded again.</li>
 <li>Downloading no longer turns monitoring off — the monitor toggle stays exactly as you set it.</li>
 <li>If a trailer file is deleted from disk, the next files scan notices it and the owning profile becomes unsatisfied — the trailer is downloaded again on the following run.</li>
-<li><span class="twemoji golden" title="Added in v0.14.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0142-tbd">v0.14.2</a> Just before it downloads for a media item, Trailarr looks for a deleted download of that item whose file is on disk again, at the same path and with the same size. If it finds one, it marks the download as active again, and the profile does not download the same video again. This helps when a network drive comes back while Trailarr runs.</li>
+<li><span class="twemoji golden" title="Added in v0.14.2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0142-tbd">v0.14.2</a> Just before it downloads for a media item, Trailarr looks for a deleted download of that item whose file is on disk again. It examines the path of the download, and it searches the folder of the media item for the file with a new name — see <a href="#matching-a-file-to-a-download">Matching a file to a download</a>. If it finds the file, it marks the download as active again, and the profile does not download the same video again. This helps when a network drive comes back while Trailarr runs.</li>
 <li><span class="twemoji golden" title="Added in v0.10.1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 1-1.26 2.75L15 5l2.74 1.26L19 9l1.25-2.74L23 5l-2.75-1.25M9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5M19 15l-1.26 2.74L15 19l2.74 1.25L19 23l1.25-2.75L23 19l-2.75-1.26"/></svg></span> <a href="/trailarr/release-notes/2026/#v0101-july-21-2026">v0.10.1</a> If the storage backing a media folder is unreachable (e.g. a disconnected network drive), the item is skipped with a <em>Storage unreachable</em> reason — it is not counted as a failed download attempt, and is simply retried on the next run once the storage is back.</li>
 <li><span class="twemoji orange" title="Updated in v0.11.5"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1a6.887 6.887 0 0 0 0 9.8c2.73 2.7 7.15 2.7 9.88 0 1.36-1.35 2.04-2.92 2.04-4.9h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58a8.987 8.987 0 0 1 12.65 0L21 3zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8z"/></svg></span> <a href="/trailarr/release-notes/2026/#v0115-september-3-2026">v0.11.5</a> The task scans the library in sweeps, so media and profiles that become eligible during a long run can still be downloaded in that run; profile changes apply to media items whose download has not started, while trailers already downloaded keep the profile settings used to download them.</li>
 <li>Uses yt-dlp and ffmpeg for downloading and conversion.</li>
@@ -3497,7 +3548,7 @@ If your media is stored on a network drive (SMB/NFS) that temporarily disconnect
 <li>Cleans up broken, incomplete, or audio-less trailers from your library.</li>
 <li>If a media item is marked as trailer existing but has no downloaded trailers, it will be marked as not having trailers. Does not change monitoring status.</li>
 <li>If a media item has downloaded trailers but file does not exist, the download record will be marked as file deleted. Does not change monitoring status. Trailarr does this only when the folder that holds the trailer still has files. For a trailer in the media folder or in its subfolder, that folder is the media folder. For a trailer in a custom folder, it is the folder of the trailer.</li>
-<li>If a download record is marked as file deleted, and its file is on disk again at the same path with the same size, Trailarr marks the record as active again. A new download of the same video is then not necessary. Trailarr also does this at each start, and just before a download for the media item.</li>
+<li>If a download record is marked as file deleted, and its file is on disk again at the same path, Trailarr marks the record as active again. If the file changed, for example its tracks, Trailarr analyzes it again — see <a href="#matching-a-file-to-a-download">Matching a file to a download</a>. A new download of the same video is then not necessary. Trailarr also does this at each start, and just before a download for the media item.</li>
 <li>Updates the statistics that the database uses to find data quickly, after the library grows or shrinks.</li>
 <li>Helps keep your storage clean and avoids playback issues.</li>
 </ul>
