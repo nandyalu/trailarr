@@ -32,6 +32,8 @@ VALID_YT_DICT = {
     "studio": "studio",
     "title": "title",
     "title_slug": "title_slug",
+    "tmdb_id": "tmdb_id",
+    "tvdb_id": "tvdb_id",
     "txdb_id": "txdb_id",
     "year": "year",
 }
@@ -46,6 +48,8 @@ VALID_FILE_DICT = {
     "studio": "studio",
     "title": "title",
     "title_slug": "title_slug",
+    "tmdb_id": "tmdb_id",
+    "tvdb_id": "tvdb_id",
     "txdb_id": "txdb_id",
     "year": "year",
     "acodec": "audio_format",

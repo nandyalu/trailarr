@@ -36,6 +36,9 @@ def __replace_media_options(
     # Convert media object to dictionary for formatting
     format_opts = media.model_dump()
     format_opts["is_movie"] = "movie" if media.is_movie else "series"
+    # A missing TMDB or TVDB id writes nothing, not 'None'.
+    for key in ("tmdb_id", "tvdb_id"):
+        format_opts[key] = format_opts.get(key) or ""
     # Remove year from search query if 0
     format_opts["year"] = "" if media.year == 0 else media.year
     # Replace the media filename with the filename without extension

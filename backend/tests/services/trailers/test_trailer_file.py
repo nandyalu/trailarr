@@ -321,6 +321,27 @@ class TestGetTrailerFilename:
 
         assert "720p" in result
 
+    def test_tmdb_and_tvdb_ids_are_written(self, mock_media, mock_profile):
+        """The {tmdb_id} and {tvdb_id} placeholders write the ids (#735)."""
+        mock_media.model_dump.return_value |= {"tmdb_id": 603, "tvdb_id": 71663}
+        mock_profile.file_name = (
+            "{title} [tmdbid-{tmdb_id}] [tvdbid-{tvdb_id}]-trailer.{ext}"
+        )
+
+        result = get_trailer_filename(mock_media, mock_profile, "mp4", 1)
+
+        assert result == "Test Movie [tmdbid-603] [tvdbid-71663]-trailer.mp4"
+
+    def test_a_missing_id_writes_nothing(self, mock_media, mock_profile):
+        """A missing id writes an empty string, not 'None' (#735)."""
+        mock_media.model_dump.return_value |= {"tmdb_id": None, "tvdb_id": None}
+        mock_profile.file_name = "{title}{tmdb_id}{tvdb_id}-trailer.{ext}"
+
+        result = get_trailer_filename(mock_media, mock_profile, "mp4", 1)
+
+        assert "None" not in result
+        assert result == "Test Movie-trailer.mp4"
+
     def test_increment_index_added_when_greater_than_one(
         self, mock_media, mock_profile
     ):
@@ -544,6 +565,23 @@ class TestMoveTrailerToFolder:
         )
 
         assert str(custom_folder) in result
+
+    def test_custom_folder_writes_tmdb_id(
+        self, tmp_path, mock_media, mock_profile, mock_video_info
+    ):
+        """The custom folder writes {tmdb_id}, and nothing for a missing
+        {tvdb_id} (#735)."""
+        mock_media.model_dump.return_value |= {"tmdb_id": 603, "tvdb_id": None}
+        src_file = tmp_path / "source" / "trailer.mp4"
+        src_file.parent.mkdir(parents=True)
+        src_file.write_text("test content")
+        mock_profile.custom_folder = f"{tmp_path}/custom/{{tmdb_id}}{{tvdb_id}}"
+
+        result = move_trailer_to_folder(
+            src_file, mock_media, mock_profile, mock_video_info
+        )
+
+        assert Path(result).parent == tmp_path / "custom" / "603"
 
     def test_accepts_path_object_for_source(
         self, tmp_path, mock_media, mock_profile

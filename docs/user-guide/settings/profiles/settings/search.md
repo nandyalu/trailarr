@@ -42,8 +42,8 @@ You can use the following placeholders in the file name:
 | studio               | Studio of the media. Eg: 'Village Roadshow Pictures'                                                          |
 | title                | Title of the media. Eg: 'The Matrix'                                                                          |
 | title_slug           | TMDB ID for Movies and a hash seperated title for Series. Eg: '603' (movie) or 'the-big-bang-theory' (series) |
-| tmdb_id              | TMDB (The Movie Database) ID of the media item. Eg: `603`. `None` for Plex-only items without a TMDB entry.   |
-| tvdb_id              | TVDB (The TV Database) ID of the media item. Eg: `71663`. `None` for Plex-only items without a TVDB entry.    |
+| tmdb_id              | {{ version_badge("upd", "0.14.2") }} TMDB (The Movie Database) ID of the media item. Eg: `603`. Empty when the item has no TMDB ID. |
+| tvdb_id              | {{ version_badge("upd", "0.14.2") }} TVDB (The TV Database) ID of the media item. Eg: `71663`. Empty when the item has no TVDB ID. |
 | txdb_id              | Legacy combined ID — TMDB ID for movies, TVDB ID for series, as a string. Eg: `'603'`. Prefer `tmdb_id` or `tvdb_id`. |
 | year                 | Year of the media. Eg: '1999'                                                                                 |
 

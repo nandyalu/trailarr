@@ -139,6 +139,9 @@ def get_trailer_filename(
     title_opts["media_filename"] = Path(media.media_filename).stem
     title_opts["is_movie"] = "movie" if media.is_movie else "series"
     title_opts["youtube_id"] = video_id or ""
+    # A missing TMDB or TVDB id writes nothing, not 'None'.
+    for key in ("tmdb_id", "tvdb_id"):
+        title_opts[key] = title_opts.get(key) or ""
     # The suffix that Plex and Jellyfin read for the type of the profile:
     # 'trailer', 'featurette', 'scene', ... (decision 6 of Phase 9).
     title_opts["video_type"] = video_types.file_suffix(profile.video_type)
@@ -348,6 +351,9 @@ def move_trailer_to_folder(
         title_opts["media_filename"] = Path(media.media_filename).stem
         title_opts["is_movie"] = "movie" if media.is_movie else "series"
         title_opts["youtube_id"] = video_id or ""
+        # A missing TMDB or TVDB id writes nothing, not 'None'.
+        for key in ("tmdb_id", "tvdb_id"):
+            title_opts[key] = title_opts.get(key) or ""
         title_opts["video_type"] = video_types.folder_name(
             profile.video_type
         )
