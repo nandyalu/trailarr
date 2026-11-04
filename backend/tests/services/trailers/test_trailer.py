@@ -1229,3 +1229,62 @@ class TestCancelAfterTheDownload:
         self, tmp_path, mock_media, mock_profile
     ):
         assert not self._run(tmp_path, mock_media, mock_profile, "silence").exists()
+
+
+class TestTrimmedDownloadCleanup:
+    """The trimmed copy replaces the download, so the download must not
+    stay in the temp folder."""
+
+    def _run(self, tmp_path, mock_media, mock_profile, trimmed):
+        from services.trailers import trailer as trailer_module
+
+        downloaded = tmp_path / "1-trailer.mp4"
+        downloaded.write_bytes(b"video")
+        trimmed_copy = tmp_path / "trimmed_1-trailer.mp4"
+        mock_profile.remove_silence = True
+        if trimmed:
+            trimmed_copy.write_bytes(b"shorter video")
+            silence_result = (str(trimmed_copy), True)
+        else:
+            silence_result = (str(downloaded), False)
+        with (
+            patch.object(
+                trailer_module, "download_video", return_value=str(downloaded)
+            ),
+            patch.object(
+                trailer_module.trailer_file,
+                "verify_download",
+                return_value=(True, MagicMock()),
+            ),
+            patch.object(
+                trailer_module.video_analysis,
+                "remove_silence_at_end",
+                return_value=silence_result,
+            ),
+            patch.object(trailer_module.video_analysis, "get_media_info"),
+        ):
+            # getattr: a class body mangles the double-underscore name.
+            run = getattr(trailer_module, "__download_and_verify_trailer")
+            output_file, _ = run(mock_media, "video_id", mock_profile)
+        return downloaded, trimmed_copy, output_file
+
+    def test_a_trimmed_download_is_removed(
+        self, tmp_path, mock_media, mock_profile
+    ):
+        downloaded, trimmed_copy, output_file = self._run(
+            tmp_path, mock_media, mock_profile, trimmed=True
+        )
+
+        assert output_file == str(trimmed_copy)
+        assert trimmed_copy.exists()
+        assert not downloaded.exists()
+
+    def test_a_download_without_silence_is_kept(
+        self, tmp_path, mock_media, mock_profile
+    ):
+        downloaded, _, output_file = self._run(
+            tmp_path, mock_media, mock_profile, trimmed=False
+        )
+
+        assert output_file == str(downloaded)
+        assert downloaded.exists()
