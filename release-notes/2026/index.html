@@ -24,7 +24,7 @@
       
       
       <link rel="icon" href="https://raw.githubusercontent.com/nandyalu/trailarr/main/assets/images/trailarr-48.png">
-      <meta name="generator" content="zensical-0.0.73">
+      <meta name="generator" content="zensical-0.0.74">
     
     
       
@@ -2499,6 +2499,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0142-november-5-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.14.2</strong> - <em>November 5, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0141-october-29-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3170,6 +3181,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v0142-november-5-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <strong>v0.14.2</strong> - <em>November 5, 2026</em>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v0141-october-29-2026" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -3637,6 +3659,36 @@
 
   <h1>2026</h1>
 
+<h2 id="v0142-november-5-2026"><strong>v0.14.2</strong> - <em>November 5, 2026</em></h2>
+<p><strong>Bug Fixes:</strong> 🐛</p>
+<ul>
+<li>
+<p><strong>A network drive that did not mount no longer marks your trailers deleted</strong> — the <code>Cleanup</code> task marked every trailer deleted when the drive showed an empty folder, and the next download run got the same videos again as <code>Trailer 2</code> files; Trailarr now keeps a trailer when its folder is empty or missing, and it marks a deleted trailer active again when its file is back on disk — see <a href="../../user-guide/tasks/#trailer-cleanup">Trailer Cleanup</a>. Thanks <a href="https://github.com/Shyrka973">@Shyrka973</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/733">#733</a>)</p>
+</li>
+<li>
+<p><strong>A renamed or edited trailer keeps its download</strong> — the files scan knew a renamed trailer only by its content, so a trailer that you renamed and changed, for example with new audio tracks, became a new download, and the old one was marked deleted; Trailarr now also matches a file by its file name and by the YouTube id in its metadata, and it analyzes the file again — see <a href="../../user-guide/tasks/#matching-a-file-to-a-download">Matching a file to a download</a>.</p>
+</li>
+<li>
+<p><strong>The scan, refresh and download tasks are much faster on a large library</strong> — three database indexes were missing, so each lookup for one media item read a whole table, and on a library of 88,000 items these tasks ran for hours; Trailarr now adds the indexes and keeps the statistics of the database up to date. Thanks <a href="https://github.com/sittingmongoose">@sittingmongoose</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/732">#732</a>)</p>
+</li>
+<li>
+<p><strong>An API key of more than 50 characters works</strong> — the connection form cut a pasted key at 50 characters, so a valid 64-character key failed the test as <code>Unauthorized</code>; the form now takes up to 128 characters. Thanks <a href="https://github.com/zebrapurring">@zebrapurring</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/734">#734</a>)</p>
+</li>
+<li>
+<p><strong>The <code>{tmdb_id}</code> and <code>{tvdb_id}</code> placeholders work</strong> — a profile with one of them in <code>File Name</code>, <code>Custom Folder</code> or <code>Search Query</code> could not be saved; both work now, and a media item without the id gets an empty value — see <a href="../../user-guide/settings/profiles/settings/file/#file-name">File Name</a>. Thanks <a href="https://github.com/nyszilard">@nyszilard</a> for the detailed report! (<a href="https://github.com/nandyalu/trailarr/issues/735">#735</a>)</p>
+</li>
+<li>
+<p><strong><code>Remove Silence</code> cuts a trailer with a long description</strong> — v0.14.1 fixed the silence detection for such a trailer, but the trim that follows still stopped at a split character in the cut description, and the trailer kept the silence at its end; Trailarr now replaces a broken character in the trim output too. Thanks <a href="https://github.com/kris-anderson">@kris-anderson</a> for finding the cause and the fix! (<a href="https://github.com/nandyalu/trailarr/issues/741">#741</a>, <a href="https://github.com/nandyalu/trailarr/pull/743">#743</a>)</p>
+</li>
+<li>
+<p><strong><code>Remove Silence</code> no longer fills the temp folder</strong> — each trimmed trailer left its untrimmed download, about 30 MB, in the temp folder until the next start, and a failed trim left a copy that stopped the next trim of the same video; Trailarr now removes the download after a trim and the copy after a failed trim. Thanks <a href="https://github.com/kris-anderson">@kris-anderson</a> for finding the cause and the fix! (<a href="https://github.com/nandyalu/trailarr/issues/742">#742</a>, <a href="https://github.com/nandyalu/trailarr/pull/744">#744</a>)</p>
+</li>
+</ul>
+<p><strong>Other Changes:</strong> ⚙️</p>
+<ul>
+<li><strong>Dependency updates</strong> — Apprise moves to 2.1.0, which adds 12 notification services and removes Amazon Chime, because that service stopped (<a href="https://github.com/nandyalu/trailarr/pull/729">#729</a>). yt-dlp moves to 2026.10.26 (<a href="https://github.com/nandyalu/trailarr/pull/730">#730</a>). The task scheduler quiv moves to 1.5.0 (<a href="https://github.com/nandyalu/trailarr/pull/738">#738</a>).</li>
+</ul>
+<hr />
 <h2 id="v0141-october-29-2026"><strong>v0.14.1</strong> - <em>October 29, 2026</em></h2>
 <p><strong>Bug Fixes:</strong> 🐛</p>
 <ul>
@@ -4890,10 +4942,10 @@
       
         
         
-      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.c47bb847.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"../..","features":["content.code.annotate","content.code.copy","content.code.select","content.tabs.link","content.tooltips","navigation.expand","navigation.footer","navigation.indexes","navigation.instant","navigation.instant.preview","navigation.instant.progress","navigation.path","navigation.sections","navigation.tabs","navigation.tabs.sticky","navigation.top","search.highlight","search.suggest","toc.follow"],"redirect":null,"search":"../../assets/javascripts/workers/search.719e0d91.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","clipboard.error":"Could not copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.77dd0ce9.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d31f0ffa.min.js"></script>
       
         <script src="../../copyright-year.js"></script>
       
