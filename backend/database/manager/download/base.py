@@ -2,7 +2,7 @@
 
 from typing import Sequence
 
-from sqlmodel import Session
+from sqlmodel import Session, col, select
 
 from database.models.download import (
     Download,
@@ -61,3 +61,24 @@ def _get_db_item(download_id: int, session: Session) -> Download:
     if db_download is None:
         raise ItemNotFoundError(model_name="Download", id=download_id)
     return db_download
+
+
+def _has_active_download_at(path: str, session: Session) -> bool:
+    """True when an active download has the path.
+
+    Two active downloads for one file are a duplicate. A caller runs this
+    in its write session, so that no other write can come between the
+    check and its own write. `ix_download_path` makes it a short lookup.
+    Args:
+        path (str): The path of the file.
+        session (Session): SQLModel Session
+    Returns:
+        bool: True when an active download has the path.
+    """
+    active_copy = session.exec(
+        select(Download.id)
+        .where(Download.path == path)
+        .where(col(Download.file_exists).is_(True))
+        .limit(1)
+    ).first()
+    return active_copy is not None

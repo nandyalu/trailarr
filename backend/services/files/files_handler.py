@@ -690,3 +690,24 @@ def is_disk_available(folder_path: str) -> bool:
         if parent == path:
             return False  # walked all the way to filesystem root
         path = parent
+
+
+def folder_has_entries(folder_path: str) -> bool:
+    """Whether a folder exists, can be listed, and holds at least one entry.
+
+    A network share that did not mount shows as an empty folder or as no
+    folder at all. So does a Docker bind whose source did not exist when
+    the container started. `is_disk_available` cannot see this, because a
+    parent folder still lists (#733).
+    Args:
+        folder_path (str): The folder to examine.
+    Returns:
+        bool: False when the folder is missing, empty or cannot be listed.
+    """
+    if not folder_path:
+        return False
+    try:
+        with os.scandir(folder_path) as entries:
+            return next(entries, None) is not None
+    except OSError:
+        return False

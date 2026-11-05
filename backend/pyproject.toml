@@ -1,6 +1,6 @@
 [project]
 name = "Trailarr"
-version = "0.14.1"
+version = "0.14.2"
 description = "Trailarr is a Docker application to download and manage trailers for your Radarr and Sonarr libraries."
 readme = "../README.md"
 requires-python = ">=3.13.5"
@@ -12,35 +12,35 @@ dependencies = [
     "bcrypt==5.0.0",
     "fastapi[standard-no-fastapi-cloud-cli]==0.162.0",
     "pillow==13.0.0",
-    "quiv==1.4.0",
+    "quiv==1.5.0",
     "sqlmodel==0.0.48",
-    "yt-dlp[curl-cffi,default]==2026.10.21",
+    "yt-dlp[curl-cffi,default]==2026.10.26",
     "rich>=15.0.0",
-    "apprise==2.0.1",
+    "apprise==2.1.0",
     "greenlet==3.5.6",
 ]
 
 [dependency-groups]
 dev = [
     "aioresponses==0.7.9",
-    "mkdocs-git-revision-date-localized-plugin==1.6.0",
+    "mkdocs-git-revision-date-localized-plugin==1.6.3",
     "mkdocs-github-changelog==0.1.1",
-    "mkdocs-glightbox==0.5.2",
-    "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
+    "mkdocs-glightbox==0.5.3",
+    "pytest==9.2.0",
+    "pytest-asyncio==1.4.1.post1",
     "pytest-cov==7.1.0",
     "pytest-timeout==2.4.0",
-    "zensical==0.0.73",
+    "zensical==0.0.74",
 ]
 docs = [
-    "mkdocs-git-revision-date-localized-plugin==1.6.0",
-    "mkdocs-glightbox==0.5.2",
-    "zensical==0.0.73",
+    "mkdocs-git-revision-date-localized-plugin==1.6.3",
+    "mkdocs-glightbox==0.5.3",
+    "zensical==0.0.74",
 ]
 testing = [
     "aioresponses==0.7.9",
-    "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
+    "pytest==9.2.0",
+    "pytest-asyncio==1.4.1.post1",
     "pytest-cov==7.1.0",
     "pytest-timeout==2.4.0",
 ]

@@ -228,3 +228,6 @@ Thumbs.db
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Handoff notes between two Claude Code sessions, one file for each topic. Personal and short-lived.
+.claude/handoffs/

@@ -213,11 +213,15 @@ def __download_and_verify_trailer(
                     "Stop event set during silence removal"
                 )
 
+            downloaded_file = output_file
             output_file, _trimmed = video_analysis.remove_silence_at_end(
                 output_file
             )
             # Re-analyze after silence removal as duration/size changed
             if _trimmed:
+                # The trimmed copy replaces the download. Remove the
+                # download, or it stays in the temp folder.
+                Path(downloaded_file).unlink(missing_ok=True)
                 video_info = video_analysis.get_media_info(output_file)
     except (JobCancelledError, StopEventSetError):
         # A stop landed after yt-dlp finished: in ffprobe, in the silence

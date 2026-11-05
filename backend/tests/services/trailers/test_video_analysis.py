@@ -527,6 +527,35 @@ class TestSubprocessGuards:
             with pytest.raises(quiv.JobCancelledError):
                 remove_silence_at_end("/path/to/trailer.mp4")
 
+    def test_a_failed_trim_removes_the_trimmed_copy(self, tmp_path):
+        from pathlib import Path
+
+        from services.trailers.video_analysis import remove_silence_at_end
+
+        def trim_then_fail(file_path, output_file, start, end):
+            # ffmpeg wrote the copy, then the call failed.
+            Path(output_file).write_bytes(b"trimmed")
+            raise Exception("Exception while trimming video: a bad byte")
+
+        with (
+            patch(
+                "services.trailers.video_analysis.tempfile.gettempdir",
+                return_value=str(tmp_path),
+            ),
+            patch(
+                "services.trailers.video_analysis.get_silence_timestamps",
+                return_value=(100.0, 110.0),
+            ),
+            patch(
+                "services.trailers.video_analysis.trim_video",
+                side_effect=trim_then_fail,
+            ),
+        ):
+            result = remove_silence_at_end("/path/to/1-trailer.mkv")
+
+        assert result == ("/path/to/1-trailer.mkv", False)
+        assert not (tmp_path / "trailarr" / "trimmed_1-trailer.mkv").exists()
+
 
 class TestSilenceTimestamps:
     """ffmpeg writes a whole second without a decimal point."""
@@ -619,3 +648,38 @@ class TestSilenceTimestamps:
 
         logger.exception.assert_not_called()
         assert result == (122.0, 126.0)
+
+
+class TestTrimVideoOutput:
+    """ffmpeg prints the same metadata when it trims the video."""
+
+    def test_a_cut_character_in_the_output_is_not_an_error(self, tmp_path):
+        # The trim prints the input tags too, so the cut description
+        # reaches this call as well. A real child process writes the
+        # bytes, so the decoding is the real one.
+        import sys
+
+        import quiv
+
+        from services.trailers.video_analysis import trim_video
+
+        stderr = (
+            b"Input #0, matroska,webm, from 'in.mkv':\n"
+            b"    DESCRIPTION     : Coming-of-age-Geschichten \xc3\n"
+            b"Output #0, matroska, to 'trimmed.mkv':\n"
+        )
+        script = f"import sys; sys.stderr.buffer.write({stderr!r})"
+        real_run = quiv.run_subprocess
+
+        def run_fake_ffmpeg(args, **kwargs):
+            return real_run([sys.executable, "-c", script], **kwargs)
+
+        with patch(
+            "services.trailers.video_analysis.quiv.run_subprocess",
+            side_effect=run_fake_ffmpeg,
+        ):
+            result = trim_video(
+                "/path/to/in.mkv", str(tmp_path / "trimmed.mkv"), 0, 120
+            )
+
+        assert result is True

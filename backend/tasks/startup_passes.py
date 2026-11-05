@@ -26,6 +26,7 @@ PASS_ATTRIBUTE_DOWNLOADS = "attribute-downloads-v0.9.9"
 PASS_FULL_SCAN_GUARD = "full-scan-before-downloads-v0.10"
 PASS_SETUP_STATE = "setup_state_v0.13.0"
 PASS_VIDEO_TYPE_NUDGE = "video-type-nudge-v0.14.0"
+PASS_RESTORE_RETURNED_TRAILERS = "restore-returned-trailers-v0.14.2"
 
 # Passes the download engine depends on — it skips its run until these are
 # recorded complete (upgrade guard against mass re-downloads on databases
@@ -33,6 +34,7 @@ PASS_VIDEO_TYPE_NUDGE = "video-type-nudge-v0.14.0"
 DOWNLOADS_REQUIRED_PASSES = {
     PASS_ATTRIBUTE_DOWNLOADS,
     PASS_FULL_SCAN_GUARD,
+    PASS_RESTORE_RETURNED_TRAILERS,
 }
 
 
@@ -92,12 +94,37 @@ async def _pass_video_type_nudge() -> None:
     nudge_extras_profiles()
 
 
+async def _pass_restore_returned_trailers() -> None:
+    """Restore the downloads that were marked deleted while their files
+    stayed on disk (#733). Runs at every start.
+
+    Before v0.14.2, the Cleanup Task marked every trailer deleted when the
+    storage did not mount, and the next download run got the same videos
+    again. The Cleanup Task restores such a download every day, but it
+    runs hours after the start, and the download run comes first. So this
+    pass runs before the download run. At the first start of v0.14.2, the
+    download run waits for it.
+
+    It runs at every start, not once: when the storage is not mounted at
+    the first start, the pass finds nothing, and the files come back only
+    after a later start.
+    """
+    from tasks.cleanup import restore_returned_trailers
+
+    await restore_returned_trailers()
+
+
 # Ordered registry — order is the dependency order.
 REGISTRY: list[tuple[str, Callable[[], Awaitable[None]], str]] = [
     (PASS_ATTRIBUTE_DOWNLOADS, _pass_attribute_downloads, "always"),
     (PASS_FULL_SCAN_GUARD, _pass_full_scan_guard, "once"),
     (PASS_SETUP_STATE, _pass_setup_state, "once"),
     (PASS_VIDEO_TYPE_NUDGE, _pass_video_type_nudge, "once"),
+    (
+        PASS_RESTORE_RETURNED_TRAILERS,
+        _pass_restore_returned_trailers,
+        "always",
+    ),
 ]
 
 

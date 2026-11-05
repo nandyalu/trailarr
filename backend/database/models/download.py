@@ -36,7 +36,9 @@ class DownloadBase(AppSQLModel):
     👉Use :class:`DownloadRead` to read the data.👈
     """
 
-    path: str
+    # Indexed: the restore checks that no active download has a path, and
+    # it runs once for each restored file (#733).
+    path: str = Field(index=True)
     file_name: str
     file_hash: str
     size: int  # Size in bytes
@@ -83,7 +85,9 @@ class Download(DownloadBase, table=True):
     """
 
     id: int | None = Field(default=None, primary_key=True)
-    media_id: int = Field(foreign_key="media.id", ondelete="CASCADE")
+    media_id: int = Field(
+        foreign_key="media.id", ondelete="CASCADE", index=True
+    )
 
     @field_validator("added_at", "updated_at", mode="after")
     @classmethod

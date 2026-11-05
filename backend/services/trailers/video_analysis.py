@@ -485,6 +485,8 @@ def trim_video(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            # ffmpeg cuts long metadata lines, which can split a character
+            errors="replace",
             timeout=FFMPEG_TIMEOUT,
         )
         if remove_result.returncode == 0:
@@ -550,6 +552,10 @@ def remove_silence_at_end(file_path: str) -> tuple[str, bool]:
         # The job was cancelled during the trim. Let the error propagate.
         raise
     except Exception as e:
+        # ffmpeg can write the trimmed copy before the error. Remove it:
+        # ffmpeg does not overwrite a file, so a copy that stays here
+        # stops the next trim of this video.
+        Path(output_file).unlink(missing_ok=True)
         # Log error with traceback but return original file to continue processing
         logger.exception(
             f"Trailarr could not remove the silence from the video:"

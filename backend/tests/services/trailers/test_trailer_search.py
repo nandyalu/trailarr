@@ -60,12 +60,16 @@ class DummyMedia:
         year=2022,
         media_filename="test_movie.mp4",
         language="en",
+        tmdb_id=603,
+        tvdb_id=None,
     ):
         self.title = title
         self.is_movie = is_movie
         self.year = year
         self.media_filename = media_filename
         self.language = language
+        self.tmdb_id = tmdb_id
+        self.tvdb_id = tvdb_id
 
     def model_dump(self):
         return {
@@ -74,6 +78,8 @@ class DummyMedia:
             "year": self.year,
             "media_filename": self.media_filename,
             "language": self.language,
+            "tmdb_id": self.tmdb_id,
+            "tvdb_id": self.tvdb_id,
         }
 
 
@@ -111,6 +117,13 @@ class DummyMedia:
             "{title}  {year}   {is_movie} ",
             DummyMedia(),
             "Test Movie 2022 movie",
+        ),
+        # TMDB and TVDB ids are written, and a missing id writes nothing
+        ("{title} {tmdb_id} {tvdb_id}", DummyMedia(), "Test Movie 603"),
+        (
+            "{title} {tvdb_id}",
+            DummyMedia(tmdb_id=None, tvdb_id=71663),
+            "Test Movie 71663",
         ),
         # Empty query returns empty string
         ("", DummyMedia(), ""),
