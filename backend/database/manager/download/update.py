@@ -2,7 +2,7 @@
 
 import os
 
-from sqlmodel import Session, col, select
+from sqlmodel import Session
 
 from . import base
 from database.models.download import (
@@ -101,13 +101,7 @@ def mark_as_restored(
     if download_db.file_exists:
         return False
     path = new_path or download_db.path
-    active_copy = _session.exec(
-        select(Download.id)
-        .where(Download.path == path)
-        .where(col(Download.file_exists).is_(True))
-        .limit(1)
-    ).first()
-    if active_copy is not None:
+    if base._has_active_download_at(path, _session):
         return False
     download_db.file_exists = True
     download_db.path = path

@@ -93,7 +93,7 @@ A trailer file can change outside Trailarr: you can rename it, move it to anothe
 2. The file has the file name of the download, in another folder.
 3. The file has the YouTube id of the download in its metadata. A trailer that Trailarr downloaded with [Embed Metadata](../settings/profiles/settings/file.md#embed-metadata) on has one.
 
-If the file and the download both have a YouTube id, and the ids are not the same, the file is another video, and rules 1 and 2 do not apply. When the path or the size of the file changed, Trailarr analyzes the file again and updates the resolution, codecs, size and duration of the download. The YouTube id, the profile and the history of the download stay.
+If the file and the download both have a YouTube id, and the ids are not the same, the file is another video, and rules 1 and 2 do not apply. When the path or the size of the file changed, Trailarr analyzes the file again and updates the resolution, codecs, size and duration of the download. The YouTube id, the profile and the history of the download stay. A file that Trailarr cannot analyze, for example a file that is not complete, does not take a download back.
 
 !!! note "Network drive protection from `v0.9.9`"
     {{ version_badge("add", "0.9.9") }}

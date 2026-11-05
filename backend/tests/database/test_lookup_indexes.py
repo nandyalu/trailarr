@@ -43,6 +43,13 @@ def _plan(connection, sql: str) -> str:
             "SELECT id FROM filefolderinfo WHERE parent_id = 1",
             "ix_filefolderinfo_parent_id",
         ),
+        (
+            # The check of `mark_as_restored` and `create_if_path_untracked`
+            # (#733). It runs once for each restored file.
+            "SELECT id FROM download"
+            " WHERE path = '/m/a-trailer.mkv' AND file_exists IS 1 LIMIT 1",
+            "ix_download_path",
+        ),
     ],
 )
 def test_the_lookup_for_one_media_item_uses_an_index(tmp_path, sql, index):

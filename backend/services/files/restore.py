@@ -132,7 +132,8 @@ async def take_back(
         title (str | None): The title of the media item, for the log. When
             None, it is read after the restore.
     Returns:
-        bool: True when the download was restored.
+        bool: True when the download was restored. False when an active
+            download has the file, or when the new analysis failed.
     """
     moved = file_path != download.path
     # Checks again under the write lock: the disk scan can record the same
@@ -141,13 +142,17 @@ async def take_back(
         download.id, new_path=file_path if moved else None
     ):
         return False
-    if video_info is not None:
-        await reanalyze_trailer_download(
-            download,
-            file_path,
-            video_info=video_info,
-            with_hash=is_trailer_type(download.video_type),
-        )
+    if video_info is not None and not await reanalyze_trailer_download(
+        download,
+        file_path,
+        video_info=video_info,
+        with_hash=is_trailer_type(download.video_type),
+    ):
+        # The download is active, but with the analysis of the old file.
+        # Mark it deleted again. The next pass finds the file at the new
+        # path and tries again.
+        download_manager.mark_as_deleted(download.id)
+        return False
     # As in the disk scan: no event for an extra. An event is permanent, and
     # it goes to the channels that subscribe to it.
     if is_trailer_type(download.video_type):
@@ -233,8 +238,13 @@ async def _search_folder(
         if not candidates:
             break
         video_info = await probe(file_path)
-        file_youtube_id = video_info.youtube_id if video_info else None
-        match = find_matching_download(file_path, file_youtube_id, candidates)
+        if video_info is None:
+            # Without the analysis, Trailarr cannot compare the file with
+            # a download. A file that ffprobe cannot read stays as it is.
+            continue
+        match = find_matching_download(
+            file_path, video_info.youtube_id, candidates
+        )
         if match is None:
             continue
         if await take_back(

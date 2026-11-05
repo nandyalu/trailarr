@@ -29,6 +29,7 @@ from database.models.video_type import (
     DEFAULT_VIDEO_TYPE,
     classify_extra_name,
     is_trailer_type,
+    video_type_label,
 )
 from services.profiles import pick_profile_for_download
 from services.trailers.trailers.service import (
@@ -220,28 +221,32 @@ async def _process_trailer_changes(
             ):
                 renamed_count += 1
                 claimed_ids.add(match.id)
+                kind = video_type_label(match.video_type).lower()
                 logger.info(
-                    f"The trailer file for '{media.title}' has a new name"
+                    f"The {kind} file for '{media.title}' has a new name"
                     " and changed content. Trailarr recorded the change."
                     f" Old path: '{match.path}'. New path: '{t_path}'.",
                     **logger.media(media.id),
                 )
-                event_manager.track_trailer_renamed(
-                    media_id=media.id,
-                    old_path=match.path,
-                    new_path=t_path,
-                    source=source,
-                    source_detail="FilesScan",
-                )
+                # As for a new file: no event for an extra. An event is
+                # permanent, and it goes to the channels that subscribe.
+                if is_trailer_type(match.video_type):
+                    event_manager.track_trailer_renamed(
+                        media_id=media.id,
+                        old_path=match.path,
+                        new_path=t_path,
+                        source=source,
+                        source_detail="FilesScan",
+                    )
                 continue
-        elif match:
+        elif match and infos_by_path.get(t_path) is not None:
             # A deleted download whose file is back, maybe with a new name
             # or new content. A file of another size is analyzed again.
-            video_info = infos_by_path.get(t_path)
+            # ffprobe must have read the file: without its analysis,
+            # Trailarr cannot compare the file with the download.
+            video_info = infos_by_path[t_path]
             same_file = (
-                match.path == t_path
-                and video_info is not None
-                and video_info.size == match.size
+                match.path == t_path and video_info.size == match.size
             )
             if await take_back(
                 match,
@@ -298,14 +303,17 @@ async def _process_trailer_changes(
         #    record. An event is permanent, and it goes to the channels
         #    that subscribe to it.
         # The ffprobe stays: the row needs the duration and the streams.
-        await record_new_trailer_download(
+        # `unless_tracked`: a restore can take the file while the scan
+        # examines it. The check runs again under the write lock.
+        recorded = await record_new_trailer_download(
             media,
             _profile_id,
             t_path,
             video_info=infos_by_path.get(t_path),
             video_type=_type_value,
+            unless_tracked=True,
         )
-        if not is_trailer_type(_type_value):
+        if not recorded or not is_trailer_type(_type_value):
             continue
         event_manager.track_trailer_detected(
             media_id=media.id,

@@ -1,4 +1,4 @@
-from .create import create
+from .create import create, create_if_path_untracked
 from .delete import delete, delete_all_for_media
 from .read import (
     read,
@@ -18,6 +18,7 @@ from .update import (
 
 __all__ = [
     "create",
+    "create_if_path_untracked",
     "delete",
     "delete_all_for_media",
     "read",

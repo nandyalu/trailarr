@@ -1,8 +1,9 @@
-"""The index migration of v0.14.2 (#732).
+"""The index migrations of v0.14.2 (#732, #733).
 
 Builds a v0.13.1 database from its release fixture, runs `alembic upgrade
-head`, and checks that the three lookup indexes exist and that ANALYZE
-wrote the first statistics of the query planner.
+head`, and checks that the four lookup indexes exist and that ANALYZE
+wrote the first statistics of the query planner. Three indexes come from
+#732. The index on `download.path` (#733) comes in the next revision.
 """
 
 import os
@@ -16,6 +17,7 @@ BASE_FIXTURE = (
 )
 INDEXES = {
     "ix_download_media_id",
+    "ix_download_path",
     "ix_filefolderinfo_media_id",
     "ix_filefolderinfo_parent_id",
 }
@@ -71,6 +73,7 @@ def test_the_upgrade_adds_the_indexes_and_the_statistics(tmp_path: Path):
         db.close()
     assert count > 0
 
-    result = _alembic(data_dir, "downgrade", "-1")
+    # The revision before the indexes of v0.14.2.
+    result = _alembic(data_dir, "downgrade", "d4e6f1a7b3c5")
     assert result.returncode == 0, result.stderr[-2000:]
     assert not INDEXES & _index_names(db_path)

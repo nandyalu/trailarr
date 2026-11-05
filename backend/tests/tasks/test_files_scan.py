@@ -859,7 +859,10 @@ class TestNewTrailerAttribution:
             await scan_media_folder(media, scanner=mock_scanner)
 
         mock_record.assert_called_once_with(
-            media, 5, trailer_path, video_info=None, video_type="trailer"
+            media, 5, trailer_path,
+            video_info=None,
+            video_type="trailer",
+            unless_tracked=True,
         )
 
     @pytest.mark.asyncio
@@ -902,7 +905,10 @@ class TestNewTrailerAttribution:
             await scan_media_folder(media, scanner=mock_scanner)
 
         mock_record.assert_called_once_with(
-            media, 0, new_path, video_info=None, video_type="trailer"
+            media, 0, new_path,
+            video_info=None,
+            video_type="trailer",
+            unless_tracked=True,
         )
 
     @pytest.mark.asyncio
@@ -949,7 +955,10 @@ class TestNewTrailerAttribution:
             await scan_media_folder(media, scanner=mock_scanner)
 
         mock_record.assert_called_once_with(
-            media, 5, new_path, video_info=None, video_type="trailer"
+            media, 5, new_path,
+            video_info=None,
+            video_type="trailer",
+            unless_tracked=True,
         )
 
 

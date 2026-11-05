@@ -161,6 +161,7 @@ async def record_new_trailer_download(
     youtube_video_id: str | None = None,
     video_info: VideoInfo | None = None,
     video_type: str = DEFAULT_VIDEO_TYPE,
+    unless_tracked: bool = False,
 ) -> bool:
     """
     Records a new trailer download in the database with comprehensive metadata.
@@ -173,9 +174,14 @@ async def record_new_trailer_download(
             redundant ffprobe calls. If None, will analyze the file.
         video_type (str): The kind of video: the type of the profile for a
             download, or what the name of the file says for a scanned file.
+        unless_tracked (bool): Record nothing when an active download has
+            the path. The disk scan sets it: a restore can give the file
+            to a deleted download while the scan examines it.
     Returns:
         bool: True when the download is in the database. A caller that
-            deletes an old trailer must check this first.
+            deletes an old trailer must check this first. With
+            `unless_tracked`, False also when an active download has the
+            path.
     """
     logger.debug(
         f"Trailarr records a new trailer download for '{media.title}'.",
@@ -233,7 +239,16 @@ async def record_new_trailer_download(
         )
 
         # Save to database using dedicated download manager
-        download_manager.create(download)
+        if unless_tracked:
+            if download_manager.create_if_path_untracked(download) is None:
+                logger.debug(
+                    f"An active download of '{media.title}' has the file"
+                    f" '{file_path}'. Trailarr does not record it again.",
+                    **logger.media(media.id),
+                )
+                return False
+        else:
+            download_manager.create(download)
         logger.debug(
             f"Trailarr recorded the new trailer download for '{media.title}'.",
             **logger.media(media.id),

@@ -36,7 +36,9 @@ class DownloadBase(AppSQLModel):
     👉Use :class:`DownloadRead` to read the data.👈
     """
 
-    path: str
+    # Indexed: the restore checks that no active download has a path, and
+    # it runs once for each restored file (#733).
+    path: str = Field(index=True)
     file_name: str
     file_hash: str
     size: int  # Size in bytes
