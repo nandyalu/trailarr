@@ -485,6 +485,8 @@ def trim_video(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            # ffmpeg cuts long metadata lines, which can split a character
+            errors="replace",
             timeout=FFMPEG_TIMEOUT,
         )
         if remove_result.returncode == 0:
