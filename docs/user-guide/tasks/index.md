@@ -166,10 +166,11 @@ If the file and the download both have a YouTube id, and the ids are not the sam
 
 ### **Trailer Cleanup**
 
-{{ version_badge("upd", "0.14.2") }}
+{{ version_badge("upd", "0.14.3") }}
 
 - Runs once a day (first run starts 4 hours after app launch).
 - Cleans up broken, incomplete, or audio-less trailers from your library.
+- {{ version_badge("add", "0.14.3") }} A trailer file with 0 bytes is a broken trailer. ffprobe cannot read an empty file, so before v0.14.3 the task kept it and logged `Trailarr could not examine the trailer` each day. Now the task deletes it when [Delete Corrupted Trailers](../settings/general-settings/index.md#delete-corrupted-trailers) is on, and the next download run gets the trailer again.
 - If a media item is marked as trailer existing but has no downloaded trailers, it will be marked as not having trailers. Does not change monitoring status.
 - If a media item has downloaded trailers but file does not exist, the download record will be marked as file deleted. Does not change monitoring status. Trailarr does this only when the folder that holds the trailer still has files. For a trailer in the media folder or in its subfolder, that folder is the media folder. For a trailer in a custom folder, it is the folder of the trailer.
 - If a download record is marked as file deleted, and its file is on disk again at the same path, Trailarr marks the record as active again. If the file changed, for example its tracks, Trailarr analyzes it again — see [Matching a file to a download](#matching-a-file-to-a-download). A new download of the same video is then not necessary. Trailarr also does this at each start, and just before a download for the media item.

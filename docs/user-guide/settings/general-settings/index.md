@@ -162,11 +162,13 @@ Enable this setting to delete the downloaded trailers only when the media files 
 
 ### Delete Corrupted Trailers
 
-{{ version_badge("add", "0.6.7") }}
+{{ version_badge("add", "0.6.7") }} {{ version_badge("upd", "0.14.3") }}
 
 - Default is `true`
 
 Enable this setting to allow the `Trailer Cleanup` task to automatically delete trailers that are found to be corrupted (e.g., missing audio or video streams).
+
+An empty trailer file (0 bytes) also counts as corrupted.
 
 !!! warning
     Disabling this means corrupted files will remain on disk and may need to be manually removed. A Warning log will be generated for each corrupted file detected during the cleanup task.
