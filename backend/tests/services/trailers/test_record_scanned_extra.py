@@ -49,7 +49,9 @@ class TestTheHashIsForTrailersOnly:
             ) as hashed,
             patch.object(service.download_manager, "create") as create,
         ):
-            stat.return_value = SimpleNamespace(st_mtime=0.0, st_ctime=0.0)
+            stat.return_value = SimpleNamespace(
+                st_mtime=0.0, st_ctime=0.0, st_size=1234
+            )
             ok = await service.record_new_trailer_download(
                 _media(), 0, path, video_type=video_type
             )

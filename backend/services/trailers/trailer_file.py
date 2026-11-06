@@ -406,30 +406,44 @@ def move_trailer_to_folder(
         f" '{dst_file_path}'."
     )
 
-    # Fixes https://github.com/nandyalu/trailarr/issues/285
-    # Sometimes shutil.move fails when app only has write permissions without modify
-    # The actual file will be moved but attributes won't be set in those cases
+    # The size of the download. A move to another file system is a copy,
+    # and the copy must have the same size (#705).
+    src_size = src_path.stat().st_size
     try:
-        # Move the file to destination
         shutil.move(src_path, dst_file_path)
-        # Set the moved file's permissions to match the destination folder's permissions
-        if dst_permissions is not None:
-            logger.debug(
-                f"Setting permissions for file: '{dst_file_path}' to"
-                f" '{oct(dst_permissions)}'"
-            )
-            dst_file_path.chmod(dst_permissions)
     except Exception as e:
-        # Check if file is copied to destination
-        if not dst_file_path.exists():
-            # Try setting permissions on source file first and then normal copying
-            if dst_permissions is not None:
-                src_path.chmod(dst_permissions)
-            shutil.copyfile(src_path, dst_file_path)
+        _recover_failed_move(
+            src_path, dst_file_path, src_size, kind, e, media_id=media.id
+        )
 
-        if not dst_file_path.exists():
-            raise FileMoveFailedError(
-                f"Trailarr could not move the {kind} file to"
+    dst_size = _file_size(dst_file_path)
+    if dst_size != src_size:
+        # An empty or short file is not a trailer. The download is still
+        # in the temporary folder when the copy failed, so the retry of
+        # the download task can try again.
+        _remove_partial_file(dst_file_path, kind)
+        raise FileMoveFailedError(
+            f"Trailarr could not move the {kind} to '{dst_file_path}'. The"
+            f" copy has {dst_size or 0} bytes, but the download has"
+            f" {src_size} bytes."
+        )
+    # After a failed move, the download can still be in the temporary
+    # folder. The copy is complete, so Trailarr removes it.
+    src_path.unlink(missing_ok=True)
+
+    # Give the file the permissions of the destination folder. Some
+    # folders let the app write a file but not change it (#285). The file
+    # is complete, so the move is a success.
+    if dst_permissions is not None:
+        logger.debug(
+            f"Setting permissions for file: '{dst_file_path}' to"
+            f" '{oct(dst_permissions)}'"
+        )
+        try:
+            dst_file_path.chmod(dst_permissions)
+        except OSError as e:
+            logger.debug(
+                f"Trailarr could not set the permissions of"
                 f" '{dst_file_path}': {e}"
             )
 
@@ -437,6 +451,82 @@ def move_trailer_to_folder(
         f"Trailarr moved the {kind} to the folder '{dst_folder_path}'."
     )
     return str(dst_file_path)
+
+
+def _file_size(path: Path) -> int | None:
+    """The size of the file in bytes, or None when Trailarr cannot read it."""
+    try:
+        return path.stat().st_size
+    except OSError:
+        return None
+
+
+def _remove_partial_file(path: Path, kind: str) -> None:
+    """Delete the file that a failed copy left. A failure is logged only:
+    the caller raises the error of the move."""
+    try:
+        path.unlink(missing_ok=True)
+    except OSError as e:
+        logger.error(
+            f"Trailarr could not delete the incomplete {kind} at"
+            f" '{path}': {e}"
+        )
+
+
+def _recover_failed_move(
+    src_path: Path,
+    dst_file_path: Path,
+    src_size: int,
+    kind: str,
+    error: Exception,
+    *,
+    media_id: int,
+) -> None:
+    """Continue after `shutil.move` raised.
+
+    A move to another file system copies the file and then its attributes.
+    When the folder does not let the app change the attributes, the move
+    raises after a complete copy (#285). Then the file is in place.
+
+    A copy that stopped before the end leaves an empty or short file
+    (#705). Trailarr deletes it and copies the download one more time. The
+    caller compares the sizes again.
+
+    Args:
+        src_path (Path): The download in the temporary folder.
+        dst_file_path (Path): The new path of the trailer.
+        src_size (int): The size of the download in bytes.
+        kind (str): The video type, for the log lines.
+        error (Exception): The error of the move.
+        media_id (int): The media item, for the link of the log line.
+    Raises:
+        FileMoveFailedError: If the download is not in the temporary
+            folder any more.
+        Exception: Any error of the second copy. An OSError stays an
+            OSError, so the caller can tell a full disk from other errors.
+    """
+    if _file_size(dst_file_path) == src_size:
+        logger.debug(
+            f"Trailarr copied the {kind} to '{dst_file_path}', but could"
+            f" not copy the file attributes: {error}"
+        )
+        return
+    logger.warning(
+        f"Trailarr could not move the {kind} to '{dst_file_path}': {error}."
+        " Trailarr copies it again.",
+        **logger.media(media_id),
+    )
+    _remove_partial_file(dst_file_path, kind)
+    if not src_path.exists():
+        raise FileMoveFailedError(
+            f"Trailarr could not move the {kind} to '{dst_file_path}'. The"
+            f" download is not in the temporary folder: {error}"
+        )
+    try:
+        shutil.copyfile(src_path, dst_file_path)
+    except Exception:
+        _remove_partial_file(dst_file_path, kind)
+        raise
 
 
 def verify_download(

@@ -101,13 +101,21 @@ def find_youtube_id(media_info: VideoInfo) -> str:
 
 
 def _extract_metadata_fields(
-    media_info: VideoInfo, file_path: str, *, with_hash: bool = True
+    media_info: VideoInfo,
+    file_path: str,
+    size: int,
+    *,
+    with_hash: bool = True,
 ) -> dict:
     """Extract the physical-file-derived metadata fields shared by new-download
     recording and re-analysis after an in-place content change.
     Args:
         media_info (VideoInfo): The ffprobe-derived video info for the file.
         file_path (str): Path to the file (used to compute the content hash).
+        size (int): The size of the file at `file_path`, from `os.stat`.
+            The video info of a new download comes from the file in the
+            temporary folder, so its size is not the size of the trailer
+            (#705).
         with_hash (bool): Whether to read the whole file for its hash.
             False stores an empty hash.
     Returns:
@@ -132,7 +140,7 @@ def _extract_metadata_fields(
 
     return {
         "file_hash": compute_file_hash(file_path) if with_hash else "",
-        "size": media_info.size,
+        "size": size,
         "resolution": resolution,
         "file_format": media_info.format_name,
         "video_format": video_stream.codec_name if video_stream else "N/A",
@@ -215,7 +223,10 @@ async def record_new_trailer_download(
         # made the first scan after the upgrade take hours. The ffprobe
         # above stays: the row needs the duration and the streams.
         metadata = _extract_metadata_fields(
-            media_info, file_path, with_hash=is_trailer_type(video_type)
+            media_info,
+            file_path,
+            file_stat.st_size,
+            with_hash=is_trailer_type(video_type),
         )
 
         # Get youtube video id
@@ -328,7 +339,7 @@ async def reanalyze_trailer_download(
 
         file_stat = os.stat(file_path)
         metadata = _extract_metadata_fields(
-            media_info, file_path, with_hash=with_hash
+            media_info, file_path, file_stat.st_size, with_hash=with_hash
         )
 
         updated = download.model_dump()

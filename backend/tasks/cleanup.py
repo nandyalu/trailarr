@@ -5,7 +5,7 @@ marked deleted, but only when the folder that holds it still has files:
 an empty or missing folder means that the storage is not there (#733). A
 deleted download whose file is back on disk is marked active again. A file
 with no audio or no video is deleted, but only when the user turned that
-on.
+on. An empty file is a bad trailer too (#705).
 """
 
 import asyncio
@@ -55,6 +55,15 @@ async def delete_trailer(trailer_path: str, download_id: int):
     await FilesHandler.delete_file(trailer_path)
     download_manager.mark_as_deleted(download_id)
     return None
+
+
+async def _is_empty_file(path: str) -> bool:
+    """True when the file has 0 bytes. False when it has data, or when
+    Trailarr cannot read its size: then the check of the streams decides."""
+    try:
+        return await aiofiles.os.path.getsize(path) == 0
+    except OSError:
+        return False
 
 
 def _storage_folder(media_folder: str, trailer_path: str) -> str:
@@ -183,8 +192,16 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
                 continue
 
             # Verify the trailer has audio and video streams
-            # if not, delete the trailer file and set monitor to True
-            verified = video_analysis.verify_trailer_streams(_path)
+            # if not, delete the trailer file and set monitor to True.
+            # ffprobe cannot read an empty file, so the check of the streams
+            # cannot tell that it is bad. An empty file is never a trailer:
+            # a copy that failed in an older version left such files (#705).
+            if await _is_empty_file(_path):
+                verified = False
+                problem = "is an empty file"
+            else:
+                verified = video_analysis.verify_trailer_streams(_path)
+                problem = "has no audio or no video"
             if verified is None:
                 logger.info(
                     f"Trailarr could not examine the trailer for"
@@ -197,8 +214,8 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
                 verification_failed_count += 1
                 if app_settings.delete_corrupted_trailers:
                     logger.info(
-                        f"The trailer for '{media.title}' has no audio or no"
-                        f" video. Trailarr deletes it. Path: '{_path}'.",
+                        f"The trailer for '{media.title}' {problem}."
+                        f" Trailarr deletes it. Path: '{_path}'.",
                         **logger.media(media.id),
                     )
                     await delete_trailer(_path, download.id)
@@ -212,8 +229,8 @@ async def trailer_cleanup(stop_event: threading.Event | None = None):
                     )
                 else:
                     logger.warning(
-                        f"The trailer for '{media.title}' has no audio or"
-                        f" no video. Trailarr keeps it, because the deletion"
+                        f"The trailer for '{media.title}' {problem}."
+                        f" Trailarr keeps it, because the deletion"
                         f" of bad trailers is off. Examine the file"
                         f" yourself. Path: '{_path}'.",
                         **logger.media(media.id),

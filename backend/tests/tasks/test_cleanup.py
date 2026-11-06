@@ -1,5 +1,6 @@
 """Tests for the trailer_cleanup function in tasks/cleanup.py"""
 
+import shutil
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
@@ -604,3 +605,95 @@ class TestOnlyTheTrailersAreExamined:
             "/path/to/corrupted-trailer.mkv", 9
         )
         assert featurette.file_exists is True
+
+
+class TestAnEmptyTrailer:
+    """A copy that failed in an older version left empty trailers (#705).
+    ffprobe cannot read an empty file, so the check of the streams kept
+    them for ever. These tests use real files on disk."""
+
+    @pytest.fixture(autouse=True)
+    def storage_is_there(self):
+        with patch(
+            "tasks.cleanup.download_manager.read_deleted_without_live_copy",
+            return_value=[],
+        ):
+            yield
+
+    async def _cleanup(self, trailer, delete_bad: bool):
+        download = create_mock_download(download_id=11, path=str(trailer))
+        media = create_mock_media(
+            title="Empty Trailer",
+            downloads=[download],
+            folder_path=str(trailer.parent),
+        )
+        with (
+            patch(
+                "tasks.cleanup.media_manager.read_all_generator",
+                return_value=iter([media]),
+            ),
+            patch("tasks.cleanup.app_settings") as settings,
+            patch(
+                "tasks.cleanup.download_manager.mark_as_deleted"
+            ) as mark_deleted,
+            patch(
+                "tasks.cleanup.event_manager.track_trailer_deleted"
+            ) as event,
+        ):
+            settings.delete_corrupted_trailers = delete_bad
+            await trailer_cleanup()
+        return download, mark_deleted, event
+
+    @pytest.mark.asyncio
+    async def test_an_empty_trailer_is_deleted(self, tmp_path):
+        trailer = tmp_path / "Movie-trailer.mkv"
+        trailer.touch()
+        (tmp_path / "Movie.mkv").write_bytes(b"movie")
+
+        with patch(
+            "tasks.cleanup.video_analysis.verify_trailer_streams"
+        ) as verify:
+            download, mark_deleted, event = await self._cleanup(
+                trailer, delete_bad=True
+            )
+
+        verify.assert_not_called()
+        assert not trailer.exists()
+        assert download.file_exists is False
+        mark_deleted.assert_called_once_with(11)
+        assert event.call_args.kwargs["reason"] == "corrupted"
+
+    @pytest.mark.asyncio
+    async def test_an_empty_trailer_stays_when_the_setting_is_off(
+        self, tmp_path
+    ):
+        trailer = tmp_path / "Movie-trailer.mkv"
+        trailer.touch()
+
+        download, mark_deleted, event = await self._cleanup(
+            trailer, delete_bad=False
+        )
+
+        assert trailer.exists()
+        assert download.file_exists is True
+        mark_deleted.assert_not_called()
+        event.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_a_file_that_ffprobe_cannot_read_still_stays(
+        self, tmp_path
+    ):
+        """Only an empty file is sure to be bad. A file with data that the
+        real ffprobe cannot read stays, as before."""
+        if not shutil.which("ffprobe"):
+            pytest.skip("ffprobe is not installed.")
+        trailer = tmp_path / "Movie-trailer.mkv"
+        trailer.write_bytes(b"not a video" * 100)
+
+        download, mark_deleted, _ = await self._cleanup(
+            trailer, delete_bad=True
+        )
+
+        assert trailer.exists()
+        assert download.file_exists is True
+        mark_deleted.assert_not_called()
