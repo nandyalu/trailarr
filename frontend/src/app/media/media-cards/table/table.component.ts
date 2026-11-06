@@ -3,7 +3,7 @@ import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/cor
 import {RouterLink} from '@angular/router';
 import {DisplayTitlePipe} from 'src/app/shared/pipes/display-title.pipe';
 import {ScrollNearEndDirective} from 'src/app/shared/directives/scroll-near-end-directive';
-import {Media} from 'src/app/models/media';
+import {hasTmdbTrailer, Media} from 'src/app/models/media';
 import {
   buildTrailerBlock,
   EMPTY_VALUE,
@@ -44,6 +44,8 @@ export class TableComponent {
   protected readonly onMediaChecked = this.mediaService.onMediaChecked.bind(this.mediaService);
   protected readonly RouteMedia = RouteMedia;
   protected readonly EMPTY_VALUE = EMPTY_VALUE;
+  /** The trailer on disk is a TMDB trailer: the row shows a badge (#707). */
+  protected readonly hasTmdbTrailer = hasTmdbTrailer;
   protected readonly headerLabel = headerLabel;
 
   /** The saved column keys, resolved against the field registry. A key the

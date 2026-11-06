@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, computed, input, output} from '@angular/core';
 import {RouterLink} from '@angular/router';
-import {Media} from 'src/app/models/media';
+import {hasTmdbTrailer, Media} from 'src/app/models/media';
 import {RouteMedia} from 'src/routing';
 import {StatusIconComponent} from '../status-icon/status-icon.component';
 
@@ -26,6 +26,8 @@ export class MediaCardShellComponent {
 
   protected readonly RouteMedia = RouteMedia;
   protected readonly checkboxId = computed(() => `card-${this.media().id}`);
+  /** The trailer on disk is a TMDB trailer (#707). */
+  protected readonly tmdbTrailer = computed(() => hasTmdbTrailer(this.media().downloads));
   protected readonly cardTitle = computed(() => {
     const m = this.media();
     const status = m.status.charAt(0).toUpperCase() + m.status.slice(1);

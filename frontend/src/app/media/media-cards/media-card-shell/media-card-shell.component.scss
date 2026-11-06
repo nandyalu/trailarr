@@ -31,6 +31,33 @@
   z-index: 2;
 }
 
+// A TMDB trailer, to the left of the status icon (#707). Primary on
+// primary keeps it readable on any poster.
+.tmdb-badge {
+  position: absolute;
+  top: 5px;
+  right: 38px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 0.45rem;
+  box-sizing: border-box;
+  border-radius: 0.5rem;
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+
+  @media (width < 765px) {
+    height: 22px;
+    padding: 0 0.3rem;
+    font-size: 0.6rem;
+  }
+}
+
 .media-card-checkbox {
   position: absolute;
   top: 0.5rem;

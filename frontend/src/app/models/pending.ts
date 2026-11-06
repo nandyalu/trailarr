@@ -102,3 +102,21 @@ export function mapFailingDownloads(items: any[]): FailingDownload[] {
     next_eligible_at: parseDate(item.next_eligible_at),
   }));
 }
+
+/** The unmonitored items with a trailer that Upgrade To TMDB Trailer skips —
+ * GET /media/unmonitored_upgrades (#707). Before v0.10.0, Trailarr turned
+ * monitoring off after each download, so an old library has many. Drives
+ * the banner that offers to monitor them. */
+export interface UnmonitoredUpgrades {
+  media_ids: number[];
+  /** How many of them also get a new download for another profile when
+   * they are monitored. */
+  other_downloads: number;
+}
+
+export function mapUnmonitoredUpgrades(response: any): UnmonitoredUpgrades {
+  return {
+    media_ids: Array.isArray(response?.media_ids) ? response.media_ids : [],
+    other_downloads: Number(response?.other_downloads ?? 0),
+  };
+}

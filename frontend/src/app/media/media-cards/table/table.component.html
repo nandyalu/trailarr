@@ -40,16 +40,21 @@
             <media-status-icon [status]="media.status" class="table-status-icon" />
           </td>
           <td class="col-title">
-            @if (!inEditMode()) {
-              <a
-                [routerLink]="['/' + RouteMedia, media.id]"
-                (click)="selectedMediaID.set(media.id)"
-                class="title-link"
-                [title]="media.title + ' (' + (media.status | displayTitle) + ')'"
-              >{{ media.title }}</a>
-            } @else {
-              <span [title]="media.title">{{ media.title }}</span>
-            }
+            <div class="title-cell">
+              @if (!inEditMode()) {
+                <a
+                  [routerLink]="['/' + RouteMedia, media.id]"
+                  (click)="selectedMediaID.set(media.id)"
+                  class="title-link"
+                  [title]="media.title + ' (' + (media.status | displayTitle) + ')'"
+                >{{ media.title }}</a>
+              } @else {
+                <span [title]="media.title">{{ media.title }}</span>
+              }
+              @if (hasTmdbTrailer(media.downloads)) {
+                <span class="tmdb-badge" title="The trailer is a video that TMDB lists for this item">TMDB</span>
+              }
+            </div>
           </td>
           @for (col of activeColumns(); track col.key) {
             <td [class]="'col-' + col.key" [class.col-trailer]="col.group === 'trailer'">

@@ -31,6 +31,9 @@ export interface Download {
   /** The kind of video: 'trailer', 'teaser', ... (Phase 9). 'trailer' when
    * the backend does not send it yet. */
   video_type: string;
+  /** True when TMDB lists the video of this download for its media item
+   * (#707). Feeds the TMDB badge. False when the backend does not send it. */
+  tmdb_video: boolean;
   media_id: number;
   added_at: Date; // When trailer was downloaded
   updated_at: Date; // When file was last modified
@@ -51,6 +54,8 @@ export function mapDownload(download: any): Download {
     ...download,
     file_exists: Boolean(download.file_exists),
     video_type: download.video_type || 'trailer',
+    // SQLite sends the flag as 1 or 0.
+    tmdb_video: Boolean(download.tmdb_video),
     added_at: parseDate(download.added_at),
     updated_at: parseDate(download.updated_at),
   };
@@ -78,6 +83,12 @@ export function isTrailerDownload(download: Download): boolean {
  * `has_downloads` and `download_count` FILTERS keep counting every type. */
 export function hasActiveTrailer(downloads: Download[]): boolean {
   return downloads.some((download) => download.file_exists && isTrailerDownload(download));
+}
+
+/** True when a trailer on disk is a video that TMDB lists for the item.
+ * The library shows a TMDB badge for it (#707). */
+export function hasTmdbTrailer(downloads: Download[]): boolean {
+  return downloads.some((download) => download.file_exists && isTrailerDownload(download) && download.tmdb_video);
 }
 
 /** List-level status is computed from downloads + monitor (the backend

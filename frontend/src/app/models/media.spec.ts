@@ -6,7 +6,7 @@
  * `download_count` filters keep counting every type.
  */
 import {describe, expect, it} from 'vitest';
-import {computeMediaStatus, Download, hasActiveTrailer, isTrailerDownload, mapDownload} from './media';
+import {computeMediaStatus, Download, hasActiveTrailer, hasTmdbTrailer, isTrailerDownload, mapDownload} from './media';
 
 function download(overrides: Partial<Download> = {}): Download {
   return {
@@ -29,6 +29,7 @@ function download(overrides: Partial<Download> = {}): Download {
     file_exists: true,
     profile_id: 1,
     video_type: 'trailer',
+    tmdb_video: false,
     added_at: new Date(),
     updated_at: new Date(),
     ...overrides,
@@ -93,5 +94,22 @@ describe('isTrailerDownload and hasActiveTrailer', () => {
     const mapped = mapDownload({id: 1, media_id: 1, file_exists: 1, profile_id: 1, added_at: '', updated_at: ''});
     expect(mapped.video_type).toBe('trailer');
     expect(hasActiveTrailer([mapped])).toBe(true);
+  });
+});
+
+describe('the TMDB badge (#707)', () => {
+  it('mapDownload reads the 1 or 0 that SQLite sends, and a missing flag as false', () => {
+    const base = {id: 1, media_id: 1, file_exists: 1, profile_id: 1, added_at: '', updated_at: ''};
+    expect(mapDownload({...base, tmdb_video: 1}).tmdb_video).toBe(true);
+    expect(mapDownload({...base, tmdb_video: 0}).tmdb_video).toBe(false);
+    expect(mapDownload(base).tmdb_video).toBe(false);
+  });
+
+  it('needs a trailer on disk that TMDB lists', () => {
+    expect(hasTmdbTrailer([download({tmdb_video: true})])).toBe(true);
+    expect(hasTmdbTrailer([download({tmdb_video: false})])).toBe(false);
+    // A deleted file, or a TMDB featurette, is not a TMDB trailer.
+    expect(hasTmdbTrailer([download({tmdb_video: true, file_exists: false})])).toBe(false);
+    expect(hasTmdbTrailer([download({tmdb_video: true, video_type: 'featurette'})])).toBe(false);
   });
 });

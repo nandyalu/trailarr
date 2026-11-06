@@ -34,6 +34,7 @@ export class MediaComponent implements OnInit {
   protected readonly selectedView = this.mediaService.selectedView;
   protected readonly unknownProfileCount = this.mediaService.unknownProfileCount;
   protected readonly failingCount = this.mediaService.failingCount;
+  protected readonly unmonitoredUpgradesDismissed = this.mediaService.unmonitoredUpgradesDismissed;
   protected readonly selectedFilter = this.mediaService.selectedFilter;
 
   // Signals in this component
@@ -68,6 +69,38 @@ export class MediaComponent implements OnInit {
   /** Applies the 'Failing Downloads' quick filter from its review banner */
   protected reviewFailingDownloads() {
     this.mediaService.selectedFilter.set('failing_downloads');
+  }
+
+  // The unmonitored items that Upgrade To TMDB Trailer skips (#707).
+  protected readonly unmonitoredUpgrades = this.mediaService.unmonitoredUpgradesResource.value;
+  protected readonly unmonitoredUpgradeCount = computed(() => this.unmonitoredUpgrades().media_ids.length);
+  /** The banner asks before it monitors anything. */
+  protected readonly confirmingMonitor = signal(false);
+  protected readonly monitoringUpgrades = signal(false);
+
+  /** Monitors the items in the banner. The download task then replaces
+   * their trailers on its next run. Trailarr does this only when the user
+   * confirms: monitoring belongs to the user. */
+  protected monitorUnmonitoredUpgrades() {
+    const ids = this.unmonitoredUpgrades().media_ids;
+    if (ids.length === 0) return;
+    this.monitoringUpgrades.set(true);
+    this.mediaService.batchUpdate(ids, 'monitor').subscribe({
+      next: () => {
+        this.monitoringUpgrades.set(false);
+        this.confirmingMonitor.set(false);
+        this.mediaService.unmonitoredUpgradesResource.reload();
+      },
+      error: () => {
+        // The backend sends the error as a toast.
+        this.monitoringUpgrades.set(false);
+      },
+    });
+  }
+
+  protected dismissUnmonitoredUpgrades() {
+    this.confirmingMonitor.set(false);
+    this.mediaService.dismissUnmonitoredUpgrades();
   }
 
   /** What the preview list says a pending pair would do. An upgrade item

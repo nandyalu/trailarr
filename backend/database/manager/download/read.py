@@ -6,6 +6,7 @@ from database.models.download import (
     Download,
     DownloadRead,
 )
+from database.models.mediavideo import VideoSource
 from database.engine import read_session
 
 
@@ -36,14 +37,29 @@ def read_all_raw(
     _session: Session = None,  # type: ignore
 ) -> list[dict]:
     """Get all downloads in raw dictionary format.
+
+    Each row also has `tmdb_video`: 1 when TMDB lists the video of the
+    download for its media item, else 0. The library shows a TMDB badge
+    from it. The unique (media_id, video_id) index of `mediavideo` makes
+    the check one index lookup for each row.
+
     Args:
         _session (Session, optional=None): A session to use for the \
             database connection. A new session is created if not provided.
     Returns:
         list[dict]: List of all downloads as dictionaries.
     """
-    query = text("SELECT * FROM download ORDER BY added_at DESC")
-    result = _session.execute(query)
+    query = text(
+        "SELECT download.*, EXISTS ("
+        " SELECT 1 FROM mediavideo"
+        " WHERE mediavideo.media_id = download.media_id"
+        " AND mediavideo.video_id = download.youtube_id"
+        " AND mediavideo.source = :tmdb"
+        ") AS tmdb_video"
+        " FROM download ORDER BY download.added_at DESC"
+    )
+    # The enum column stores the member name, such as 'TMDB'.
+    result = _session.execute(query, {"tmdb": VideoSource.TMDB.name})
     rows = []
     for row in result.mappings():
         item = dict(row)
