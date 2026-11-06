@@ -98,6 +98,28 @@
   fill: var(--color-primary);
 }
 
+// The downloaded icon says a fact. It does nothing when clicked.
+.icon-link.status-only {
+  cursor: default;
+}
+
+// The monitor toggle is a real button, so it takes keyboard focus.
+.monitor-toggle {
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+
+  &:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
 .nav-icons {
   display: flex;
   flex-direction: row;
@@ -507,6 +529,11 @@
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+
+  // A profile whose filters do not match this item comes last.
+  &.not-matching {
+    color: var(--color-on-surface-variant);
   }
 }
 

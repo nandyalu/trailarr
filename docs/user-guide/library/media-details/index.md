@@ -12,6 +12,8 @@ Media Details view offers some features for managing media items. They are descr
 
 Media can be Monitored or UnMonitored by clicking the icon before the Media Title. Only monitored media is processed by the [Download Missing Trailers](../../tasks/index.md#download-missing-trailers) task.
 
+{{ version_badge("upd", "0.14.3") }} The monitor button shows for every item. An item with a trailer shows the downloaded icon and, next to it, the monitor button. Before, such an item showed only the downloaded icon, and you could change its monitoring only in the [Edit View](../index.md#edit-view) of the library pages.
+
 !!! info ""
     {{ version_badge("upd", "0.10.2") }} Monitoring belongs to you alone: downloads no longer turn it off (since `v0.10.0`), and connection syncs never change it (since `v0.10.2`) — only you set it, plus the one-time starting value when media is first added ([Monitor New Media](../../settings/connections/index.md#monitor-types)). A monitored item whose matching profiles already have their downloads simply stays monitored without being re-downloaded — it is safe to keep everything monitored forever.
 
@@ -47,7 +49,7 @@ If a [Plex connection](../../../getting-started/03-setup/plex-connection.md) is 
 The `YouTube Trailer ID` box of earlier versions is gone. Add a video to the [Known videos](#known-videos) list instead: paste a YouTube link or id, choose its language and its type, and click `Add`. The video goes to the top of the list, Trailarr tries it before every other source, and no task removes it.
 
 !!! note ""
-    Adding a video only stores it in Trailarr. It does not download it. Click `Download` on the row to get it now, or wait for the `Download Missing Trailers` task.
+    Adding a video only stores it in Trailarr. It does not download it. Click `Download` on the row to get it now, or wait for the `Download Missing Trailers` task. {{ version_badge("upd", "0.14.3") }} The [Download](#download) button below the box adds a video that you typed and did not add yet, and then downloads it.
 
 The **type** says what the video is: a trailer, a teaser, a clip, a featurette, a behind-the-scenes video, bloopers or other. A profile uses the videos of its own [Video Type](../../settings/profiles/settings/general.md#video-type) only, so a featurette you add is for your featurette profile and never becomes the trailer.
 
@@ -91,7 +93,9 @@ There are up to 2 action buttons that can appear depending on the selected Media
 
 - Always visible for all Media items.
 - Clicking on this will open a dialog asking you to select a Profile to use for download.
+- {{ version_badge("upd", "0.14.3") }} The dialog lists the profiles whose filters match the item first, and selects the first of them. A profile whose filters do not match comes last, with `(filters don't match)` after its name. The download button of a row in [Known videos](#known-videos) lists the profiles in the same order.
 - This will schedule a task for Trailarr to download a trailer for this Media, with the first [known video](#known-videos) that the profile can use.
+- {{ version_badge("upd", "0.14.3") }} When the [Add a video](#add-a-video) box has a link that you did not add yet, `Download` adds the video first and then downloads that video.
 
 !!! tip "Multiple trailers"
     Because Trailarr supports downloading multiple trailers per media item (one per matching [Profile](../../settings/profiles/index.md)), the Download button is always shown so you can trigger additional downloads at any time.
@@ -110,6 +114,7 @@ This section shows, for **every** Trailer Profile, exactly where it stands with 
 - **Not matching** — the profile's filters do not apply to this item (or the profile is disabled).
 - **Satisfied** — the profile already owns a downloaded video (its own download, or an existing file it claimed). {{ version_badge("upd", "0.13.1") }} With [Upgrade To TMDB](../../settings/profiles/settings/general.md#upgrade-to-tmdb) on, the row also says whether the download is a TMDB trailer, or why the upgrade keeps it: the item has no TMDB id, TMDB was not asked yet, TMDB lists nothing in the language of the profile, or the video of the trailer is unknown.
 - **Pending** — the profile matches but has no download yet; it will download on the next task run. With the upgrade on, the row says that the download replaces the trailer, and why. {{ version_badge("upd", "0.14.0") }} A profile of a [Video Type](../../settings/profiles/settings/general.md#video-type) other than `Trailer` stays pending while TMDB lists no video of its type for the item, and the row says that it waits for TMDB; such a profile never searches YouTube.
+- {{ version_badge("upd", "0.14.3") }} For an item that is not monitored, an upgrade row says that the upgrade skips the item. The download task and the Refresh Video Lists task skip an item that is not monitored, so Trailarr does not ask TMDB about it. Turn on monitoring to let the upgrade check the trailer.
 - **Backing off** — previous download attempts failed; shows the attempt count, when the next retry is due, and {{ version_badge("upd", "0.13.1") }} the reason of the last failure with the fix, when Trailarr knows it. A manual download bypasses the wait.
 
 The matrix is computed with the exact same rule the download task uses, so what you see here is precisely what the engine will do next — there is no separate bookkeeping that could disagree with it.
@@ -132,6 +137,7 @@ It shows the following details:
 - Profile name used for download (clickable, opens the Profile details)
 - Link to the YouTube video (clickable, opens in new tab)
 - {{ version_badge("add", "0.14.0") }} The type of the video: trailer, teaser, clip, featurette, behind the scenes, bloopers or other. A download takes the type of its profile. A file that Trailarr found on disk takes the type that its name and folder say, following the names that Plex and Jellyfin use (`-featurette`, `Featurettes/`, ...).
+- {{ version_badge("add", "0.14.3") }} A **TMDB** badge when TMDB lists the video of the download for this item. See [TMDB badge](../index.md#tmdb-badge).
 
 !!! tip ""
     If the trailer was downloaded using an older version of Trailarr ( `< 0.6.0-beta`), some of the above details may not be available.

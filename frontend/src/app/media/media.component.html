@@ -36,6 +36,40 @@
       <button class="attention-review-button" (click)="reviewFailingDownloads()">Review</button>
     </div>
   }
+  @if (!inEditMode() && unmonitoredUpgradeCount() > 0 && !unmonitoredUpgradesDismissed()) {
+    <!-- Before v0.10.0, Trailarr turned monitoring off after each download.
+         The TMDB upgrade skips those items (#707). The user decides. -->
+    <div class="attention-banner" role="status" id="unmonitored-upgrades-banner">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="attention-icon" aria-hidden="true" focusable="false">
+        <path
+          d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"
+        />
+      </svg>
+      @if (!confirmingMonitor()) {
+        <span>
+          {{ unmonitoredUpgradeCount() }} media item{{ unmonitoredUpgradeCount() === 1 ? ' has' : 's have' }} a trailer but
+          {{ unmonitoredUpgradeCount() === 1 ? 'is' : 'are' }} not monitored, so Upgrade To TMDB Trailer skips
+          {{ unmonitoredUpgradeCount() === 1 ? 'it' : 'them' }}. Before v0.10.0, Trailarr turned off monitoring after each download.
+        </span>
+        <div class="attention-actions">
+          <button class="attention-review-button" (click)="confirmingMonitor.set(true)">Monitor {{ unmonitoredUpgradeCount() === 1 ? 'it' : 'them' }}</button>
+          <button class="attention-secondary-button" (click)="dismissUnmonitoredUpgrades()">Dismiss</button>
+        </div>
+      } @else {
+        <span>
+          Monitor {{ unmonitoredUpgradeCount() }} media item{{ unmonitoredUpgradeCount() === 1 ? '' : 's' }}? The next Download Missing
+          Trailers run replaces a trailer that is not a TMDB trailer.
+          @if (unmonitoredUpgrades().other_downloads > 0) {
+            It also downloads for other profiles on {{ unmonitoredUpgrades().other_downloads }} of them.
+          }
+        </span>
+        <div class="attention-actions">
+          <button class="attention-review-button" [disabled]="monitoringUpgrades()" (click)="monitorUnmonitoredUpgrades()">Confirm</button>
+          <button class="attention-secondary-button" [disabled]="monitoringUpgrades()" (click)="confirmingMonitor.set(false)">Cancel</button>
+        </div>
+      }
+    </div>
+  }
   @if (!inEditMode() && previewMode()) {
     <div class="attention-banner" role="status">
       <!-- Visibility (eye) icon - Google Fonts -->

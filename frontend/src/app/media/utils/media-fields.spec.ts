@@ -56,6 +56,7 @@ function makeDownload(id: number, overrides: Partial<Download> = {}): Download {
     file_exists: true,
     profile_id: 1,
     video_type: 'trailer',
+    tmdb_video: false,
     added_at: daysAgo(id),
     updated_at: daysAgo(id),
     ...overrides,

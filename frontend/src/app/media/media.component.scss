@@ -87,6 +87,41 @@
       background-color: color-mix(in srgb, var(--color-primary) 85%, black);
     }
   }
+
+  // Two buttons stay together at the end of the banner.
+  .attention-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.5rem;
+    margin-left: auto;
+
+    .attention-review-button {
+      margin-left: 0;
+    }
+  }
+
+  .attention-secondary-button {
+    padding: 0.375rem 0.875rem;
+    border: none;
+    border-radius: 0.625rem;
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+    font-size: 0.875rem;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--color-surface-container-highest);
+    }
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  @media (width < 765px) {
+    flex-wrap: wrap;
+  }
 }
 
 .preview-dialog {

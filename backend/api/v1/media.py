@@ -30,9 +30,11 @@ from services.trailers.trailers.pending import (
     FailingDownload,
     MediaPendingView,
     PendingSummary,
+    UnmonitoredUpgrades,
     compute_failing_downloads,
     compute_library_pending,
     compute_media_pending,
+    compute_unmonitored_upgrades,
 )
 from tasks.files_scan import scan_media_folder
 from tasks.download_trailers import (
@@ -140,6 +142,22 @@ async def get_failing_downloads() -> list[FailingDownload]:
         list[FailingDownload]: One row per (media, profile) pair, by title. \n
     """
     return compute_failing_downloads()
+
+
+@media_router.get("/unmonitored_upgrades")
+async def get_unmonitored_upgrades() -> UnmonitoredUpgrades:
+    """The unmonitored media items that the TMDB upgrade skips. \n
+    Each item has a trailer, and an enabled profile with `Upgrade To TMDB
+    Trailer` matches it. The profile replaces the trailer, or Trailarr
+    never asked TMDB about the item. The download task skips an
+    unmonitored item, so the upgrade never reaches these. The library page
+    shows them in a banner, and the user decides whether to monitor them.
+    Performs no writes. \n
+    Returns:
+        UnmonitoredUpgrades: The media ids, and how many of them also get
+            a new download for another profile when monitored. \n
+    """
+    return compute_unmonitored_upgrades()
 
 
 @media_router.get("/downloads_raw")

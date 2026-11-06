@@ -8,7 +8,7 @@ reimplementation — and performs no writes: claims the task would apply are
 reported as satisfied-via-claim, not persisted.
 """
 
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -27,6 +27,7 @@ from database.models.mediavideo import MediaVideoRead
 from database.models.trailerprofile import TrailerProfileRead
 from exceptions import ItemNotFoundError
 from services.profiles import find_matching_profiles
+from services.trailers.resolver import upgrade_enabled
 from services.satisfaction import (
     SatisfactionResult,
     UpgradeState,
@@ -382,6 +383,68 @@ def compute_failing_downloads() -> list[FailingDownload]:
     return failing
 
 
+class UnmonitoredUpgrades(BaseModel):
+    """The media items that `Upgrade To TMDB Trailer` skips because they
+    are not monitored."""
+
+    media_ids: list[int]
+    # How many of these items also get a new download for another profile
+    # when they are monitored. The banner says so before the user agrees.
+    other_downloads: int = 0
+
+
+def compute_unmonitored_upgrades() -> UnmonitoredUpgrades:
+    """The unmonitored items with a trailer that the TMDB upgrade would
+    check if they were monitored.
+
+    Before v0.10.0, Trailarr turned monitoring off when it downloaded a
+    trailer. Phase 4 kept those values, so in a library from that time
+    most items with a trailer are not monitored. The download task and
+    the Refresh Video Lists task skip an unmonitored item, so the upgrade
+    never reaches it. The library page shows these items in a banner, and
+    the user decides whether to monitor them (#707). Trailarr does not
+    change `monitor` itself: it belongs to the user.
+
+    An item counts when an upgrade profile that matches it replaces its
+    trailer, or keeps it because Trailarr never asked TMDB about the item.
+    An item whose trailer is a TMDB trailer already does not count, and
+    neither does one that TMDB lists nothing for.
+
+    Returns:
+        UnmonitoredUpgrades: The media ids, in library order.
+    """
+    enabled_profiles = [
+        p for p in trailerprofile.get_trailerprofiles() if p.enabled
+    ]
+    if not any(upgrade_enabled(p) for p in enabled_profiles):
+        return UnmonitoredUpgrades(media_ids=[])
+    unmonitored = (
+        media
+        for media in media_manager.read_all_generator(downloaded_only=True)
+        if not media.monitor
+    )
+    media_ids: list[int] = []
+    other_downloads = 0
+    for media, result in _evaluate_media(unmonitored, enabled_profiles):
+        never_asked = media.last_videos_refresh is None
+        if not any(
+            d.upgrade or (d.satisfied and d.awaiting_tmdb and never_asked)
+            for d in result.details
+        ):
+            continue
+        media_ids.append(media.id)
+        # A profile that waits for TMDB is skipped by the download task,
+        # so only a plain pending profile is a new download.
+        if any(
+            not d.satisfied and not d.upgrade and not d.awaiting_tmdb
+            for d in result.details
+        ):
+            other_downloads += 1
+    return UnmonitoredUpgrades(
+        media_ids=media_ids, other_downloads=other_downloads
+    )
+
+
 def _evaluate_library(
     enabled_profiles: list[TrailerProfileRead],
 ) -> Iterator[tuple[MediaRead, SatisfactionResult]]:
@@ -389,6 +452,20 @@ def _evaluate_library(
 
     The same rule, with the same inputs, as the download task. A media
     item that no enabled profile matches is left out.
+    """
+    yield from _evaluate_media(
+        media_manager.read_all_generator(monitored_only=True),
+        enabled_profiles,
+    )
+
+
+def _evaluate_media(
+    media_items: Iterable[MediaRead],
+    enabled_profiles: list[TrailerProfileRead],
+) -> Iterator[tuple[MediaRead, SatisfactionResult]]:
+    """Run the satisfaction rule over the given media items.
+
+    A media item that no enabled profile matches is left out.
 
     When the profiles need the known videos, an item with no rows gets an
     empty list, not None: an empty list is an answer ("TMDB lists
@@ -396,7 +473,7 @@ def _evaluate_library(
     """
     videos_needed = needs_videos(enabled_profiles)
     videos_by_media = read_known_videos(enabled_profiles)
-    for media in media_manager.read_all_generator(monitored_only=True):
+    for media in media_items:
         matching = find_matching_profiles(media, enabled_profiles)
         if not matching:
             continue

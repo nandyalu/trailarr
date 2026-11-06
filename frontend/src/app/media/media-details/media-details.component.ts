@@ -14,7 +14,7 @@ import {RouteMedia} from 'src/routing';
 import {DurationConvertPipe} from '../../shared/pipes/duration-pipe';
 import {MediaService} from '../../services/media.service';
 import {WebsocketService} from '../../services/websocket.service';
-import {ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/profile-select-dialog.component';
+import {orderProfiles, ProfileOption, ProfileSelectDialogComponent} from '../dialogs/profile-select-dialog/profile-select-dialog.component';
 import {DownloadsComponent} from './downloads/downloads.component';
 import {FilesComponent} from './files/files.component';
 import {MediaEventsComponent} from './media-events/media-events.component';
@@ -213,16 +213,21 @@ export class MediaDetailsComponent {
     }
   }
 
+  /** The ids of the profiles whose filters match this item, in priority
+   * order. Null until the profile matrix has loaded. */
+  readonly matchingProfileIds = computed<number[] | null>(() => {
+    const view = this.mediaService.mediaPendingResource.value();
+    if (!view || view.media_id !== this.mediaId()) return null;
+    return view.profiles.filter((row) => row.matches).map((row) => row.profile_id);
+  });
+
   openProfileSelectDialog(isNextActionSearch: boolean): void {
     // Open the dialog for selecting a profile
     const dialogRef = this.viewContainerRef.createComponent(ProfileSelectDialogComponent);
+    // The profiles that match this item come first (#707).
+    dialogRef.setInput('matchingProfileIds', this.matchingProfileIds());
     dialogRef.instance.onSubmit.subscribe((profileId: number) => {
-      // Handle the profile selection
-      if (isNextActionSearch) {
-        this.searchTrailer(profileId);
-      } else {
-        this.downloadTrailer(profileId);
-      }
+      this.onProfileChosen(profileId, isNextActionSearch);
       setTimeout(() => {
         dialogRef.destroy(); // Destroy the dialog component after use
       }, 3000);
@@ -233,6 +238,26 @@ export class MediaDetailsComponent {
         dialogRef.destroy(); // Destroy the dialog when closed
       }, 3000);
     });
+  }
+
+  /**
+   * Does what the Search or the Download button asked for, with the
+   * profile chosen in the dialog.
+   *
+   * A video in the add form that is not added yet is the one the user
+   * means to download. Download adds it first, then downloads it (#707).
+   *
+   * @param {number} profileId - The ID of the chosen profile.
+   * @param {boolean} isNextActionSearch - True for the Search button.
+   */
+  onProfileChosen(profileId: number, isNextActionSearch: boolean): void {
+    if (isNextActionSearch) {
+      this.searchTrailer(profileId);
+    } else if (this.newVideoUrl.trim()) {
+      this.addChosenVideo((video) => this.downloadTrailer(profileId, video.video_id));
+    } else {
+      this.downloadTrailer(profileId);
+    }
   }
 
   /**
@@ -264,10 +289,12 @@ export class MediaDetailsComponent {
   }
 
   /** The profiles that download the given type of video. A profile with no
-   * stored type is a trailer profile. */
-  profilesForType(videoType: string | null | undefined): TrailerProfileRead[] {
+   * stored type is a trailer profile. The profiles that match this item
+   * come first, and the others say that they do not match. */
+  profilesForType(videoType: string | null | undefined): ProfileOption[] {
     const wanted = normalizeVideoType(videoType);
-    return this.profileService.allProfiles.value().filter((profile) => normalizeVideoType(profile.video_type) === wanted);
+    const profiles: TrailerProfileRead[] = this.profileService.allProfiles.value().filter((profile) => normalizeVideoType(profile.video_type) === wanted);
+    return orderProfiles(profiles, this.matchingProfileIds());
   }
 
   /** Downloads one known video with the chosen profile. */
@@ -289,11 +316,23 @@ export class MediaDetailsComponent {
     // console.log('Toggling Media Monitoring');
     this.isLoadingMonitor.set(true);
     const monitor = !this.selectedMedia()?.monitor;
-    this.mediaService.monitorMedia(this.mediaId(), monitor).subscribe((res: string) => {
-      console.log(res);
-      this.selectedMedia()!.monitor = monitor;
-      this.isLoadingMonitor.set(false);
-    });
+    this.mediaService
+      .monitorMedia(this.mediaId(), monitor)
+      .pipe(
+        catchError((error) => {
+          this.webSocketService.showToast(error.error?.detail || 'Could not change the monitor status.', 'Error');
+          this.isLoadingMonitor.set(false);
+          return of(null);
+        }),
+      )
+      .subscribe((res: string | null) => {
+        if (res === null) return;
+        console.log(res);
+        this.selectedMedia()!.monitor = monitor;
+        this.isLoadingMonitor.set(false);
+        // The profile matrix says whether the download task skips the item.
+        this.mediaService.mediaPendingResource.reload();
+      });
   }
 
   searchTrailer(profileID: number) {
@@ -317,8 +356,11 @@ export class MediaDetailsComponent {
   }
 
   /** Adds the video in the add form as one the user chose, with its
-   * language and type. */
-  addChosenVideo() {
+   * language and type.
+   *
+   * @param then - Runs with the added video, when the add worked.
+   */
+  addChosenVideo(then?: (video: MediaVideo) => void) {
     const url = this.newVideoUrl.trim();
     if (!url) {
       return;
@@ -341,6 +383,7 @@ export class MediaDetailsComponent {
           this.videoLanguage = '';
           this.newVideoType = DEFAULT_VIDEO_TYPE;
           this.loadKnownVideos();
+          then?.(row);
         }
       });
   }

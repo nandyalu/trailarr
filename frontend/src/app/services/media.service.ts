@@ -6,10 +6,23 @@ import {environment} from '../../environment';
 import {applySelectedFilter, applySelectedSort, MOVIES_ONLY_FILTERS} from '../media/utils/apply-filters';
 import {buildMediaTreeMap, FileFolderInfo, mapFileFolderInfo} from '../models/filefolderinfo';
 import {buildDownloadMap, computeMediaStatus, Download, FolderInfo, hasActiveTrailer, mapDownload, mapFolderInfo, mapMedia, Media, MediaVideo, SearchMedia} from '../models/media';
-import {FailingDownload, mapFailingDownloads} from '../models/pending';
+import {FailingDownload, mapFailingDownloads, mapUnmonitoredUpgrades, UnmonitoredUpgrades} from '../models/pending';
 import {mapMediaPending, MediaPendingView} from '../models/pending';
 import {CustomfilterService} from './customfilter.service';
 import {WebsocketService} from './websocket.service';
+
+/** The localStorage key that remembers a closed unmonitored-upgrades banner. */
+export const UNMONITORED_UPGRADES_DISMISSED_KEY = 'TrailarrUnmonitoredUpgradesDismissed';
+
+/** Reads a 'true' flag from localStorage. Storage can be blocked, for
+ * example in a private window: the flag is then off. */
+function readStoredFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === 'true';
+  } catch {
+    return false;
+  }
+}
 
 @Injectable({
   providedIn: 'root',
@@ -226,6 +239,29 @@ export class MediaService {
   readonly failingMediaIds = computed(() => new Set(this.failingDownloadsResource.value().map((item) => item.media_id)));
   readonly failingCount = computed(() => this.failingMediaIds().size);
 
+  /** The user closed the banner about unmonitored items that the TMDB
+   * upgrade skips. Kept in this browser only. */
+  readonly unmonitoredUpgradesDismissed = signal<boolean>(readStoredFlag(UNMONITORED_UPGRADES_DISMISSED_KEY));
+
+  /** The unmonitored items with a trailer that Upgrade To TMDB Trailer
+   * skips (GET /media/unmonitored_upgrades, #707). Not read once the user
+   * closed the banner. */
+  readonly unmonitoredUpgradesResource = httpResource<UnmonitoredUpgrades>(
+    () => (this.unmonitoredUpgradesDismissed() ? undefined : {url: this.mediaUrl + 'unmonitored_upgrades'}),
+    {
+      defaultValue: {media_ids: [], other_downloads: 0},
+      parse: (response) => mapUnmonitoredUpgrades(response),
+    },
+  );
+
+  /** Closes the banner about unmonitored items for good, in this browser. */
+  dismissUnmonitoredUpgrades(): void {
+    this.unmonitoredUpgradesDismissed.set(true);
+    try {
+      localStorage.setItem(UNMONITORED_UPGRADES_DISMISSED_KEY, 'true');
+    } catch {}
+  }
+
   /** Currently selected media item based on the selectedMediaID */
   readonly selectedMedia = computed(() => {
     const mediaID = this.selectedMediaID();
@@ -288,6 +324,8 @@ export class MediaService {
     this.webSocketService.toastMessage.pipe(takeUntilDestroyed()).subscribe((msg) => {
       if (msg.reload?.includes('media')) {
         this.mediaResource.reload();
+        // A monitor change can add items to the banner or remove them.
+        this.unmonitoredUpgradesResource.reload();
       }
       if (msg.reload?.includes('files')) {
         this.mediaFilesResource.reload();

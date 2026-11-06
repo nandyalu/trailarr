@@ -39,6 +39,9 @@
               }
               <div class="download-meta">
                 <span class="meta-item type-badge" [title]="'This download is a ' + typeLabel(download).toLowerCase()">{{ typeLabel(download) }}</span>
+                @if (download.tmdb_video) {
+                  <span class="meta-item type-badge tmdb-badge" title="TMDB lists this video for this item">TMDB</span>
+                }
                 <span class="meta-separator">•</span>
                 <span class="meta-item">{{ download.resolution }}p</span>
                 <span class="meta-separator">•</span>

@@ -16,4 +16,7 @@
   ></a>
 }
 <ng-content />
+@if (tmdbTrailer()) {
+  <span class="tmdb-badge" title="The trailer is a video that TMDB lists for this item">TMDB</span>
+}
 <media-status-icon [status]="media().status" class="status-icon" />

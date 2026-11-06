@@ -24,6 +24,7 @@ const fakeDownload: Download = {
   file_exists: true,
   profile_id: 0,
   video_type: 'trailer',
+  tmdb_video: false,
   media_id: 7,
   added_at: new Date('2026-01-01T00:00:00Z'),
   updated_at: new Date('2026-01-01T00:00:00Z'),
