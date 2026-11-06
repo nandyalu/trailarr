@@ -63,6 +63,8 @@ An answer from TMDB stays fresh for seven days. A curated list changes rarely, a
 
 A key changes which trailer Trailarr downloads next. It does not change the trailers that you already have. To replace those with TMDB trailers, turn on [Upgrade To TMDB](profiles/settings/general.md#upgrade-to-tmdb) in each profile that you want to upgrade.
 
+{{ version_badge("add", "0.14.3") }} The upgrade works on monitored items only, because the [Download Missing Trailers](../tasks/index.md#download-missing-trailers) task and the [Refresh Video Lists](../tasks/index.md#refresh-video-lists) task skip an item that is not monitored. Before `v0.10.0`, Trailarr turned off monitoring after each download, so in an older library most items with a trailer are not monitored, and the upgrade replaces nothing. When an upgrade profile matches such items, the library pages show a banner with a **Monitor them** button. The banner says how many items it monitors, and how many of them also get a new download for another profile, before you click **Confirm**. You can also select items in the [Edit View](../library/index.md#edit-view) and click **Monitor**. A monitored item whose profiles have their downloads is not downloaded again, so it is safe to monitor the whole library.
+
 Trailarr then replaces only the trailers that are not TMDB trailers. It keeps a trailer that TMDB already lists, and it keeps a trailer when TMDB lists none for the item. Most trailers from Radarr are TMDB trailers already, because Radarr takes its trailer id from TMDB. In a test on one real library, about one media item in four needed a new trailer.
 
 [Delete Replaced File](profiles/settings/general.md#delete-replaced-file) decides whether the old file stays next to the new one.
@@ -70,6 +72,8 @@ Trailarr then replaces only the trailers that are not TMDB trailers. It keeps a 
 A trailer whose video Trailarr does not know stays, unless [Replace Unknown Videos](profiles/settings/general.md#replace-unknown-videos) is on. Most of these are TMDB trailers already, because Radarr takes its trailer id from TMDB, so replacing them would download a large part of the library again for nothing.
 
 The [Download Profiles](../library/media-details/index.md#download-profiles-section) section of the media details page says what the upgrade does for each profile: a trailer that it replaces and why, a trailer that it keeps because it is a TMDB trailer or a video you chose, a trailer that it keeps because TMDB lists nothing in the language of the profile, and a trailer that it keeps because its video is unknown. Trailarr asks TMDB again every seven days about an item that TMDB listed nothing for.
+
+{{ version_badge("add", "0.14.3") }} A trailer that TMDB lists for its item shows a **TMDB** badge on the library pages and in the [Downloads](../library/media-details/index.md#downloads-section) section of the media details page. See [TMDB badge](../library/index.md#tmdb-badge).
 
 To keep one trailer that the upgrade would replace, add its YouTube link on the media details page under [Add a video](../library/media-details/index.md#add-a-video). A video that you chose is never replaced, in any language.
 

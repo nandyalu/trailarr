@@ -40,6 +40,8 @@ Trailarr replaces only the trailers that are not TMDB trailers. It keeps a trail
 
 Set [Delete Replaced File](../user-guide/settings/profiles/settings/general.md#delete-replaced-file) to decide if the old file stays. On a large library, the upgrade takes a few days, because Trailarr asks TMDB about 200 items in each run of [Refresh Video Lists](../user-guide/tasks/index.md#refresh-video-lists). To go faster, run that task by hand from the Tasks page. See [Upgrade an existing library](../user-guide/settings/tmdb.md#upgrade-an-existing-library).
 
+{{ version_badge("add", "0.14.3") }} If the upgrade replaces nothing, check that the items are monitored. The upgrade skips an item that is not monitored, and before `v0.10.0` Trailarr turned off monitoring after each download. The library pages show a banner with a **Monitor them** button for these items. A trailer that TMDB lists shows a **TMDB** badge, so you can see which trailers are TMDB trailers already.
+
 !!! warning "Do not use a batch download for this"
     A batch `Download` from the library pages does not replace a trailer. It skips the video that is already on disk and saves a second trailer next to the first one.
 

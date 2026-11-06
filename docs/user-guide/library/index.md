@@ -46,6 +46,12 @@ A media item can have more than one trailer, one per profile, so the Trailers gr
 
 No trailer field shows until you turn it on. The field choice is kept per browser, in the same place as before `v0.14.0`, so a choice you made earlier stays.
 
+### TMDB badge
+
+{{ version_badge("add", "0.14.3") }}
+
+A media item shows a **TMDB** badge when its trailer is a video that TMDB lists for the item. The Poster and Expanded views show the badge next to the status icon, and the Table view shows it after the title. The badge needs a [TMDB API key](../settings/tmdb.md), because without one Trailarr does not know the TMDB list. The badge says only that TMDB lists the video: a profile with a [Trailer Language](../settings/profiles/settings/general.md#trailer-language) can still replace a TMDB trailer in another language. See [Upgrade an existing library](../settings/tmdb.md#upgrade-an-existing-library).
+
 ## Sorting
 
 ![Library - Sorting](library-sorting.png)
@@ -86,6 +92,10 @@ Media items in the view can be filtered using the following options:
 !!! note "Downloads that keep failing"
     {{ version_badge("add", "0.13.1") }}
     When a download fails on two task runs or more, the media pages show a banner ("N media items have a trailer download that keeps failing") with a **Review** button, and the **Failing Downloads** quick filter appears in the filter dropdown. Open an item: the [Download Profiles](media-details/index.md#download-profiles-section) section shows the reason of the last failure and, when Trailarr knows it, the fix. After you fix the cause, download the item again from its page, or select the items and use the batch **Download**: a manual download does not wait for the next retry. An item leaves the banner when a download succeeds, when you unmonitor it, or when no profile matches it any more.
+
+!!! note "Trailers that the TMDB upgrade skips"
+    {{ version_badge("add", "0.14.3") }}
+    Before `v0.10.0`, Trailarr turned off monitoring after each download, so in an older library most items with a trailer are not monitored. [Upgrade To TMDB](../settings/profiles/settings/general.md#upgrade-to-tmdb) skips an item that is not monitored. When an upgrade profile matches such items, the media pages show a banner ("N media items have a trailer but are not monitored, so Upgrade To TMDB Trailer skips them"). Click **Monitor them**, read what the banner says the next run does, and click **Confirm**. Click **Dismiss** to hide the banner in this browser. See [Upgrade an existing library](../settings/tmdb.md#upgrade-an-existing-library).
 
 !!! tip
     There is also an option to add a custom filter to fit your needs. These use the same mechanism as the `Filters` in `Profiles`, and view filters additionally get the [Download Filters](../settings/profiles/filters.md#download-filters-view-filters-only) family {{ version_badge("add", "0.11.3") }} — filter by download count, resolution, owning profile, download dates, or deleted files. The filter editor groups the fields into **Media**, **Downloads**, and **Files**. For more information see [Filters](../settings/profiles/filters.md).

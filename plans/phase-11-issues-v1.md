@@ -39,6 +39,19 @@ stabilization checklist.
      runs once; make it return the profiles and call it from the feed).
    - `user-video-failing` — USER-source MediaVideo candidates whose downloads keep
      failing (video deleted/blocked) — user intent is reported on, never discarded.
+   - `video-unavailable` — (added Nov 6, 2026, #707; **revisit at execution, not
+     settled**) a TMDB/ARR/SEARCH video that YouTube refuses for good: "not available
+     in your country", removed, private. Today `utils/error_classify.is_video_unavailable`
+     recognizes these wordings, but only the health test reads it. The resolver tries
+     one candidate per run and rotates across runs (`trailer_search._last_tried_video_id`),
+     so an item whose only TMDB trailer is geo-blocked retries it forever with backoff
+     and stays in the Failing Downloads banner. The reporter could clear it only by
+     unmonitoring the item. Decide: (a) remember the refusal per (media, video) — an
+     automation-owned fact on the automation-owned row, e.g. `mediavideo.unavailable_at`
+     + reason, with a TTL because a geo-block can lift — so the resolver skips that
+     video and falls through to the next candidate or search; (b) a USER row is never
+     marked or skipped silently (invariant #6), it stays `user-video-failing`; (c)
+     dismiss/snooze from the Issues page also covers the Failing Downloads banner item.
 3. **API:** `GET /issues` (grouped, counts, dismissal state) + dismiss/snooze endpoints.
    The v0.9.9 media-page banner generalizes: topnav badge with total count; new
    **Issues** page (sidenav) grouping by kind with per-item deep links (media details,
