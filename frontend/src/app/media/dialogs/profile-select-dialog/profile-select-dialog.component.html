@@ -12,8 +12,10 @@
       <p class="profile-description">Select a profile to use for searching/downloading</p>
       <label class="profile-label" for="profile-select">Profile</label>
       <select name="profiles" id="profile-select" [(ngModel)]="selectedProfileID" required="true">
-        @for (profile of allProfiles(); track profile.id) {
-          <option [value]="profile.id" [selected]="profile.id === selectedProfileID()">{{ profile.customfilter.filter_name }}</option>
+        @for (option of options(); track option.profile.id) {
+          <option [ngValue]="option.profile.id">
+            {{ option.profile.customfilter.filter_name }}{{ option.matches ? '' : " (filters don't match)" }}
+          </option>
         }
       </select>
     </div>

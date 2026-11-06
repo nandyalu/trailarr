@@ -226,9 +226,73 @@ describe('MediaDetailsComponent known videos', () => {
       profile(3, '4K Trailers', 'trailer'),
     ]);
 
-    expect(component.profilesForType('trailer').map((p) => p.id)).toEqual([1, 3]);
-    expect(component.profilesForType('featurette').map((p) => p.id)).toEqual([2]);
+    expect(component.profilesForType('trailer').map((o) => o.profile.id)).toEqual([1, 3]);
+    expect(component.profilesForType('featurette').map((o) => o.profile.id)).toEqual([2]);
     expect(component.profilesForType('bloopers')).toEqual([]);
+  });
+
+  it('puts the profiles that match the item first and marks the others (#707)', () => {
+    const profiles = TestBed.inject(ProfileService);
+    vi.spyOn(profiles.allProfiles, 'value').mockReturnValue([profile(1, 'Movie Trailers'), profile(3, 'TV Trailers')]);
+    const service = TestBed.inject(MediaService);
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+    vi.spyOn(service.mediaPendingResource, 'value').mockReturnValue({
+      media_id: 7,
+      monitor: true,
+      has_tmdb_id: true,
+      tmdb_asked: true,
+      profiles: [
+        {profile_id: 1, matches: false},
+        {profile_id: 3, matches: true},
+      ],
+    } as never);
+
+    const options = component.profilesForType('trailer');
+
+    expect(options.map((o) => [o.profile.id, o.matches])).toEqual([
+      [3, true],
+      [1, false],
+    ]);
+  });
+
+  it('downloads the video typed into the add form, after it adds it (#707)', () => {
+    const service = TestBed.inject(MediaService);
+    vi.spyOn(service, 'addMediaVideo').mockReturnValue(of(video({video_id: 'typed000000'})));
+    vi.spyOn(service, 'getMediaVideos').mockReturnValue(of([]));
+    const download = vi.spyOn(service, 'downloadMediaTrailer').mockReturnValue(of('started'));
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+    component.newVideoUrl = 'https://youtu.be/typed000000';
+
+    component.onProfileChosen(3, false);
+
+    expect(download).toHaveBeenCalledWith(7, 3, 'typed000000');
+    expect(component.newVideoUrl).toBe('');
+  });
+
+  it('does not download when the typed video cannot be added', () => {
+    const service = TestBed.inject(MediaService);
+    vi.spyOn(service, 'addMediaVideo').mockReturnValue(
+      new Observable((subscriber) => subscriber.error({error: {detail: 'Not a YouTube id'}})),
+    );
+    const download = vi.spyOn(service, 'downloadMediaTrailer');
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+    component.newVideoUrl = 'not a video';
+
+    component.onProfileChosen(3, false);
+
+    expect(download).not.toHaveBeenCalled();
+  });
+
+  it('lets the backend pick the video when the add form is empty', () => {
+    const service = TestBed.inject(MediaService);
+    const add = vi.spyOn(service, 'addMediaVideo');
+    const download = vi.spyOn(service, 'downloadMediaTrailer').mockReturnValue(of('started'));
+    vi.spyOn(component, 'mediaId').mockReturnValue(7 as never);
+
+    component.onProfileChosen(3, false);
+
+    expect(add).not.toHaveBeenCalled();
+    expect(download).toHaveBeenCalledWith(7, 3, '');
   });
 
   it('downloads a known video with the chosen profile and its id', () => {

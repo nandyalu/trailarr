@@ -40,16 +40,23 @@ export class PendingComponent {
   protected readonly isMonitored = computed(() => this.pendingView()?.monitor ?? true);
 
   /** Why an upgrade profile keeps its trailer while TMDB lists nothing for it.
-   * Three cases read differently, and the page says which. */
+   * Four cases read differently, and the page says which. */
   protected awaitingDetail(): string {
     const view = this.pendingView();
     if (view && !view.has_tmdb_id) {
       return 'TMDB cannot be asked for a better one: this item has no TMDB id';
     }
-    if (view && !view.tmdb_asked) {
-      return 'Trailarr has not asked TMDB about this item yet; the Refresh Video Lists task will';
+    // The Refresh Video Lists task and the download task skip an item that
+    // is not monitored. Saying that they will ask TMDB about it is false (#707).
+    if (view && !view.monitor) {
+      return 'This item is not monitored, so Trailarr does not ask TMDB about it and the TMDB upgrade skips it. Turn on monitoring to let the upgrade check it';
     }
-    return 'TMDB lists no video that the profile can use, so it stays; Trailarr asks TMDB again every 7 days';
+    if (view && !view.tmdb_asked) {
+      // The task asks about at most 200 items in one run, so it is not
+      // always the next run.
+      return 'Trailarr has not asked TMDB about this item yet. The Refresh Video Lists task asks about it';
+    }
+    return 'TMDB lists no video that the profile can use, so it stays. Trailarr asks TMDB again every 7 days';
   }
 
   protected stateOf(profile: MediaPendingProfile): 'satisfied' | 'backoff' | 'pending' | 'disabled' | 'not-matching' {
@@ -106,10 +113,12 @@ export class PendingComponent {
         return `${profile.attempt_count} failed attempt${profile.attempt_count === 1 ? '' : 's'}`;
       case 'pending':
         if (profile.upgrade) {
+          // A TMDB video in another language is not one the profile can
+          // use, so "not a TMDB video" was false next to the TMDB badge.
           const why =
             profile.upgrade_state === 'replace_unknown'
               ? 'Trailarr does not know which video it is'
-              : 'it is not a TMDB video';
+              : 'it is not a TMDB video that this profile can use';
           return this.isMonitored()
             ? `Will replace the video with a TMDB video on the next run: ${why}`
             : `Would replace the video with a TMDB video (${why}), but this item is not monitored`;

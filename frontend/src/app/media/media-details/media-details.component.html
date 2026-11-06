@@ -16,8 +16,11 @@
       </div>
       <div class="media-details-col">
         <div class="media-details-row">
+          <!-- Two separate facts: whether a trailer is on disk, and whether the
+               download task looks at the item. Monitor is the user's choice,
+               so its toggle shows whatever the downloads are (#707). -->
           @if (selectedMedia_.status === 'downloaded') {
-            <div class="icon-link" title="Trailer Downloaded">
+            <div class="icon-link status-only" title="Trailer Downloaded">
               <!-- Show Downloaded icon -->
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="downloaded-icon success" aria-label="Downloaded">
                 <path
@@ -25,44 +28,43 @@
                 />
               </svg>
             </div>
+          }
+          @if (isLoadingMonitor()) {
+            <div class="icon-link" title="Updating Monitor Status">
+              <!-- Show loading icon on click -->
+              <!-- Cycle icon - Google Fonts -->
+              <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+                <path
+                  d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+                />
+              </svg>
+            </div>
           } @else {
-            @if (isLoadingMonitor()) {
-              <div class="icon-link" title="Updating Monitor Status">
-                <!-- Show loading icon on click -->
-                <!-- Cycle icon - Google Fonts -->
-                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="loading">
+            <button
+              type="button"
+              (click)="monitorMedia()"
+              class="icon-link monitor-toggle"
+              id="monitor_toggle"
+              [attr.aria-pressed]="selectedMedia_.monitor"
+              [attr.aria-label]="selectedMedia_.monitor ? 'Monitored. Click to stop monitoring' : 'Not monitored. Click to monitor'"
+              [title]="selectedMedia_.monitor ? 'Monitored, click to change' : 'Not Monitored, click to change'"
+            >
+              @if (selectedMedia_.monitor) {
+                <!-- Show Monitored icon -->
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon">
                   <path
-                    d="M343-107q-120-42-194.5-146.5T74-490q0-29 4-57.5T91-604l-57 33-37-62 185-107 106 184-63 36-54-92q-13 30-18.5 60.5T147-490q0 113 65.5 200T381-171l-38 64Zm291-516v-73h107q-47-60-115.5-93.5T480-823q-66 0-123.5 24T255-734l-38-65q54-45 121-71t142-26q85 0 160.5 33T774-769v-67h73v213H634ZM598-1 413-107l107-184 62 37-54 94q123-17 204.5-110.5T814-489q0-19-2.5-37.5T805-563h74q4 18 6 36.5t2 36.5q0 142-87 251.5T578-96l56 33-36 62Z"
+                    d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
                   />
                 </svg>
-              </div>
-            } @else {
-              <div
-                (click)="monitorMedia()"
-                class="icon-link"
-                [title]="selectedMedia_.monitor ? 'Monitored, click to change' : 'Not Monitored, click to change'"
-              >
-                @if (selectedMedia_.monitor) {
-                  <span>
-                    <!-- Show Monitored icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="monitored-icon" aria-label="Monitored">
-                      <path
-                        d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"
-                      />
-                    </svg>
-                  </span>
-                } @else {
-                  <span>
-                    <!-- Show Not Monitored icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="not-monitored-icon" aria-label="Not Monitored">
-                      <path
-                        d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
-                      />
-                    </svg>
-                  </span>
-                }
-              </div>
-            }
+              } @else {
+                <!-- Show Not Monitored icon -->
+                <svg aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="not-monitored-icon">
+                  <path
+                    d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"
+                  />
+                </svg>
+              }
+            </button>
           }
           <span class="text-lg title-text" appCopyToClipboard [textToCopy]="selectedMedia_.title" [title]="selectedMedia_.title">
             {{ selectedMedia_.title }}
@@ -209,14 +211,16 @@
                         </button>
                         <div [attr.id]="'videoProfiles' + video.id" popover="auto" class="popover" #videoProfilesPopover>
                           <div class="dropdown-list" role="listbox" [attr.aria-label]="'Profiles that download a ' + group.label.toLowerCase()">
-                            @for (profile of typeProfiles; track profile.id) {
+                            @for (option of typeProfiles; track option.profile.id) {
                               <button
                                 class="dropdown-option"
                                 role="option"
                                 type="button"
-                                (click)="downloadKnownVideo(video, profile.id, videoProfilesPopover)"
+                                [class.not-matching]="!option.matches"
+                                [title]="option.matches ? '' : 'The filters of this profile do not match this item'"
+                                (click)="downloadKnownVideo(video, option.profile.id, videoProfilesPopover)"
                               >
-                                {{ profile.customfilter.filter_name }}
+                                {{ option.profile.customfilter.filter_name }}{{ option.matches ? '' : " (filters don't match)" }}
                               </button>
                             }
                           </div>
