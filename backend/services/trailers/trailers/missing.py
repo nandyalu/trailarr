@@ -734,7 +734,9 @@ async def _process_single_media_item(
             if download_attempted:
                 total_processed += 1
                 download_attempts += 1
-                await utils.sleep_between_downloads(total_processed, logger)
+                await utils.sleep_between_downloads(
+                    total_processed, logger, stop_event=stop_event
+                )
 
     _profile_count = len(profiles)
     _msg = f"Trailarr finished the work on '{media.title}'."

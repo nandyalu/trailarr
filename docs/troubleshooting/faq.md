@@ -73,6 +73,6 @@ If you are using a Raspberry Pi or a low powered server, it might take longer to
 
 Trailarr deliberately sleeps between trailer downloads to avoid rate-limiting by YouTube. Downloading too many videos in quick succession can get your server's IP address — or your YouTube account if you're using a cookies file — temporarily or permanently blocked.
 
-The pause ranges from roughly 2 to 11 minutes per download, increasing as the batch gets larger. This is expected behavior. Once the initial backlog is downloaded, subsequent runs only process newly added media so the delays become infrequent.
+The pause ranges from roughly 2 to 11 minutes per download, increasing as the batch gets larger. This is expected behavior. Once the initial backlog is downloaded, subsequent runs only process newly added media so the delays become infrequent. A stop of Trailarr ends the pause at once.
 
 See the [Slow Downloads](./common-issues.md#slow-downloads-long-pauses-between-trailers) section in Common Issues for the full breakdown.

@@ -510,6 +510,39 @@ async def test_download_failure_records_backoff_attempt():
 
 
 @pytest.mark.asyncio
+async def test_the_wait_after_a_download_gets_the_stop_event():
+    """The wait after a download can be 11 minutes. Without the stop event
+    it ignored a stop, and a `docker stop` ran into its timeout."""
+    media = _media(1)
+    profile = _profile(1)
+    profile.retry_count = 0
+    stop_event = threading.Event()
+
+    with (
+        patch(
+            "services.trailers.trailers.missing._is_valid_media",
+            return_value=True,
+        ),
+        patch(
+            "services.trailers.trailers.missing.trailer_downloader"
+            ".download_trailer",
+            new_callable=AsyncMock,
+            return_value=True,
+        ),
+        patch(
+            "services.trailers.trailers.missing.utils.sleep_between_downloads",
+            new_callable=AsyncMock,
+        ) as sleep,
+    ):
+        await _process_single_media_item(
+            media, [profile], stop_event=stop_event
+        )
+
+    sleep.assert_awaited_once()
+    assert sleep.await_args.kwargs["stop_event"] is stop_event
+
+
+@pytest.mark.asyncio
 async def test_validation_skip_does_not_record_backoff_attempt():
     """A storage validation skip is not treated as a failed download."""
     media = _media(1)
