@@ -1,5 +1,6 @@
 """Tests for the batch download loop."""
 
+import threading
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -67,6 +68,33 @@ async def test_every_item_of_the_batch_is_downloaded():
     assert [c.args[0].id for c in download_trailer.await_args_list] == [1, 2, 3]
     # A pause between items, none after the last one.
     assert sleep.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_the_wait_between_items_gets_the_stop_event():
+    """The wait between two items can be 11 minutes. Without the stop event
+    it ignored a stop, and a `docker stop` ran into its timeout."""
+    profile = MagicMock()
+    profile.video_type = "trailer"
+    profile.retry_count = 0
+    stop_event = threading.Event()
+
+    with (
+        patch(
+            "services.trailers.trailers.batch.download_trailer",
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "services.trailers.trailers.batch.utils.sleep_between_downloads",
+            new_callable=AsyncMock,
+        ) as sleep,
+    ):
+        await batch_download_task(
+            [_media(1), _media(2)], profile, stop_event=stop_event
+        )
+
+    sleep.assert_awaited_once()
+    assert sleep.await_args.kwargs["stop_event"] is stop_event
 
 
 @pytest.mark.asyncio

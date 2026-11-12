@@ -71,5 +71,7 @@ async def batch_download_task(
         # the last item of every batch of two or more.
         if downloading_count > download_count:
             return None
-        await utils.sleep_between_downloads(downloading_count, logger)
+        await utils.sleep_between_downloads(
+            downloading_count, logger, stop_event=stop_event
+        )
     return None
