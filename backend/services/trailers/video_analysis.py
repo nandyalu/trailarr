@@ -358,6 +358,9 @@ def get_silence_timestamps(
                 app_settings.ffmpeg_path,
                 "-i",
                 file_path,
+                # The filter reads only the audio. Without "-vn", ffmpeg
+                # also decodes each video frame for the null output.
+                "-vn",
                 "-af",
                 "silencedetect=noise=-30dB:d=3",
                 "-f",

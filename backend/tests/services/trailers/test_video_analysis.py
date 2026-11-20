@@ -582,6 +582,25 @@ class TestSilenceTimestamps:
         logger.exception.assert_not_called()
         return result
 
+    def test_the_detection_reads_only_the_audio(self):
+        # Without "-vn", ffmpeg decodes each video frame for the null
+        # output. The filter does not use the frames.
+        from services.trailers.video_analysis import get_silence_timestamps
+
+        with (
+            patch(
+                "services.trailers.video_analysis.quiv.run_subprocess"
+            ) as run,
+            patch("services.trailers.video_analysis.logger"),
+        ):
+            run.return_value.stderr = ""
+            get_silence_timestamps("/path/to/trailer.mkv")
+
+        args = run.call_args.args[0]
+        assert "-vn" in args
+        # An output option: after the input, before the output.
+        assert args.index("-i") < args.index("-vn") < args.index("-f")
+
     def test_silence_at_the_start_is_not_an_error(self):
         # Real output for a trailer that starts with 6 s of silence.
         stderr = self._silence_output(
